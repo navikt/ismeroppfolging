@@ -74,3 +74,5 @@ spec:
       value: "dev-gcp.teamsykefravr.istilgangskontroll"
     - name: ISTILGANGSKONTROLL_URL
       value: "http://istilgangskontroll"
+    - name: SENOPPFOLGING_SVAR_CONSUMER_ENABLED
+      value: "true"

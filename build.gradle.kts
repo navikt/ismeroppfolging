@@ -7,6 +7,7 @@ val flywayVersion = "10.8.1"
 val hikariVersion = "5.1.0"
 val postgresVersion = "42.7.2"
 val postgresEmbeddedVersion = "2.0.6"
+val kafkaVersion = "3.7.0"
 val logbackVersion = "1.4.14"
 val logstashEncoderVersion = "7.4"
 val micrometerRegistryVersion = "1.12.2"
@@ -54,6 +55,9 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     testImplementation("io.zonky.test:embedded-postgres:$postgresEmbeddedVersion")
+
+    // Kafka
+    implementation("org.apache.kafka:kafka_2.13:$kafkaVersion")
 
     // (De-)serialization
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonDatatypeVersion")
