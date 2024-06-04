@@ -13,7 +13,7 @@ class SenOppfolgingSvarConsumer : KafkaConsumerService<SenOppfolgingSvarRecord> 
         val records = kafkaConsumer.poll(Duration.ofMillis(pollDurationInMillis))
         if (records.count() > 0) {
             records.forEach { record ->
-                log.info("Received record: ${record.value()}")
+                log.info("Received record: ${record.value()}") // TODO: Lagre i database
                 kafkaConsumer.commitSync()
             }
         }
