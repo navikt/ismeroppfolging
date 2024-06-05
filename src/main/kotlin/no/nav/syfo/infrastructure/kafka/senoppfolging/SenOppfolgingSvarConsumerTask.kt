@@ -5,6 +5,7 @@ import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.infrastructure.kafka.kafkaAivenConsumerConfig
 import no.nav.syfo.infrastructure.kafka.launchKafkaConsumer
 import no.nav.syfo.util.configuredJacksonMapper
+import org.apache.kafka.clients.consumer.OffsetResetStrategy
 import org.apache.kafka.common.serialization.Deserializer
 
 const val SENOPPFOLGING_SVAR_TOPIC =
@@ -16,6 +17,7 @@ fun launchSenOppfolgingSvarConsumer(applicationState: ApplicationState, kafkaEnv
         topic = SENOPPFOLGING_SVAR_TOPIC,
         consumerProperties = kafkaAivenConsumerConfig<SenOppfolgingSvarDeserializer>(
             kafkaEnvironment = kafkaEnvironment,
+            offsetResetStrategy = OffsetResetStrategy.EARLIEST,
         ),
         kafkaConsumerService = SenOppfolgingSvarConsumer(),
     )
