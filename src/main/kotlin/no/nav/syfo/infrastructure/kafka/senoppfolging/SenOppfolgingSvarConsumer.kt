@@ -14,8 +14,8 @@ class SenOppfolgingSvarConsumer : KafkaConsumerService<SenOppfolgingSvarRecord> 
         if (records.count() > 0) {
             records.forEach { record ->
                 log.info("Received record: ${record.value()}") // TODO: Lagre i database
-                kafkaConsumer.commitSync()
             }
+            kafkaConsumer.commitSync()
         }
     }
 
