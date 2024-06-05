@@ -4,6 +4,7 @@ import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.clients.ClientsEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureEnvironment
 import no.nav.syfo.infrastructure.database.DatabaseEnvironment
+import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 
 fun testEnvironment() = Environment(
     database = DatabaseEnvironment(
@@ -13,6 +14,13 @@ fun testEnvironment() = Environment(
         username = "username",
         password = "password",
         url = "jdbc:postgresql://localhost:5432/ismeroppfolging_dev",
+    ),
+    kafka = KafkaEnvironment(
+        aivenBootstrapServers = "kafkaBootstrapServers",
+        aivenCredstorePassword = "credstorepassord",
+        aivenKeystoreLocation = "keystore",
+        aivenSecurityProtocol = "SSL",
+        aivenTruststoreLocation = "truststore",
     ),
     azure = AzureEnvironment(
         appClientId = "ismeroppfolging-client-id",
@@ -27,6 +35,7 @@ fun testEnvironment() = Environment(
         ),
     ),
     electorPath = "electorPath",
+    senOppfolgingSvarConsumerEnabled = true,
 )
 
 fun testAppState() = ApplicationState(

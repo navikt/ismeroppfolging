@@ -4,6 +4,7 @@ import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.clients.ClientsEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureEnvironment
 import no.nav.syfo.infrastructure.database.DatabaseEnvironment
+import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 
 const val NAIS_DATABASE_ENV_PREFIX = "NAIS_DATABASE_ISMEROPPFOLGING_ISMEROPPFOLGING_DB"
 
@@ -16,6 +17,13 @@ data class Environment(
         password = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_PASSWORD"),
         url = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_JDBC_URL")
     ),
+    val kafka: KafkaEnvironment = KafkaEnvironment(
+        aivenBootstrapServers = getEnvVar("KAFKA_BROKERS"),
+        aivenCredstorePassword = getEnvVar("KAFKA_CREDSTORE_PASSWORD"),
+        aivenKeystoreLocation = getEnvVar("KAFKA_KEYSTORE_PATH"),
+        aivenSecurityProtocol = "SSL",
+        aivenTruststoreLocation = getEnvVar("KAFKA_TRUSTSTORE_PATH"),
+    ),
     val azure: AzureEnvironment =
         AzureEnvironment(
             appClientId = getEnvVar("AZURE_APP_CLIENT_ID"),
@@ -24,6 +32,7 @@ data class Environment(
             openidConfigTokenEndpoint = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT")
         ),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
+    val senOppfolgingSvarConsumerEnabled: Boolean = getEnvVar("SENOPPFOLGING_SVAR_CONSUMER_ENABLED").toBoolean(),
     val clients: ClientsEnvironment =
         ClientsEnvironment(
             istilgangskontroll = ClientEnvironment(

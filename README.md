@@ -8,7 +8,7 @@ Applikasjon for prosessering av sykmeldte som har oppgitt at de trenger mer oppf
 
 * Docker
 * Gradle
-* Kafka (Soon)
+* Kafka
 * Kotlin
 * Ktor
 * Postgres

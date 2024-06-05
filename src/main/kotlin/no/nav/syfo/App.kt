@@ -9,6 +9,7 @@ import no.nav.syfo.api.apiModule
 import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
+import no.nav.syfo.infrastructure.kafka.senoppfolging.launchSenOppfolgingSvarConsumer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
@@ -47,6 +48,13 @@ fun main() {
     applicationEngineEnvironment.monitor.subscribe(ApplicationStarted) {
         applicationState.ready = true
         logger.info("Application is ready, running Java VM ${Runtime.version()}")
+
+        if (environment.senOppfolgingSvarConsumerEnabled) {
+            launchSenOppfolgingSvarConsumer(
+                applicationState = applicationState,
+                kafkaEnvironment = environment.kafka,
+            )
+        }
     }
 
     val server = embeddedServer(
