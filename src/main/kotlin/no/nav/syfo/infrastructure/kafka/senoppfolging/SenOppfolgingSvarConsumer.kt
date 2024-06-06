@@ -1,8 +1,12 @@
 package no.nav.syfo.infrastructure.kafka.senoppfolging
 
+import io.micrometer.core.instrument.Counter
 import no.nav.syfo.application.SenOppfolgingService
+import no.nav.syfo.domain.OnskerOppfolging
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.kafka.KafkaConsumerService
+import no.nav.syfo.infrastructure.metric.METRICS_NS
+import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import no.nav.syfo.util.toOffsetDateTimeUTC
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
@@ -18,7 +22,8 @@ class SenOppfolgingSvarConsumer(private val senOppfolgingService: SenOppfolgingS
         if (records.count() > 0) {
             records.requireNoNulls().forEach { record ->
                 val senOppfolgingSvarRecord = record.value()
-                log.info("Received record: $senOppfolgingSvarRecord")
+                log.info("Received sen oppfolging svar record with id: ${senOppfolgingSvarRecord.id}")
+                Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_READ.increment()
                 processRecord(senOppfolgingSvarRecord = senOppfolgingSvarRecord)
             }
             kafkaConsumer.commitSync()
@@ -30,19 +35,43 @@ class SenOppfolgingSvarConsumer(private val senOppfolgingService: SenOppfolgingS
         val kandidat = senOppfolgingService.createKandidat(
             personident = Personident(senOppfolgingSvarRecord.personIdent),
             varselAt = OffsetDateTime.now()
-        )
+        ).also { Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_CREATED.increment() }
 
         // TODO: Should get kandidat based on varsel associated with svar, then add svar to that kandidat
-        val kandidatMedSvar = senOppfolgingService.addSvar(
+        val onskerOppfolging = senOppfolgingSvarRecord.response.toOnskerOppfolging()
+        senOppfolgingService.addSvar(
             kandidat = kandidat,
             svarAt = senOppfolgingSvarRecord.createdAt.toOffsetDateTimeUTC(),
-            onskerOppfolging = senOppfolgingSvarRecord.response.toOnskerOppfolging()
+            onskerOppfolging = onskerOppfolging
         )
-
-        log.info("Created kandidat med svar: $kandidatMedSvar")
+        when (onskerOppfolging) {
+            OnskerOppfolging.JA -> Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_ONSKER_OPPFOLGING.increment()
+            OnskerOppfolging.NEI -> Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_ONSKER_IKKE_OPPFOLGING.increment()
+        }
     }
 
     companion object {
         private val log = LoggerFactory.getLogger(this::class.java)
     }
+}
+
+private object Metrics {
+    private const val KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_BASE = "${METRICS_NS}_kafka_consumer_sen_oppfolging_svar"
+
+    val COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_READ: Counter = Counter
+        .builder("${KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_BASE}_read_count")
+        .description("Counts the number of reads from topic $SENOPPFOLGING_SVAR_TOPIC")
+        .register(METRICS_REGISTRY)
+    val COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_CREATED: Counter = Counter
+        .builder("${KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_BASE}_kandidat_created_count")
+        .description("Counts the number of kandidater created from topic $SENOPPFOLGING_SVAR_TOPIC")
+        .register(METRICS_REGISTRY)
+    val COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_ONSKER_OPPFOLGING: Counter = Counter
+        .builder("${KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_BASE}_kandidat_onsker_oppfolging_count")
+        .description("Counts the number of kandidater onsker oppfolging from topic $SENOPPFOLGING_SVAR_TOPIC")
+        .register(METRICS_REGISTRY)
+    val COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_ONSKER_IKKE_OPPFOLGING: Counter = Counter
+        .builder("${KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_BASE}_kandidat_onsker_ikke_oppfolging_count")
+        .description("Counts the number of kandidater onsker ikke oppfolging from topic $SENOPPFOLGING_SVAR_TOPIC")
+        .register(METRICS_REGISTRY)
 }

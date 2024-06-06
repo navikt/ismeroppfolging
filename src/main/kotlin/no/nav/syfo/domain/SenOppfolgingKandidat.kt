@@ -7,7 +7,6 @@ data class SenOppfolgingKandidat private constructor(
     val uuid: UUID,
     val personident: Personident,
     val createdAt: OffsetDateTime,
-    val updatedAt: OffsetDateTime,
     val varselAt: OffsetDateTime,
     val svar: SenOppfolgingSvar?,
 ) {
@@ -18,7 +17,6 @@ data class SenOppfolgingKandidat private constructor(
         uuid = UUID.randomUUID(),
         personident = personident,
         createdAt = OffsetDateTime.now(),
-        updatedAt = OffsetDateTime.now(),
         varselAt = varselAt,
         svar = null,
     )
@@ -32,14 +30,12 @@ data class SenOppfolgingKandidat private constructor(
             uuid: UUID,
             personident: Personident,
             createdAt: OffsetDateTime,
-            updatedAt: OffsetDateTime,
             varselAt: OffsetDateTime,
             svar: SenOppfolgingSvar?
         ): SenOppfolgingKandidat = SenOppfolgingKandidat(
             uuid = uuid,
             personident = personident,
             createdAt = createdAt,
-            updatedAt = updatedAt,
             varselAt = varselAt,
             svar = svar,
         )

@@ -12,7 +12,12 @@ import org.apache.kafka.common.serialization.Deserializer
 const val SENOPPFOLGING_SVAR_TOPIC =
     "team-esyfo.sen-oppfolging-svar"
 
-fun launchSenOppfolgingSvarConsumer(applicationState: ApplicationState, kafkaEnvironment: KafkaEnvironment) {
+fun launchSenOppfolgingSvarConsumer(
+    applicationState: ApplicationState,
+    kafkaEnvironment: KafkaEnvironment,
+    senOppfolgingService: SenOppfolgingService
+) {
+    val senOppfolgingSvarConsumer = SenOppfolgingSvarConsumer(senOppfolgingService = senOppfolgingService)
     launchKafkaConsumer(
         applicationState = applicationState,
         topic = SENOPPFOLGING_SVAR_TOPIC,
@@ -20,7 +25,7 @@ fun launchSenOppfolgingSvarConsumer(applicationState: ApplicationState, kafkaEnv
             kafkaEnvironment = kafkaEnvironment,
             offsetResetStrategy = OffsetResetStrategy.EARLIEST,
         ),
-        kafkaConsumerService = SenOppfolgingSvarConsumer(senOppfolgingService = SenOppfolgingService())
+        kafkaConsumerService = senOppfolgingSvarConsumer
     )
 }
 
