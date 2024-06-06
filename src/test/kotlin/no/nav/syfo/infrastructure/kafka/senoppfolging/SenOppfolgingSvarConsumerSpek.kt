@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.syfo.ExternalMockEnvironment
+import no.nav.syfo.application.SenOppfolgingService
 import no.nav.syfo.generators.generateSenOppfolgingSvarRecord
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.mocks.mockPollConsumerRecords
@@ -18,7 +19,7 @@ class SenOppfolgingSvarConsumerSpek : Spek({
     val database = externalMockEnvironment.database
     val kafkaConsumer = mockk<KafkaConsumer<String, SenOppfolgingSvarRecord>>()
 
-    val senOppfolgingSvarConsumer = SenOppfolgingSvarConsumer()
+    val senOppfolgingSvarConsumer = SenOppfolgingSvarConsumer(senOppfolgingService = SenOppfolgingService())
 
     beforeEachTest {
         every { kafkaConsumer.commitSync() } returns Unit

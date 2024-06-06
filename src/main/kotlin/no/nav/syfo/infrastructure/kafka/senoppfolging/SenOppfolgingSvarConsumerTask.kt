@@ -1,6 +1,7 @@
 package no.nav.syfo.infrastructure.kafka.senoppfolging
 
 import no.nav.syfo.ApplicationState
+import no.nav.syfo.application.SenOppfolgingService
 import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.infrastructure.kafka.kafkaAivenConsumerConfig
 import no.nav.syfo.infrastructure.kafka.launchKafkaConsumer
@@ -19,7 +20,7 @@ fun launchSenOppfolgingSvarConsumer(applicationState: ApplicationState, kafkaEnv
             kafkaEnvironment = kafkaEnvironment,
             offsetResetStrategy = OffsetResetStrategy.EARLIEST,
         ),
-        kafkaConsumerService = SenOppfolgingSvarConsumer(),
+        kafkaConsumerService = SenOppfolgingSvarConsumer(senOppfolgingService = SenOppfolgingService())
     )
 }
 
