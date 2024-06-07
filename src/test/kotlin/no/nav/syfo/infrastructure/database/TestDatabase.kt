@@ -1,6 +1,8 @@
 package no.nav.syfo.infrastructure.database
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
+import no.nav.syfo.infrastructure.database.repository.PSenOppfolgingKandidat
+import no.nav.syfo.infrastructure.database.repository.toPSenOppfolgingKandidat
 import org.flywaydb.core.Flyway
 import java.sql.Connection
 
@@ -27,7 +29,11 @@ class TestDatabase : DatabaseInterface {
 }
 
 fun TestDatabase.dropData() {
-    val queryList = emptyList<String>() // TODO: Add queries to delete data
+    val queryList = listOf(
+        """
+        DELETE FROM SEN_OPPFOLGING_KANDIDAT
+        """.trimIndent(),
+    )
     this.connection.use { connection ->
         queryList.forEach { query ->
             connection.prepareStatement(query).execute()
@@ -35,6 +41,13 @@ fun TestDatabase.dropData() {
         connection.commit()
     }
 }
+
+fun TestDatabase.getSenOppfolgingKandidater(): List<PSenOppfolgingKandidat> =
+    this.connection.use { connection ->
+        connection.prepareStatement("SELECT * FROM SEN_OPPFOLGING_KANDIDAT").use {
+            it.executeQuery().toList { toPSenOppfolgingKandidat() }
+        }
+    }
 
 class TestDatabaseNotResponding : DatabaseInterface {
 

@@ -6,10 +6,12 @@ import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
+import no.nav.syfo.application.SenOppfolgingService
 import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
 import no.nav.syfo.infrastructure.cronjob.launchCronjobs
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
+import no.nav.syfo.infrastructure.database.repository.SenOppfolgingRepository
 import no.nav.syfo.infrastructure.kafka.senoppfolging.launchSenOppfolgingSvarConsumer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
@@ -25,6 +27,8 @@ fun main() {
         wellKnownUrl = environment.azure.appWellKnownUrl,
     )
 
+    lateinit var senOppfolgingService: SenOppfolgingService
+
     val applicationEngineEnvironment =
         applicationEngineEnvironment {
             log = logger
@@ -36,6 +40,9 @@ fun main() {
                 databaseModule(
                     databaseEnvironment = environment.database,
                 )
+
+                val senOppfolgingRepository = SenOppfolgingRepository(database = applicationDatabase)
+                senOppfolgingService = SenOppfolgingService(senOppfolgingRepository = senOppfolgingRepository)
 
                 apiModule(
                     applicationState = applicationState,
@@ -59,6 +66,7 @@ fun main() {
             launchSenOppfolgingSvarConsumer(
                 applicationState = applicationState,
                 kafkaEnvironment = environment.kafka,
+                senOppfolgingService = senOppfolgingService,
             )
         }
     }
