@@ -72,6 +72,7 @@ fun main() {
         launchCronjobs(
             applicationState = applicationState,
             environment = environment,
+            senOppfolgingService = senOppfolgingService,
         )
 
         if (environment.senOppfolgingSvarConsumerEnabled) {
