@@ -16,7 +16,6 @@ data class PSenOppfolgingKandidat(
     val varselAt: OffsetDateTime,
     val svarAt: OffsetDateTime?,
     val onskerOppfolging: String?,
-    val publishedAt: OffsetDateTime?,
 ) {
     fun toSenOppfolgingKandidat(): SenOppfolgingKandidat {
         val svar = if (svarAt != null && onskerOppfolging != null) SenOppfolgingSvar.createFromDatabase(svarAt = svarAt, onskerOppfolging = OnskerOppfolging.valueOf(onskerOppfolging)) else null
@@ -27,7 +26,6 @@ data class PSenOppfolgingKandidat(
             createdAt = createdAt,
             varselAt = varselAt,
             svar = svar,
-            publishedAt = publishedAt,
         )
     }
 }
