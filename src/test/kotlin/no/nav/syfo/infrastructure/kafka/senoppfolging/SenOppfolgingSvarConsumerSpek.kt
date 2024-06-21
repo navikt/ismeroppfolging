@@ -11,10 +11,13 @@ import no.nav.syfo.generators.generateSenOppfolgingSvarRecord
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getSenOppfolgingKandidater
 import no.nav.syfo.infrastructure.database.repository.SenOppfolgingRepository
+import no.nav.syfo.infrastructure.kafka.KandidatStatusProducer
+import no.nav.syfo.infrastructure.kafka.KandidatStatusRecord
 import no.nav.syfo.mocks.mockPollConsumerRecords
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeNull
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.util.*
@@ -23,9 +26,13 @@ class SenOppfolgingSvarConsumerSpek : Spek({
     val externalMockEnvironment = ExternalMockEnvironment.instance
     val database = externalMockEnvironment.database
     val kafkaConsumer = mockk<KafkaConsumer<String, SenOppfolgingSvarRecord>>()
+    val kafkaProducer = mockk<KafkaProducer<String, KandidatStatusRecord>>()
 
     val senOppfolgingRepository = SenOppfolgingRepository(database = database)
-    val senOppfolgingService = SenOppfolgingService(senOppfolgingRepository = senOppfolgingRepository)
+    val senOppfolgingService = SenOppfolgingService(
+        senOppfolgingRepository = senOppfolgingRepository,
+        kandidatStatusProducer = KandidatStatusProducer(kafkaProducer),
+    )
     val senOppfolgingSvarConsumer = SenOppfolgingSvarConsumer(senOppfolgingService = senOppfolgingService)
 
     beforeEachTest {

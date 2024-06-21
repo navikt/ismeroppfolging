@@ -6,6 +6,7 @@ import no.nav.syfo.domain.SenOppfolgingKandidat
 import no.nav.syfo.domain.SenOppfolgingSvar
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
+import no.nav.syfo.util.nowUTC
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -26,6 +27,28 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             it.setObject(1, senOppfolgingSvar.svarAt)
             it.setString(2, senOppfolgingSvar.onskerOppfolging.name)
             it.setObject(3, senOppfolgingKandidaUuid.toString())
+            val updated = it.executeUpdate()
+            if (updated != 1) {
+                throw SQLException("Expected a single row to be updated, got update count $updated")
+            }
+        }
+        connection.commit()
+    }
+
+    override fun getUnpublishedKandidater(): List<SenOppfolgingKandidat> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_UNPUBLISHED).use {
+                it.executeQuery().toList { toPSenOppfolgingKandidat() }
+            }.map {
+                it.toSenOppfolgingKandidat()
+            }
+        }
+
+    override fun setPublished(kandidat: SenOppfolgingKandidat) = database.connection.use { connection ->
+        connection.prepareStatement(UPDATE_PUBLISHED_AT).use {
+            it.setObject(1, nowUTC())
+            it.setObject(2, kandidat.publishedAt)
+            it.setString(3, kandidat.uuid.toString())
             val updated = it.executeUpdate()
             if (updated != 1) {
                 throw SQLException("Expected a single row to be updated, got update count $updated")
@@ -63,6 +86,16 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
                 onsker_oppfolging = ?
             WHERE uuid = ?
         """
+
+        private const val GET_UNPUBLISHED =
+            """
+                SELECT * FROM SEN_OPPFOLGING_KANDIDAT WHERE published_at IS NULL ORDER BY created_at ASC
+            """
+
+        private const val UPDATE_PUBLISHED_AT =
+            """
+                UPDATE SEN_OPPFOLGING_KANDIDAT SET updated_at=?, published_at=? WHERE uuid=?
+            """
     }
 }
 
@@ -75,4 +108,5 @@ internal fun ResultSet.toPSenOppfolgingKandidat(): PSenOppfolgingKandidat = PSen
     varselAt = getObject("varsel_at", OffsetDateTime::class.java),
     svarAt = getObject("svar_at", OffsetDateTime::class.java),
     onskerOppfolging = getString("onsker_oppfolging"),
+    publishedAt = getObject("published_at", OffsetDateTime::class.java),
 )

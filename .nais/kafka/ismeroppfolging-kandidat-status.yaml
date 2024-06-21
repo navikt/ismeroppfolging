@@ -1,0 +1,30 @@
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  annotations:
+    dcat.data.nav.no/title: "Status på kandidat til mer oppfølging i sen fase"
+    dcat.data.nav.no/description: >-
+      Topic inneholder informasjon om status på kandidat til mer oppfølging i sen fase.
+  name: ismeroppfolging-kandidat-status
+  namespace: teamsykefravr
+  labels:
+    team: teamsykefravr
+spec:
+  pool: {{ kafkaPool }}
+  config:
+    cleanupPolicy: delete
+    minimumInSyncReplicas: 1
+    partitions: 4
+    replication: 3
+    retentionBytes: -1  # -1 means unlimited
+    retentionHours: -1  # -1 means unlimited
+  acl:
+    - team: teamsykefravr
+      application: ismeroppfolging
+      access: readwrite
+    - team: teamsykefravr
+      application: syfooversiktsrv
+      access: read
+    - team: disykefravar
+      application: dvh-sykefravar-airflow-kafka
+      access: read
