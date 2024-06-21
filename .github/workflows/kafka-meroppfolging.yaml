@@ -1,0 +1,40 @@
+name: kafka
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/kafka-meroppfolging.yaml'
+      - '.nais/kafka/**'
+
+permissions:
+  id-token: write
+
+jobs:
+  deploy-kafka-meroppfolging-dev:
+    name: Deploy Kafka topics to dev-gcp
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy ismeroppfolging-kandidat-status topic to dev
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: .nais/kafka/ismeroppfolging-kandidat-status.yaml
+          VARS: .nais/kafka/dev.json
+
+  deploy-kafka-meroppfolging-prod:
+    name: Deploy Kafka topics to prod-gcp
+    needs: deploy-kafka-meroppfolging-dev
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy ismeroppfolging-kandidat-status topic to prod
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-gcp
+          RESOURCE: .nais/kafka/ismeroppfolging-kandidat-status.yaml
+          VARS: .nais/kafka/prod.json

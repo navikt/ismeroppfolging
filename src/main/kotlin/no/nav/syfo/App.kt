@@ -12,7 +12,11 @@ import no.nav.syfo.infrastructure.cronjob.launchCronjobs
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.repository.SenOppfolgingRepository
+import no.nav.syfo.infrastructure.kafka.KandidatStatusProducer
+import no.nav.syfo.infrastructure.kafka.KandidatStatusRecordSerializer
+import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
 import no.nav.syfo.infrastructure.kafka.senoppfolging.launchSenOppfolgingSvarConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
@@ -25,6 +29,11 @@ fun main() {
 
     val wellKnownInternalAzureAD = getWellKnown(
         wellKnownUrl = environment.azure.appWellKnownUrl,
+    )
+    val kandidatStatusProducer = KandidatStatusProducer(
+        producer = KafkaProducer(
+            kafkaAivenProducerConfig<KandidatStatusRecordSerializer>(kafkaEnvironment = environment.kafka)
+        )
     )
 
     lateinit var senOppfolgingService: SenOppfolgingService
@@ -42,7 +51,10 @@ fun main() {
                 )
 
                 val senOppfolgingRepository = SenOppfolgingRepository(database = applicationDatabase)
-                senOppfolgingService = SenOppfolgingService(senOppfolgingRepository = senOppfolgingRepository)
+                senOppfolgingService = SenOppfolgingService(
+                    senOppfolgingRepository = senOppfolgingRepository,
+                    kandidatStatusProducer = kandidatStatusProducer,
+                )
 
                 apiModule(
                     applicationState = applicationState,

@@ -4,9 +4,13 @@ import no.nav.syfo.domain.OnskerOppfolging
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.SenOppfolgingKandidat
 import no.nav.syfo.domain.SenOppfolgingSvar
+import no.nav.syfo.infrastructure.kafka.KandidatStatusProducer
 import java.time.OffsetDateTime
 
-class SenOppfolgingService(private val senOppfolgingRepository: ISenOppfolgingRepository) {
+class SenOppfolgingService(
+    private val senOppfolgingRepository: ISenOppfolgingRepository,
+    private val kandidatStatusProducer: KandidatStatusProducer,
+) {
 
     fun createKandidat(personident: Personident, varselAt: OffsetDateTime): SenOppfolgingKandidat {
         val senOppfolgingKandidat = SenOppfolgingKandidat(
@@ -25,5 +29,17 @@ class SenOppfolgingService(private val senOppfolgingRepository: ISenOppfolgingRe
         senOppfolgingRepository.updateKandidatSvar(senOppfolgingSvar = svar, senOppfolgingKandidaUuid = kandidatWithSvar.uuid)
 
         return kandidatWithSvar
+    }
+
+    fun publishUnpublishedKandidatStatus(): List<Result<SenOppfolgingKandidat>> {
+        val unpublished = senOppfolgingRepository.getUnpublishedKandidater()
+        return unpublished.map { kandidat ->
+            val producerResult = kandidatStatusProducer.send(kandidatStatus = kandidat)
+            producerResult.map {
+                val publishedKandidat = it.publish()
+                senOppfolgingRepository.setPublished(publishedKandidat)
+                publishedKandidat
+            }
+        }
     }
 }
