@@ -1,7 +1,5 @@
 package no.nav.syfo.domain
 
-import java.util.*
-
 @JvmInline
 value class Personident(val value: String) {
     init {
@@ -10,5 +8,3 @@ value class Personident(val value: String) {
         }
     }
 }
-
-fun Personident.asProducerRecordKey(): String = java.util.UUID.nameUUIDFromBytes(value.toByteArray()).toString()
