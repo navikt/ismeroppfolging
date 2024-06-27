@@ -22,18 +22,19 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             pSenOppfolgingKandidat.toSenOppfolgingKandidat()
         }
 
-    override fun updateKandidatSvar(senOppfolgingSvar: SenOppfolgingSvar, senOppfolgingKandidaUuid: UUID) = database.connection.use { connection ->
-        connection.prepareStatement(UPDATE_KANDIDAT_SVAR).use {
-            it.setObject(1, senOppfolgingSvar.svarAt)
-            it.setString(2, senOppfolgingSvar.onskerOppfolging.name)
-            it.setObject(3, senOppfolgingKandidaUuid.toString())
-            val updated = it.executeUpdate()
-            if (updated != 1) {
-                throw SQLException("Expected a single row to be updated, got update count $updated")
+    override fun updateKandidatSvar(senOppfolgingSvar: SenOppfolgingSvar, senOppfolgingKandidaUuid: UUID) =
+        database.connection.use { connection ->
+            connection.prepareStatement(UPDATE_KANDIDAT_SVAR).use {
+                it.setObject(1, senOppfolgingSvar.svarAt)
+                it.setString(2, senOppfolgingSvar.onskerOppfolging.name)
+                it.setObject(3, senOppfolgingKandidaUuid.toString())
+                val updated = it.executeUpdate()
+                if (updated != 1) {
+                    throw SQLException("Expected a single row to be updated, got update count $updated")
+                }
             }
+            connection.commit()
         }
-        connection.commit()
-    }
 
     override fun getUnpublishedKandidater(): List<SenOppfolgingKandidat> =
         database.connection.use { connection ->
@@ -44,18 +45,19 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             }
         }
 
-    override fun setPublished(kandidat: SenOppfolgingKandidat) = database.connection.use { connection ->
-        connection.prepareStatement(UPDATE_PUBLISHED_AT).use {
-            it.setObject(1, nowUTC())
-            it.setObject(2, kandidat.publishedAt)
-            it.setString(3, kandidat.uuid.toString())
-            val updated = it.executeUpdate()
-            if (updated != 1) {
-                throw SQLException("Expected a single row to be updated, got update count $updated")
+    override fun setPublished(kandidatUuid: UUID) =
+        database.connection.use { connection ->
+            connection.prepareStatement(UPDATE_PUBLISHED_AT).use {
+                it.setObject(1, nowUTC())
+                it.setObject(2, nowUTC())
+                it.setString(3, kandidatUuid.toString())
+                val updated = it.executeUpdate()
+                if (updated != 1) {
+                    throw SQLException("Expected a single row to be updated, got update count $updated")
+                }
             }
+            connection.commit()
         }
-        connection.commit()
-    }
 
     private fun Connection.createKandidat(senOppfolgingKandidat: SenOppfolgingKandidat): PSenOppfolgingKandidat =
         prepareStatement(CREATE_KANDIDAT).use {

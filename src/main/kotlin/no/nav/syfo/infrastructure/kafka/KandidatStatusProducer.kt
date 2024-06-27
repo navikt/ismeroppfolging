@@ -1,8 +1,8 @@
 package no.nav.syfo.infrastructure.kafka
 
 import no.nav.syfo.application.IKandidatStatusProducer
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.SenOppfolgingKandidat
-import no.nav.syfo.domain.asProducerRecordKey
 import no.nav.syfo.util.configuredJacksonMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -34,6 +34,8 @@ class KandidatStatusProducer(private val producer: KafkaProducer<String, Kandida
         private val log = LoggerFactory.getLogger(KandidatStatusProducer::class.java)
     }
 }
+
+private fun Personident.asProducerRecordKey(): String = UUID.nameUUIDFromBytes(value.toByteArray()).toString()
 
 data class KandidatStatusRecord(
     val uuid: UUID,

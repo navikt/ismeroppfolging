@@ -27,7 +27,6 @@ data class PSenOppfolgingKandidat(
             createdAt = createdAt,
             varselAt = varselAt,
             svar = svar,
-            publishedAt = publishedAt,
         )
     }
 }

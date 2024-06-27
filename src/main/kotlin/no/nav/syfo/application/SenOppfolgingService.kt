@@ -34,12 +34,11 @@ class SenOppfolgingService(
     fun publishUnpublishedKandidatStatus(): List<Result<SenOppfolgingKandidat>> {
         val unpublished = senOppfolgingRepository.getUnpublishedKandidater()
         return unpublished.map { kandidat ->
-            val producerResult = kandidatStatusProducer.send(kandidatStatus = kandidat)
-            producerResult.map {
-                val publishedKandidat = it.publish()
-                senOppfolgingRepository.setPublished(publishedKandidat)
-                publishedKandidat
-            }
+            kandidatStatusProducer.send(kandidatStatus = kandidat)
+                .map {
+                    senOppfolgingRepository.setPublished(it.uuid)
+                    it
+                }
         }
     }
 }
