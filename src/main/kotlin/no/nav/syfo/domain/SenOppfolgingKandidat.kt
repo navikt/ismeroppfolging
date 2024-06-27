@@ -31,7 +31,7 @@ data class SenOppfolgingKandidat private constructor(
             personident: Personident,
             createdAt: OffsetDateTime,
             varselAt: OffsetDateTime,
-            svar: SenOppfolgingSvar?
+            svar: SenOppfolgingSvar?,
         ): SenOppfolgingKandidat = SenOppfolgingKandidat(
             uuid = uuid,
             personident = personident,
