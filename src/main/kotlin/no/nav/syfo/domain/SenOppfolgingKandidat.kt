@@ -9,6 +9,7 @@ data class SenOppfolgingKandidat private constructor(
     val createdAt: OffsetDateTime,
     val varselAt: OffsetDateTime,
     val svar: SenOppfolgingSvar?,
+    val status: Status,
 ) {
     constructor(
         personident: Personident,
@@ -19,6 +20,7 @@ data class SenOppfolgingKandidat private constructor(
         createdAt = OffsetDateTime.now(),
         varselAt = varselAt,
         svar = null,
+        status = Status.KANDIDAT,
     )
 
     fun addSvar(svar: SenOppfolgingSvar): SenOppfolgingKandidat = this.copy(
@@ -38,6 +40,11 @@ data class SenOppfolgingKandidat private constructor(
             createdAt = createdAt,
             varselAt = varselAt,
             svar = svar,
+            status = Status.KANDIDAT,
         )
     }
+}
+
+enum class Status(val isActive: Boolean) {
+    KANDIDAT(isActive = true),
 }

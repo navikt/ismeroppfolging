@@ -3,6 +3,7 @@ package no.nav.syfo.infrastructure.kafka
 import no.nav.syfo.application.IKandidatStatusProducer
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.SenOppfolgingKandidat
+import no.nav.syfo.domain.Status
 import no.nav.syfo.util.configuredJacksonMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -16,13 +17,12 @@ class KandidatStatusProducer(private val producer: KafkaProducer<String, Kandida
 
     override fun send(kandidatStatus: SenOppfolgingKandidat): Result<SenOppfolgingKandidat> =
         try {
-            producer.send(
-                ProducerRecord(
-                    TOPIC,
-                    kandidatStatus.personident.asProducerRecordKey(),
-                    KandidatStatusRecord.fromSenOppfolgingKandidat(kandidatStatus),
-                )
-            ).get()
+            val record = ProducerRecord(
+                TOPIC,
+                kandidatStatus.personident.asProducerRecordKey(),
+                KandidatStatusRecord.fromSenOppfolgingKandidat(kandidatStatus),
+            )
+            producer.send(record).get()
             Result.success(kandidatStatus)
         } catch (e: Exception) {
             log.error("Exception was thrown when attempting to send vurdering: ${e.message}")
@@ -41,6 +41,7 @@ data class KandidatStatusRecord(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val personident: String,
+    val status: Status,
 ) {
     companion object {
         fun fromSenOppfolgingKandidat(kandidat: SenOppfolgingKandidat): KandidatStatusRecord =
@@ -48,6 +49,7 @@ data class KandidatStatusRecord(
                 uuid = kandidat.uuid,
                 createdAt = kandidat.createdAt,
                 personident = kandidat.personident.value,
+                status = kandidat.status,
             )
     }
 }
