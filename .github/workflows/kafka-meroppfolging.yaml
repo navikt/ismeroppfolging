@@ -25,6 +25,13 @@ jobs:
           RESOURCE: .nais/kafka/ismeroppfolging-kandidat-status.yaml
           VARS: .nais/kafka/dev.json
 
+      - name: Deploy ismeroppfolging-senoppfolging-kandidat-status topic to dev
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: .nais/kafka/ismeroppfolging-senoppfolging-kandidat-status.yaml
+          VARS: .nais/kafka/dev.json
+
   deploy-kafka-meroppfolging-prod:
     name: Deploy Kafka topics to prod-gcp
     needs: deploy-kafka-meroppfolging-dev
@@ -37,4 +44,11 @@ jobs:
         env:
           CLUSTER: prod-gcp
           RESOURCE: .nais/kafka/ismeroppfolging-kandidat-status.yaml
+          VARS: .nais/kafka/prod.json
+
+      - name: Deploy ismeroppfolging-senoppfolging-kandidat-status topic to prod
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-gcp
+          RESOURCE: .nais/kafka/ismeroppfolging-senoppfolging-kandidat-status.yaml
           VARS: .nais/kafka/prod.json

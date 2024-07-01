@@ -30,7 +30,7 @@ class KandidatStatusProducer(private val producer: KafkaProducer<String, Kandida
         }
 
     companion object {
-        private const val TOPIC = "teamsykefravr.ismeroppfolging-kandidat-status"
+        private const val TOPIC = "teamsykefravr.ismeroppfolging-senoppfolging-kandidat-status"
         private val log = LoggerFactory.getLogger(KandidatStatusProducer::class.java)
     }
 }

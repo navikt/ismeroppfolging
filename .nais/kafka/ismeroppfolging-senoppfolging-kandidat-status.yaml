@@ -2,11 +2,10 @@ apiVersion: kafka.nais.io/v1
 kind: Topic
 metadata:
   annotations:
-    kafka.nais.io/removeDataWhenResourceIsDeleted: "true"
     dcat.data.nav.no/title: "Status på kandidat til mer oppfølging i sen fase"
     dcat.data.nav.no/description: >-
       Topic inneholder informasjon om status på kandidat til mer oppfølging i sen fase.
-  name: ismeroppfolging-kandidat-status
+  name: ismeroppfolging-senoppfolging-kandidat-status
   namespace: teamsykefravr
   labels:
     team: teamsykefravr
