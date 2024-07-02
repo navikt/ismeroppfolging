@@ -111,4 +111,5 @@ internal fun ResultSet.toPSenOppfolgingKandidat(): PSenOppfolgingKandidat = PSen
     svarAt = getObject("svar_at", OffsetDateTime::class.java),
     onskerOppfolging = getString("onsker_oppfolging"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
+    status = getString("status"),
 )

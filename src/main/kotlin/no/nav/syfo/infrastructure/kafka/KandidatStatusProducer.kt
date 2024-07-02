@@ -41,7 +41,7 @@ data class KandidatStatusRecord(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val personident: String,
-    val status: Status,
+    val status: StatusDTO,
 ) {
     companion object {
         fun fromSenOppfolgingKandidat(kandidat: SenOppfolgingKandidat): KandidatStatusRecord =
@@ -49,10 +49,18 @@ data class KandidatStatusRecord(
                 uuid = kandidat.uuid,
                 createdAt = kandidat.createdAt,
                 personident = kandidat.personident.value,
-                status = kandidat.status,
+                status = StatusDTO(
+                    value = kandidat.status,
+                    isActive = kandidat.status.isActive,
+                ),
             )
     }
 }
+
+data class StatusDTO(
+    val value: Status,
+    val isActive: Boolean,
+)
 
 class KandidatStatusRecordSerializer : Serializer<KandidatStatusRecord> {
     private val mapper = configuredJacksonMapper()
