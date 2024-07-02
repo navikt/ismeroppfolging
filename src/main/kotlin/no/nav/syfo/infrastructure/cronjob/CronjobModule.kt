@@ -19,8 +19,8 @@ fun launchCronjobs(
         leaderPodClient = leaderPodClient,
     )
     val cronjobs = mutableListOf<Cronjob>()
-    // val publishKandidatStatusCronjob = PublishKandidatStatusCronjob(senOppfolgingService)
-    // cronjobs.add(publishKandidatStatusCronjob)
+    val publishKandidatStatusCronjob = PublishKandidatStatusCronjob(senOppfolgingService)
+    cronjobs.add(publishKandidatStatusCronjob)
 
     cronjobs.forEach {
         launchBackgroundTask(

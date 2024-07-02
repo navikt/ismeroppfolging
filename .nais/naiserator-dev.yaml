@@ -75,4 +75,4 @@ spec:
     - name: ISTILGANGSKONTROLL_URL
       value: "http://istilgangskontroll"
     - name: SENOPPFOLGING_SVAR_CONSUMER_ENABLED
-      value: "false"
+      value: "true"
