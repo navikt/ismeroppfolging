@@ -34,13 +34,14 @@ data class SenOppfolgingKandidat private constructor(
             createdAt: OffsetDateTime,
             varselAt: OffsetDateTime,
             svar: SenOppfolgingSvar?,
+            status: String,
         ): SenOppfolgingKandidat = SenOppfolgingKandidat(
             uuid = uuid,
             personident = personident,
             createdAt = createdAt,
             varselAt = varselAt,
             svar = svar,
-            status = Status.KANDIDAT,
+            status = Status.valueOf(status),
         )
     }
 }

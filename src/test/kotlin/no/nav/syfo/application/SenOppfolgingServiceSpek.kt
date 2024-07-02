@@ -61,6 +61,8 @@ class SenOppfolgingServiceSpek : Spek({
                 kandidatStatusRecord.uuid shouldBeEqualTo kandidat.uuid
                 kandidatStatusRecord.personident shouldBeEqualTo kandidat.personident.value
                 kandidatStatusRecord.createdAt shouldBeEqualTo kandidat.createdAt
+                kandidatStatusRecord.status.value shouldBeEqualTo kandidat.status
+                kandidatStatusRecord.status.isActive shouldBeEqualTo kandidat.status.isActive
             }
 
             it("publishes nothing when no unpublished vurdering") {
