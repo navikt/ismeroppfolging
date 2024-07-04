@@ -4,6 +4,7 @@ import no.nav.syfo.application.ISenOppfolgingRepository
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.SenOppfolgingKandidat
 import no.nav.syfo.domain.SenOppfolgingSvar
+import no.nav.syfo.domain.SenOppfolgingVurdering
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.util.nowUTC
@@ -35,6 +36,17 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             }
             connection.commit()
         }
+
+    override fun addVurdering(senOppfolgingKandidat: SenOppfolgingKandidat, vurdering: SenOppfolgingVurdering) {
+        database.connection.use { connection ->
+            val kandidatId = connection.updateKandidatStatus(senOppfolgingKandidat = senOppfolgingKandidat)
+            connection.createVurdering(
+                kandidatId = kandidatId,
+                senOppfolgingVurdering = vurdering
+            )
+            connection.commit()
+        }
+    }
 
     override fun getUnpublishedKandidater(): List<SenOppfolgingKandidat> =
         database.connection.use { connection ->
@@ -69,6 +81,23 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             it.executeQuery().toList { toPSenOppfolgingKandidat() }.single()
         }
 
+    private fun Connection.updateKandidatStatus(senOppfolgingKandidat: SenOppfolgingKandidat): Int =
+        prepareStatement(UPDATE_KANDIDAT_STATUS).use {
+            it.setObject(1, senOppfolgingKandidat.status.name)
+            it.setObject(2, senOppfolgingKandidat.uuid.toString())
+            it.executeQuery().toList { getInt("id") }.single()
+        }
+
+    private fun Connection.createVurdering(kandidatId: Int, senOppfolgingVurdering: SenOppfolgingVurdering) =
+        prepareStatement(CREATE_VURDERING).use {
+            it.setString(1, senOppfolgingVurdering.uuid.toString())
+            it.setInt(2, kandidatId)
+            it.setObject(3, senOppfolgingVurdering.createdAt)
+            it.setString(4, senOppfolgingVurdering.veilederident)
+            it.setString(5, senOppfolgingVurdering.status.name)
+            it.executeQuery().toList { toPSenOppfolgingVurdering() }.single()
+        }
+
     companion object {
         private const val CREATE_KANDIDAT = """
             INSERT INTO SEN_OPPFOLGING_KANDIDAT (
@@ -82,11 +111,31 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             RETURNING *
         """
 
+        private const val CREATE_VURDERING = """
+            INSERT INTO SEN_OPPFOLGING_VURDERING (
+                id,
+                uuid,
+                kandidat_id,
+                created_at,
+                created_by,
+                status
+            ) VALUES (DEFAULT, ?, ?, ?, ?, ?)
+            RETURNING *
+        """
+
         private const val UPDATE_KANDIDAT_SVAR = """
             UPDATE SEN_OPPFOLGING_KANDIDAT SET
                 svar_at = ?,
-                onsker_oppfolging = ?
+                onsker_oppfolging = ?,
+                updated_at = NOW()
             WHERE uuid = ?
+        """
+
+        private const val UPDATE_KANDIDAT_STATUS = """
+            UPDATE SEN_OPPFOLGING_KANDIDAT SET
+                status = ?,
+                updated_at = NOW()
+            WHERE uuid = ? RETURNING id
         """
 
         private const val GET_UNPUBLISHED =
@@ -110,6 +159,16 @@ internal fun ResultSet.toPSenOppfolgingKandidat(): PSenOppfolgingKandidat = PSen
     varselAt = getObject("varsel_at", OffsetDateTime::class.java),
     svarAt = getObject("svar_at", OffsetDateTime::class.java),
     onskerOppfolging = getString("onsker_oppfolging"),
+    publishedAt = getObject("published_at", OffsetDateTime::class.java),
+    status = getString("status"),
+)
+
+internal fun ResultSet.toPSenOppfolgingVurdering(): PSenOppfolgingVurdering = PSenOppfolgingVurdering(
+    id = getInt("id"),
+    uuid = UUID.fromString(getString("uuid")),
+    kandidatId = getInt("kandidat_id"),
+    createdAt = getObject("created_at", OffsetDateTime::class.java),
+    createdBy = getString("created_by"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
     status = getString("status"),
 )

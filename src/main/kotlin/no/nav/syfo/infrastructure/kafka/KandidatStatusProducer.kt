@@ -3,7 +3,7 @@ package no.nav.syfo.infrastructure.kafka
 import no.nav.syfo.application.IKandidatStatusProducer
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.SenOppfolgingKandidat
-import no.nav.syfo.domain.Status
+import no.nav.syfo.domain.SenOppfolgingStatus
 import no.nav.syfo.util.configuredJacksonMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -58,7 +58,7 @@ data class KandidatStatusRecord(
 }
 
 data class StatusDTO(
-    val value: Status,
+    val value: SenOppfolgingStatus,
     val isActive: Boolean,
 )
 
