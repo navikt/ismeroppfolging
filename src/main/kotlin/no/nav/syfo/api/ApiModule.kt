@@ -4,6 +4,7 @@ import io.ktor.client.plugins.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.metrics.micrometer.*
 import io.ktor.server.plugins.callid.*
 import io.ktor.server.plugins.contentnegotiation.*
@@ -18,8 +19,11 @@ import no.nav.syfo.api.auth.JwtIssuerType
 import no.nav.syfo.api.auth.installJwtAuthentication
 import no.nav.syfo.api.endpoints.metricEndpoints
 import no.nav.syfo.api.endpoints.podEndpoints
+import no.nav.syfo.api.endpoints.registerSenOppfolgingEndpoints
+import no.nav.syfo.application.SenOppfolgingService
 import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
 import no.nav.syfo.infrastructure.clients.veiledertilgang.ForbiddenAccessVeilederException
+import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
@@ -34,6 +38,8 @@ fun Application.apiModule(
     environment: Environment,
     wellKnownInternalAzureAD: WellKnown,
     database: DatabaseInterface,
+    veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
+    senOppfolgingService: SenOppfolgingService,
 ) {
     installMetrics()
     installCallId()
@@ -53,6 +59,12 @@ fun Application.apiModule(
     routing {
         podEndpoints(applicationState = applicationState, database = database)
         metricEndpoints()
+        authenticate(JwtIssuerType.INTERNAL_AZUREAD.name) {
+            registerSenOppfolgingEndpoints(
+                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                senOppfolgingService = senOppfolgingService,
+            )
+        }
     }
 }
 
