@@ -35,19 +35,20 @@ fun Route.registerSenOppfolgingEndpoints(
                 val kandidatUuid = UUID.fromString(this.call.parameters[kandidatUuidParam])
                 val veilederIdent = call.getNAVIdent()
 
-                val senOppfolgingKandidat = senOppfolgingService.getKandidat(kandidatUuid = kandidatUuid)
-                    ?.takeIf { it.personident == personident }
-                    ?: throw IllegalArgumentException("Finner ikke kandidat with uuid $kandidatUuid for person")
-                if (senOppfolgingKandidat.isFerdigbehandlet()) {
-                    call.respond(HttpStatusCode.Conflict, "Kandidat is already ferdigbehandlet")
+                val senOppfolgingKandidat = senOppfolgingService.getKandidat(kandidatUuid = kandidatUuid)?.takeIf { it.personident == personident }
+
+                if (senOppfolgingKandidat == null) {
+                    call.respond(HttpStatusCode.BadRequest, "Finner ikke kandidat med uuid $kandidatUuid for person")
+                } else if (senOppfolgingKandidat.isFerdigbehandlet()) {
+                    call.respond(HttpStatusCode.Conflict, "Kandidat med uuid $kandidatUuid er allerede ferdigbehandlet")
+                } else {
+                    val ferdigbehandletKandidat = senOppfolgingService.ferdigbehandleKandidat(
+                        kandidat = senOppfolgingKandidat,
+                        veilederident = veilederIdent,
+                    )
+
+                    call.respond(HttpStatusCode.OK, ferdigbehandletKandidat.toResponseDTO())
                 }
-
-                val ferdigbehandletKandidat = senOppfolgingService.ferdigbehandleKandidat(
-                    kandidat = senOppfolgingKandidat,
-                    veilederident = veilederIdent,
-                )
-
-                call.respond(HttpStatusCode.OK, ferdigbehandletKandidat.toResponseDTO())
             }
         }
     }
