@@ -28,7 +28,7 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             it.setString(1, kandidatUuid.toString())
             it.executeQuery().toList { toPSenOppfolgingKandidat() }
         }.map {
-            it.toSenOppfolgingKandidat()
+            it.toSenOppfolgingKandidat(connection.getVurderinger(it.id))
         }.firstOrNull()
     }
 

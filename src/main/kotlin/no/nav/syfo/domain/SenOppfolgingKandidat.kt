@@ -34,6 +34,11 @@ data class SenOppfolgingKandidat private constructor(
         vurderinger = listOf(vurdering) + this.vurderinger,
     )
 
+    fun isFerdigbehandlet(): Boolean = status == SenOppfolgingStatus.FERDIGBEHANDLET
+
+    fun getFerdigbehandletVurdering(): SenOppfolgingVurdering? =
+        if (this.status == SenOppfolgingStatus.FERDIGBEHANDLET) vurderinger.first { it.status == SenOppfolgingStatus.FERDIGBEHANDLET } else null
+
     companion object {
         fun createFromDatabase(
             uuid: UUID,
