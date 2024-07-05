@@ -9,7 +9,8 @@ data class SenOppfolgingKandidat private constructor(
     val createdAt: OffsetDateTime,
     val varselAt: OffsetDateTime,
     val svar: SenOppfolgingSvar?,
-    val status: SenOppfolgingStatus, // TODO: List<SenOppfolgingVurdering> ?
+    val status: SenOppfolgingStatus,
+    val vurderinger: List<SenOppfolgingVurdering>,
 ) {
     constructor(
         personident: Personident,
@@ -21,6 +22,7 @@ data class SenOppfolgingKandidat private constructor(
         varselAt = varselAt,
         svar = null,
         status = SenOppfolgingStatus.KANDIDAT,
+        vurderinger = emptyList(),
     )
 
     fun addSvar(svar: SenOppfolgingSvar): SenOppfolgingKandidat = this.copy(
@@ -29,6 +31,7 @@ data class SenOppfolgingKandidat private constructor(
 
     fun addVurdering(vurdering: SenOppfolgingVurdering): SenOppfolgingKandidat = this.copy(
         status = vurdering.status,
+        vurderinger = listOf(vurdering) + this.vurderinger,
     )
 
     companion object {
@@ -39,6 +42,7 @@ data class SenOppfolgingKandidat private constructor(
             varselAt: OffsetDateTime,
             svar: SenOppfolgingSvar?,
             status: String,
+            vurderinger: List<SenOppfolgingVurdering>,
         ): SenOppfolgingKandidat = SenOppfolgingKandidat(
             uuid = uuid,
             personident = personident,
@@ -46,6 +50,7 @@ data class SenOppfolgingKandidat private constructor(
             varselAt = varselAt,
             svar = svar,
             status = SenOppfolgingStatus.valueOf(status),
+            vurderinger = vurderinger,
         )
     }
 }

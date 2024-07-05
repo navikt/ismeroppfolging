@@ -20,7 +20,7 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
         database.connection.use { connection ->
             val pSenOppfolgingKandidat = connection.createKandidat(senOppfolgingKandidat)
             connection.commit()
-            pSenOppfolgingKandidat.toSenOppfolgingKandidat()
+            pSenOppfolgingKandidat.toSenOppfolgingKandidat(vurderinger = emptyList())
         }
 
     override fun updateKandidatSvar(senOppfolgingSvar: SenOppfolgingSvar, senOppfolgingKandidaUuid: UUID) =
@@ -53,7 +53,7 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             connection.prepareStatement(GET_UNPUBLISHED).use {
                 it.executeQuery().toList { toPSenOppfolgingKandidat() }
             }.map {
-                it.toSenOppfolgingKandidat()
+                it.toSenOppfolgingKandidat(connection.getVurderinger(it.id))
             }
         }
 
@@ -98,6 +98,12 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             it.executeQuery().toList { toPSenOppfolgingVurdering() }.single()
         }
 
+    private fun Connection.getVurderinger(kandidatId: Int) =
+        prepareStatement(GET_VURDERINGER).use {
+            it.setInt(1, kandidatId)
+            it.executeQuery().toList { toPSenOppfolgingVurdering() }
+        }
+
     companion object {
         private const val CREATE_KANDIDAT = """
             INSERT INTO SEN_OPPFOLGING_KANDIDAT (
@@ -122,6 +128,12 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             ) VALUES (DEFAULT, ?, ?, ?, ?, ?)
             RETURNING *
         """
+
+        private const val GET_VURDERINGER = """
+                SELECT *
+                FROM SEN_OPPFOLGING_VURDERING
+                WHERE kandidat_id = ? ORDER BY created_at
+            """
 
         private const val UPDATE_KANDIDAT_SVAR = """
             UPDATE SEN_OPPFOLGING_KANDIDAT SET
