@@ -23,6 +23,15 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             pSenOppfolgingKandidat.toSenOppfolgingKandidat(vurderinger = emptyList())
         }
 
+    override fun getKandidat(kandidatUuid: UUID): SenOppfolgingKandidat? = database.connection.use { connection ->
+        connection.prepareStatement(GET_KANDIDAT).use {
+            it.setString(1, kandidatUuid.toString())
+            it.executeQuery().toList { toPSenOppfolgingKandidat() }
+        }.map {
+            it.toSenOppfolgingKandidat()
+        }.firstOrNull()
+    }
+
     override fun updateKandidatSvar(senOppfolgingSvar: SenOppfolgingSvar, senOppfolgingKandidaUuid: UUID) =
         database.connection.use { connection ->
             connection.prepareStatement(UPDATE_KANDIDAT_SVAR).use {
@@ -115,6 +124,10 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
                 varsel_at
             ) VALUES (DEFAULT, ?, ?, ?, ?, ?)
             RETURNING *
+        """
+
+        private const val GET_KANDIDAT = """
+            SELECT * FROM SEN_OPPFOLGING_KANDIDAT WHERE uuid = ?
         """
 
         private const val CREATE_VURDERING = """

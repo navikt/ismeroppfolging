@@ -5,6 +5,7 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.application.SenOppfolgingService
+import no.nav.syfo.domain.SenOppfolgingStatus
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.validateVeilederAccess
@@ -33,12 +34,22 @@ fun Route.registerSenOppfolgingEndpoints(
             ) {
                 val kandidatUuid = UUID.fromString(this.call.parameters[kandidatUuidParam])
                 val veilederIdent = call.getNAVIdent()
+
+                val senOppfolgingKandidat = senOppfolgingService.getKandidat(kandidatUuid = kandidatUuid)
+                    ?.takeIf { it.personident == personident }
+                    ?: throw IllegalArgumentException("Finner ikke kandidat with uuid $kandidatUuid for person")
+                if (senOppfolgingKandidat.status == SenOppfolgingStatus.FERDIGBEHANDLET) {
+                    call.respond(HttpStatusCode.Conflict, "Kandidat is already ferdigbehandlet")
+                }
+
+                val ferdigbehandletKandidat = senOppfolgingService.ferdigbehandleKandidat(
+                    kandidat = senOppfolgingKandidat,
+                    veilederident = veilederIdent,
+                )
+
+                // Map to DTO and respond.
+
                 call.respond(HttpStatusCode.OK)
-                /* TODO
-                - get kandidat by personident and uuid
-                - validate not ferdigbehandlet
-                - call service to ferdigbehandle
-                 */
             }
         }
     }

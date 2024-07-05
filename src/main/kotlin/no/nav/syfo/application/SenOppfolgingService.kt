@@ -3,6 +3,7 @@ package no.nav.syfo.application
 import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.kafka.KandidatStatusProducer
 import java.time.OffsetDateTime
+import java.util.*
 
 class SenOppfolgingService(
     private val senOppfolgingRepository: ISenOppfolgingRepository,
@@ -18,6 +19,8 @@ class SenOppfolgingService(
 
         return createdKandidat
     }
+
+    fun getKandidat(kandidatUuid: UUID): SenOppfolgingKandidat? = senOppfolgingRepository.getKandidat(kandidatUuid = kandidatUuid)
 
     fun addSvar(kandidat: SenOppfolgingKandidat, svarAt: OffsetDateTime, onskerOppfolging: OnskerOppfolging): SenOppfolgingKandidat {
         val svar = SenOppfolgingSvar(svarAt = svarAt, onskerOppfolging = onskerOppfolging)
