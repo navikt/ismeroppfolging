@@ -2,6 +2,7 @@ package no.nav.syfo.api.model
 
 import no.nav.syfo.domain.SenOppfolgingKandidat
 import no.nav.syfo.domain.SenOppfolgingStatus
+import no.nav.syfo.domain.VurderingType
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -15,7 +16,7 @@ data class SenOppfolgingKandidatResponseDTO(
 
 data class SenOppfolgingVurderingResponseDTO(
     val uuid: UUID,
-    val status: SenOppfolgingStatus,
+    val type: VurderingType,
     val veilederident: String,
     val createdAt: LocalDateTime,
 )
@@ -28,7 +29,7 @@ fun SenOppfolgingKandidat.toResponseDTO(): SenOppfolgingKandidatResponseDTO = Se
     vurderinger = this.vurderinger.map {
         SenOppfolgingVurderingResponseDTO(
             uuid = it.uuid,
-            status = it.status,
+            type = it.type,
             veilederident = it.veilederident,
             createdAt = it.createdAt.toLocalDateTime(),
         )

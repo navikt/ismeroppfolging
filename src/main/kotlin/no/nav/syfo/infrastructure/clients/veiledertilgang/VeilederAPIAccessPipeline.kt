@@ -2,6 +2,7 @@ package no.nav.syfo.infrastructure.clients.veiledertilgang
 
 import io.ktor.server.application.*
 import io.ktor.util.pipeline.*
+import no.nav.syfo.application.exception.ForbiddenAccessVeilederException
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.util.getBearerHeader
 import no.nav.syfo.util.getCallId

@@ -8,16 +8,16 @@ data class SenOppfolgingVurdering(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val veilederident: String,
-    val status: SenOppfolgingStatus,
+    val type: VurderingType,
 ) {
     constructor(
         veilederident: String,
-        status: SenOppfolgingStatus,
+        type: VurderingType,
     ) : this(
         uuid = UUID.randomUUID(),
         createdAt = nowUTC(),
         veilederident = veilederident,
-        status = status,
+        type = type,
     )
 
     companion object {
@@ -25,12 +25,16 @@ data class SenOppfolgingVurdering(
             uuid: UUID,
             createdAt: OffsetDateTime,
             veilederident: String,
-            status: SenOppfolgingStatus,
+            type: VurderingType,
         ) = SenOppfolgingVurdering(
             uuid = uuid,
             createdAt = createdAt,
             veilederident = veilederident,
-            status = status,
+            type = type,
         )
     }
+}
+
+enum class VurderingType {
+    FERDIGBEHANDLET,
 }

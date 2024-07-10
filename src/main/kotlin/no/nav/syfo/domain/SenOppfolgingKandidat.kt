@@ -30,7 +30,7 @@ data class SenOppfolgingKandidat private constructor(
     )
 
     fun addVurdering(vurdering: SenOppfolgingVurdering): SenOppfolgingKandidat = this.copy(
-        status = vurdering.status,
+        status = SenOppfolgingStatus.from(vurdering.type),
         vurderinger = listOf(vurdering) + this.vurderinger,
     )
 

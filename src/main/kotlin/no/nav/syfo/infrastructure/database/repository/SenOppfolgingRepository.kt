@@ -103,7 +103,7 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             it.setInt(2, kandidatId)
             it.setObject(3, senOppfolgingVurdering.createdAt)
             it.setString(4, senOppfolgingVurdering.veilederident)
-            it.setString(5, senOppfolgingVurdering.status.name)
+            it.setString(5, senOppfolgingVurdering.type.name)
             it.executeQuery().toList { toPSenOppfolgingVurdering() }.single()
         }
 
@@ -137,7 +137,7 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
                 kandidat_id,
                 created_at,
                 veilederident,
-                status
+                type
             ) VALUES (DEFAULT, ?, ?, ?, ?, ?)
             RETURNING *
         """
@@ -195,5 +195,5 @@ internal fun ResultSet.toPSenOppfolgingVurdering(): PSenOppfolgingVurdering = PS
     createdAt = getObject("created_at", OffsetDateTime::class.java),
     veilederident = getString("veilederident"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
-    status = getString("status"),
+    type = getString("type"),
 )

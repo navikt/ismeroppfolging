@@ -1,5 +1,6 @@
 package no.nav.syfo.application
 
+import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.kafka.KandidatStatusProducer
 import java.time.OffsetDateTime
@@ -31,16 +32,20 @@ class SenOppfolgingService(
         return kandidatWithSvar
     }
 
-    fun ferdigbehandleKandidat(kandidat: SenOppfolgingKandidat, veilederident: String): SenOppfolgingKandidat {
+    fun vurderKandidat(kandidat: SenOppfolgingKandidat, veilederident: String, type: VurderingType): SenOppfolgingKandidat {
+        if (type == VurderingType.FERDIGBEHANDLET && kandidat.isFerdigbehandlet()) {
+            throw ConflictException("Kandidat med uuid ${kandidat.uuid} er allerede ferdigbehandlet")
+        }
+
         val vurdering = SenOppfolgingVurdering(
             veilederident = veilederident,
-            status = SenOppfolgingStatus.FERDIGBEHANDLET,
+            type = type,
         )
-        val ferdigbehandletKandidat = kandidat.addVurdering(vurdering = vurdering).also {
+        val updatedKandidat = kandidat.addVurdering(vurdering = vurdering).also {
             senOppfolgingRepository.addVurdering(it, vurdering)
         }
 
-        return ferdigbehandletKandidat
+        return updatedKandidat
     }
 
     fun publishUnpublishedKandidatStatus(): List<Result<SenOppfolgingKandidat>> {

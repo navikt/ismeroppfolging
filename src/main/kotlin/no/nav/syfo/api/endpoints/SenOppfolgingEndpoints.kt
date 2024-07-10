@@ -2,8 +2,10 @@ package no.nav.syfo.api.endpoints
 
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import no.nav.syfo.api.model.SenOppfolgingVurderingRequestDTO
 import no.nav.syfo.api.model.toResponseDTO
 import no.nav.syfo.application.SenOppfolgingService
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
@@ -23,7 +25,7 @@ fun Route.registerSenOppfolgingEndpoints(
     senOppfolgingService: SenOppfolgingService,
 ) {
     route(senOppfolgingApiBasePath) {
-        post("/kandidater/{$kandidatUuidParam}/ferdigbehandling") {
+        post("/kandidater/{$kandidatUuidParam}/vurderinger") {
             val personident = call.getPersonident()
                 ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
             validateVeilederAccess(
@@ -32,6 +34,7 @@ fun Route.registerSenOppfolgingEndpoints(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
                 val kandidatUuid = UUID.fromString(this.call.parameters[kandidatUuidParam])
+                val requestDTO = call.receive<SenOppfolgingVurderingRequestDTO>()
                 val veilederIdent = call.getNAVIdent()
 
                 val senOppfolgingKandidat = senOppfolgingService.getKandidat(kandidatUuid = kandidatUuid)
@@ -39,15 +42,14 @@ fun Route.registerSenOppfolgingEndpoints(
 
                 if (senOppfolgingKandidat == null) {
                     call.respond(HttpStatusCode.BadRequest, "Finner ikke kandidat med uuid $kandidatUuid for person")
-                } else if (senOppfolgingKandidat.isFerdigbehandlet()) {
-                    call.respond(HttpStatusCode.Conflict, "Kandidat med uuid $kandidatUuid er allerede ferdigbehandlet")
                 } else {
-                    val ferdigbehandletKandidat = senOppfolgingService.ferdigbehandleKandidat(
+                    val vurdertKandidat = senOppfolgingService.vurderKandidat(
                         kandidat = senOppfolgingKandidat,
                         veilederident = veilederIdent,
+                        type = requestDTO.type,
                     )
 
-                    call.respond(HttpStatusCode.OK, ferdigbehandletKandidat.toResponseDTO())
+                    call.respond(HttpStatusCode.OK, vurdertKandidat.toResponseDTO())
                 }
             }
         }

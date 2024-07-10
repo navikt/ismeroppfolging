@@ -7,8 +7,10 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.api.*
 import no.nav.syfo.api.model.SenOppfolgingKandidatResponseDTO
+import no.nav.syfo.api.model.SenOppfolgingVurderingRequestDTO
 import no.nav.syfo.domain.SenOppfolgingKandidat
 import no.nav.syfo.domain.SenOppfolgingStatus
+import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.bearerHeader
 import no.nav.syfo.infrastructure.database.dropData
@@ -48,7 +50,9 @@ object SenOppfolgingEndpointsSpek : Spek({
 
             describe("Ferdigbehandle kandidat") {
                 val kandidatUuid = senOppfolgingKandidat.uuid
-                val ferdigbehandlingUrl = "$senOppfolgingApiBasePath/kandidater/$kandidatUuid/ferdigbehandling"
+                val ferdigbehandlingUrl = "$senOppfolgingApiBasePath/kandidater/$kandidatUuid/vurderinger"
+                val vurderingRequestDTO =
+                    SenOppfolgingVurderingRequestDTO(type = VurderingType.FERDIGBEHANDLET)
 
                 it("Returns OK if request is successful") {
                     senOppfolgingRepository.createKandidat(senOppfolgingKandidat = senOppfolgingKandidat)
@@ -57,23 +61,28 @@ object SenOppfolgingEndpointsSpek : Spek({
                         handleRequest(HttpMethod.Post, ferdigbehandlingUrl) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
                             addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(vurderingRequestDTO))
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
 
                         val kandidatResponse = objectMapper.readValue(response.content, SenOppfolgingKandidatResponseDTO::class.java)
                         kandidatResponse.uuid shouldBeEqualTo kandidatUuid
+                        kandidatResponse.status shouldBeEqualTo SenOppfolgingStatus.FERDIGBEHANDLET
                         val ferdigbehandletVurdering =
-                            kandidatResponse.vurderinger.first { it.status == SenOppfolgingStatus.FERDIGBEHANDLET }
+                            kandidatResponse.vurderinger.first { it.type == VurderingType.FERDIGBEHANDLET }
                         ferdigbehandletVurdering.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
                     }
                 }
 
                 it("Returns status BadRequest when unknown kandidat") {
                     with(
-                        handleRequest(HttpMethod.Post, "$senOppfolgingApiBasePath/kandidater/${UUID.randomUUID()}/ferdigbehandling") {
+                        handleRequest(HttpMethod.Post, "$senOppfolgingApiBasePath/kandidater/${UUID.randomUUID()}/vurderinger") {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
                             addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(vurderingRequestDTO))
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.BadRequest
@@ -87,6 +96,8 @@ object SenOppfolgingEndpointsSpek : Spek({
                         handleRequest(HttpMethod.Post, ferdigbehandlingUrl) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
                             addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(vurderingRequestDTO))
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -96,6 +107,8 @@ object SenOppfolgingEndpointsSpek : Spek({
                         handleRequest(HttpMethod.Post, ferdigbehandlingUrl) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
                             addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(vurderingRequestDTO))
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.Conflict
