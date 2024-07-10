@@ -21,8 +21,9 @@ import no.nav.syfo.api.endpoints.metricEndpoints
 import no.nav.syfo.api.endpoints.podEndpoints
 import no.nav.syfo.api.endpoints.registerSenOppfolgingEndpoints
 import no.nav.syfo.application.SenOppfolgingService
+import no.nav.syfo.application.exception.ConflictException
+import no.nav.syfo.application.exception.ForbiddenAccessVeilederException
 import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
-import no.nav.syfo.infrastructure.clients.veiledertilgang.ForbiddenAccessVeilederException
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.DatabaseInterface
@@ -125,6 +126,9 @@ fun Application.installStatusPages() {
 
                     is ForbiddenAccessVeilederException -> {
                         HttpStatusCode.Forbidden
+                    }
+                    is ConflictException -> {
+                        HttpStatusCode.Conflict
                     }
 
                     else -> {

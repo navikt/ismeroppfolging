@@ -23,6 +23,15 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             pSenOppfolgingKandidat.toSenOppfolgingKandidat(vurderinger = emptyList())
         }
 
+    override fun getKandidat(kandidatUuid: UUID): SenOppfolgingKandidat? = database.connection.use { connection ->
+        connection.prepareStatement(GET_KANDIDAT).use {
+            it.setString(1, kandidatUuid.toString())
+            it.executeQuery().toList { toPSenOppfolgingKandidat() }
+        }.map {
+            it.toSenOppfolgingKandidat(connection.getVurderinger(it.id))
+        }.firstOrNull()
+    }
+
     override fun updateKandidatSvar(senOppfolgingSvar: SenOppfolgingSvar, senOppfolgingKandidaUuid: UUID) =
         database.connection.use { connection ->
             connection.prepareStatement(UPDATE_KANDIDAT_SVAR).use {
@@ -94,7 +103,7 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             it.setInt(2, kandidatId)
             it.setObject(3, senOppfolgingVurdering.createdAt)
             it.setString(4, senOppfolgingVurdering.veilederident)
-            it.setString(5, senOppfolgingVurdering.status.name)
+            it.setString(5, senOppfolgingVurdering.type.name)
             it.executeQuery().toList { toPSenOppfolgingVurdering() }.single()
         }
 
@@ -117,6 +126,10 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             RETURNING *
         """
 
+        private const val GET_KANDIDAT = """
+            SELECT * FROM SEN_OPPFOLGING_KANDIDAT WHERE uuid = ?
+        """
+
         private const val CREATE_VURDERING = """
             INSERT INTO SEN_OPPFOLGING_VURDERING (
                 id,
@@ -124,7 +137,7 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
                 kandidat_id,
                 created_at,
                 veilederident,
-                status
+                type
             ) VALUES (DEFAULT, ?, ?, ?, ?, ?)
             RETURNING *
         """
@@ -182,5 +195,5 @@ internal fun ResultSet.toPSenOppfolgingVurdering(): PSenOppfolgingVurdering = PS
     createdAt = getObject("created_at", OffsetDateTime::class.java),
     veilederident = getString("veilederident"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
-    status = getString("status"),
+    type = getString("type"),
 )

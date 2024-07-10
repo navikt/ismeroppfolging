@@ -5,6 +5,7 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.domain.SenOppfolgingStatus
+import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getSenOppfolgingKandidater
 import no.nav.syfo.infrastructure.database.getSenOppfolgingVurderinger
@@ -101,15 +102,16 @@ class SenOppfolgingServiceSpek : Spek({
                     personident = ARBEIDSTAKER_PERSONIDENT,
                     varselAt = nowUTC(),
                 )
-                val ferdigbehandletKandidat = senOppfolgingService.ferdigbehandleKandidat(
+                val ferdigbehandletKandidat = senOppfolgingService.vurderKandidat(
                     kandidat = kandidat,
                     veilederident = UserConstants.VEILEDER_IDENT,
+                    type = VurderingType.FERDIGBEHANDLET,
                 )
 
                 ferdigbehandletKandidat.status shouldBeEqualTo SenOppfolgingStatus.FERDIGBEHANDLET
                 ferdigbehandletKandidat.vurderinger.size shouldBeEqualTo 1
                 val vurdering = ferdigbehandletKandidat.vurderinger.first()
-                vurdering.status shouldBeEqualTo SenOppfolgingStatus.FERDIGBEHANDLET
+                vurdering.type shouldBeEqualTo VurderingType.FERDIGBEHANDLET
                 vurdering.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
 
                 val pKandidat = database.getSenOppfolgingKandidater().first()
@@ -117,7 +119,7 @@ class SenOppfolgingServiceSpek : Spek({
                 pKandidat.status shouldBeEqualTo SenOppfolgingStatus.FERDIGBEHANDLET.name
                 val pVurdering = database.getSenOppfolgingVurderinger().first()
                 pVurdering.kandidatId shouldBeEqualTo pKandidat.id
-                pVurdering.status shouldBeEqualTo SenOppfolgingStatus.FERDIGBEHANDLET.name
+                pVurdering.type shouldBeEqualTo VurderingType.FERDIGBEHANDLET.name
                 pVurdering.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
                 pVurdering.publishedAt.shouldBeNull()
             }
