@@ -8,6 +8,7 @@ import no.nav.syfo.UserConstants
 import no.nav.syfo.api.*
 import no.nav.syfo.api.model.SenOppfolgingKandidatResponseDTO
 import no.nav.syfo.domain.SenOppfolgingKandidat
+import no.nav.syfo.domain.SenOppfolgingStatus
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.bearerHeader
 import no.nav.syfo.infrastructure.database.dropData
@@ -63,8 +64,9 @@ object SenOppfolgingEndpointsSpek : Spek({
 
                         val kandidatResponse = objectMapper.readValue(response.content, SenOppfolgingKandidatResponseDTO::class.java)
                         kandidatResponse.uuid shouldBeEqualTo kandidatUuid
-                        kandidatResponse.ferdigbehandlet.shouldNotBeNull()
-                        kandidatResponse.ferdigbehandlet!!.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
+                        val ferdigbehandletVurdering =
+                            kandidatResponse.vurderinger.first { it.status == SenOppfolgingStatus.FERDIGBEHANDLET }
+                        ferdigbehandletVurdering.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
                     }
                 }
 
