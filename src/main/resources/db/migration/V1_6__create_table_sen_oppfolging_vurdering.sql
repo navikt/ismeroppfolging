@@ -3,7 +3,7 @@ CREATE TABLE SEN_OPPFOLGING_VURDERING (
     uuid               CHAR(36)    NOT NULL UNIQUE,
     kandidat_id        INTEGER REFERENCES SEN_OPPFOLGING_KANDIDAT (id) ON DELETE CASCADE,
     created_at         timestamptz NOT NULL,
-    created_by         VARCHAR(7) NOT NULL,
+    veilederident      VARCHAR(7) NOT NULL,
     status             VARCHAR(20) NOT NULL,
     published_at       timestamptz
 );

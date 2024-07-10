@@ -118,7 +118,7 @@ class SenOppfolgingServiceSpek : Spek({
                 val pVurdering = database.getSenOppfolgingVurderinger().first()
                 pVurdering.kandidatId shouldBeEqualTo pKandidat.id
                 pVurdering.status shouldBeEqualTo SenOppfolgingStatus.FERDIGBEHANDLET.name
-                pVurdering.createdBy shouldBeEqualTo UserConstants.VEILEDER_IDENT
+                pVurdering.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
                 pVurdering.publishedAt.shouldBeNull()
             }
         }

@@ -10,14 +10,14 @@ data class PSenOppfolgingVurdering(
     val uuid: UUID,
     val kandidatId: Int,
     val createdAt: OffsetDateTime,
-    val createdBy: String,
+    val veilederident: String,
     val status: String,
     val publishedAt: OffsetDateTime?,
 ) {
     fun toSenOppfolgingVurdering() = SenOppfolgingVurdering.createFromDatabase(
         uuid = uuid,
         createdAt = createdAt,
-        veilederident = createdBy,
+        veilederident = veilederident,
         status = SenOppfolgingStatus.valueOf(status),
     )
 }

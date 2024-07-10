@@ -123,7 +123,7 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
                 uuid,
                 kandidat_id,
                 created_at,
-                created_by,
+                veilederident,
                 status
             ) VALUES (DEFAULT, ?, ?, ?, ?, ?)
             RETURNING *
@@ -180,7 +180,7 @@ internal fun ResultSet.toPSenOppfolgingVurdering(): PSenOppfolgingVurdering = PS
     uuid = UUID.fromString(getString("uuid")),
     kandidatId = getInt("kandidat_id"),
     createdAt = getObject("created_at", OffsetDateTime::class.java),
-    createdBy = getString("created_by"),
+    veilederident = getString("veilederident"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
     status = getString("status"),
 )
