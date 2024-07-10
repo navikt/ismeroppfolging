@@ -15,7 +15,6 @@ import java.util.*
 
 const val kandidatUuidParam = "vedtakUUID"
 const val senOppfolgingApiBasePath = "/api/internad/v1/senoppfolging"
-const val ferdigbehandlingPath = "/kandidat/{$kandidatUuidParam}/ferdigbehandling"
 
 private const val API_ACTION = "access sen oppfolging kandidat for person"
 
@@ -24,7 +23,7 @@ fun Route.registerSenOppfolgingEndpoints(
     senOppfolgingService: SenOppfolgingService,
 ) {
     route(senOppfolgingApiBasePath) {
-        put(ferdigbehandlingPath) {
+        post("/kandidater/{$kandidatUuidParam}/ferdigbehandling") {
             val personident = call.getPersonident()
                 ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
             validateVeilederAccess(
@@ -35,7 +34,8 @@ fun Route.registerSenOppfolgingEndpoints(
                 val kandidatUuid = UUID.fromString(this.call.parameters[kandidatUuidParam])
                 val veilederIdent = call.getNAVIdent()
 
-                val senOppfolgingKandidat = senOppfolgingService.getKandidat(kandidatUuid = kandidatUuid)?.takeIf { it.personident == personident }
+                val senOppfolgingKandidat = senOppfolgingService.getKandidat(kandidatUuid = kandidatUuid)
+                    ?.takeIf { it.personident == personident }
 
                 if (senOppfolgingKandidat == null) {
                     call.respond(HttpStatusCode.BadRequest, "Finner ikke kandidat med uuid $kandidatUuid for person")
