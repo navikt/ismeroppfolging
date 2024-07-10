@@ -15,7 +15,6 @@ import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.repository.SenOppfolgingRepository
 import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
