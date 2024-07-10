@@ -19,7 +19,7 @@ data class PSenOppfolgingKandidat(
     val publishedAt: OffsetDateTime?,
     val status: String,
 ) {
-    fun toSenOppfolgingKandidat(): SenOppfolgingKandidat {
+    fun toSenOppfolgingKandidat(vurderinger: List<PSenOppfolgingVurdering>): SenOppfolgingKandidat {
         val svar = if (svarAt != null && onskerOppfolging != null) SenOppfolgingSvar.createFromDatabase(svarAt = svarAt, onskerOppfolging = OnskerOppfolging.valueOf(onskerOppfolging)) else null
 
         return SenOppfolgingKandidat.createFromDatabase(
@@ -29,6 +29,7 @@ data class PSenOppfolgingKandidat(
             varselAt = varselAt,
             svar = svar,
             status = status,
+            vurderinger = vurderinger.map { it.toSenOppfolgingVurdering() },
         )
     }
 }

@@ -2,8 +2,12 @@ package no.nav.syfo.application
 
 import io.mockk.*
 import no.nav.syfo.ExternalMockEnvironment
+import no.nav.syfo.UserConstants
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
+import no.nav.syfo.domain.SenOppfolgingStatus
 import no.nav.syfo.infrastructure.database.dropData
+import no.nav.syfo.infrastructure.database.getSenOppfolgingKandidater
+import no.nav.syfo.infrastructure.database.getSenOppfolgingVurderinger
 import no.nav.syfo.infrastructure.database.repository.SenOppfolgingRepository
 import no.nav.syfo.infrastructure.kafka.KandidatStatusProducer
 import no.nav.syfo.infrastructure.kafka.KandidatStatusRecord
@@ -88,6 +92,34 @@ class SenOppfolgingServiceSpek : Spek({
                 val kandidatList = senOppfolgingRepository.getUnpublishedKandidater()
                 kandidatList.size shouldBeEqualTo 1
                 kandidatList.first().uuid.shouldBeEqualTo(kandidat.uuid)
+            }
+        }
+
+        describe("ferdigbehandleKandidat") {
+            it("ferdigbehandler kandidat") {
+                val kandidat = senOppfolgingService.createKandidat(
+                    personident = ARBEIDSTAKER_PERSONIDENT,
+                    varselAt = nowUTC(),
+                )
+                val ferdigbehandletKandidat = senOppfolgingService.ferdigbehandleKandidat(
+                    kandidat = kandidat,
+                    veilederident = UserConstants.VEILEDER_IDENT,
+                )
+
+                ferdigbehandletKandidat.status shouldBeEqualTo SenOppfolgingStatus.FERDIGBEHANDLET
+                ferdigbehandletKandidat.vurderinger.size shouldBeEqualTo 1
+                val vurdering = ferdigbehandletKandidat.vurderinger.first()
+                vurdering.status shouldBeEqualTo SenOppfolgingStatus.FERDIGBEHANDLET
+                vurdering.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
+
+                val pKandidat = database.getSenOppfolgingKandidater().first()
+                pKandidat.uuid shouldBeEqualTo kandidat.uuid
+                pKandidat.status shouldBeEqualTo SenOppfolgingStatus.FERDIGBEHANDLET.name
+                val pVurdering = database.getSenOppfolgingVurderinger().first()
+                pVurdering.kandidatId shouldBeEqualTo pKandidat.id
+                pVurdering.status shouldBeEqualTo SenOppfolgingStatus.FERDIGBEHANDLET.name
+                pVurdering.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
+                pVurdering.publishedAt.shouldBeNull()
             }
         }
     }

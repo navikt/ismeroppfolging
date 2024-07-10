@@ -9,7 +9,8 @@ data class SenOppfolgingKandidat private constructor(
     val createdAt: OffsetDateTime,
     val varselAt: OffsetDateTime,
     val svar: SenOppfolgingSvar?,
-    val status: Status,
+    val status: SenOppfolgingStatus,
+    val vurderinger: List<SenOppfolgingVurdering>,
 ) {
     constructor(
         personident: Personident,
@@ -20,11 +21,17 @@ data class SenOppfolgingKandidat private constructor(
         createdAt = OffsetDateTime.now(),
         varselAt = varselAt,
         svar = null,
-        status = Status.KANDIDAT,
+        status = SenOppfolgingStatus.KANDIDAT,
+        vurderinger = emptyList(),
     )
 
     fun addSvar(svar: SenOppfolgingSvar): SenOppfolgingKandidat = this.copy(
         svar = svar,
+    )
+
+    fun addVurdering(vurdering: SenOppfolgingVurdering): SenOppfolgingKandidat = this.copy(
+        status = vurdering.status,
+        vurderinger = listOf(vurdering) + this.vurderinger,
     )
 
     companion object {
@@ -35,17 +42,15 @@ data class SenOppfolgingKandidat private constructor(
             varselAt: OffsetDateTime,
             svar: SenOppfolgingSvar?,
             status: String,
+            vurderinger: List<SenOppfolgingVurdering>,
         ): SenOppfolgingKandidat = SenOppfolgingKandidat(
             uuid = uuid,
             personident = personident,
             createdAt = createdAt,
             varselAt = varselAt,
             svar = svar,
-            status = Status.valueOf(status),
+            status = SenOppfolgingStatus.valueOf(status),
+            vurderinger = vurderinger,
         )
     }
-}
-
-enum class Status(val isActive: Boolean) {
-    KANDIDAT(isActive = true),
 }

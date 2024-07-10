@@ -1,9 +1,6 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.OnskerOppfolging
-import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.SenOppfolgingKandidat
-import no.nav.syfo.domain.SenOppfolgingSvar
+import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.kafka.KandidatStatusProducer
 import java.time.OffsetDateTime
 
@@ -29,6 +26,18 @@ class SenOppfolgingService(
         senOppfolgingRepository.updateKandidatSvar(senOppfolgingSvar = svar, senOppfolgingKandidaUuid = kandidatWithSvar.uuid)
 
         return kandidatWithSvar
+    }
+
+    fun ferdigbehandleKandidat(kandidat: SenOppfolgingKandidat, veilederident: String): SenOppfolgingKandidat {
+        val vurdering = SenOppfolgingVurdering(
+            veilederident = veilederident,
+            status = SenOppfolgingStatus.FERDIGBEHANDLET,
+        )
+        val ferdigbehandletKandidat = kandidat.addVurdering(vurdering = vurdering).also {
+            senOppfolgingRepository.addVurdering(it, vurdering)
+        }
+
+        return ferdigbehandletKandidat
     }
 
     fun publishUnpublishedKandidatStatus(): List<Result<SenOppfolgingKandidat>> {
