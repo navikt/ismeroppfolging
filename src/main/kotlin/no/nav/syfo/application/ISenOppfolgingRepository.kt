@@ -1,5 +1,6 @@
 package no.nav.syfo.application
 
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.SenOppfolgingKandidat
 import no.nav.syfo.domain.SenOppfolgingSvar
 import no.nav.syfo.domain.SenOppfolgingVurdering
@@ -13,4 +14,5 @@ interface ISenOppfolgingRepository {
     fun getKandidat(kandidatUuid: UUID): SenOppfolgingKandidat?
     fun getUnpublishedKandidater(): List<SenOppfolgingKandidat>
     fun setPublished(kandidatUuid: UUID)
+    fun getKandidater(personident: Personident): List<SenOppfolgingKandidat>
 }

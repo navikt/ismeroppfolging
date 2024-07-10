@@ -58,4 +58,6 @@ class SenOppfolgingService(
                 }
         }
     }
+
+    fun getKandidater(personident: Personident): List<SenOppfolgingKandidat> = senOppfolgingRepository.getKandidater(personident = personident)
 }

@@ -1,6 +1,7 @@
 package no.nav.syfo.api.endpoints
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import no.nav.syfo.ExternalMockEnvironment
@@ -46,6 +47,60 @@ object SenOppfolgingEndpointsSpek : Spek({
 
             beforeEachTest {
                 database.dropData()
+            }
+
+            describe("Get kandidat") {
+                val kandidaterUrl = "$senOppfolgingApiBasePath/kandidater"
+
+                it("Returns empty list when person not kandidat") {
+                    with(
+                        handleRequest(HttpMethod.Get, kandidaterUrl) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val responseDTOs = objectMapper.readValue<List<SenOppfolgingKandidatResponseDTO>>(response.content!!)
+                        responseDTOs.size shouldBeEqualTo 0
+                    }
+                }
+
+                it("Returns list of kandidat for person") {
+                    senOppfolgingRepository.createKandidat(senOppfolgingKandidat = senOppfolgingKandidat)
+
+                    with(
+                        handleRequest(HttpMethod.Get, kandidaterUrl) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val responseDTOs = objectMapper.readValue<List<SenOppfolgingKandidatResponseDTO>>(response.content!!)
+                        responseDTOs.size shouldBeEqualTo 1
+
+                        val kandidat = responseDTOs.first()
+                        kandidat.uuid shouldBeEqualTo senOppfolgingKandidat.uuid
+                        kandidat.personident shouldBeEqualTo senOppfolgingKandidat.personident.value
+                    }
+                }
+
+                it("Returns status Unauthorized if no token is supplied") {
+                    testMissingToken(kandidaterUrl, HttpMethod.Get)
+                }
+
+                it("Returns status Forbidden if denied access to person") {
+                    testDeniedPersonAccess(kandidaterUrl, validToken, HttpMethod.Get)
+                }
+
+                it("Returns status BadRequest if no $NAV_PERSONIDENT_HEADER is supplied") {
+                    testMissingPersonIdent(kandidaterUrl, validToken, HttpMethod.Get)
+                }
+
+                it("Returns status BadRequest if $NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied") {
+                    testInvalidPersonIdent(kandidaterUrl, validToken, HttpMethod.Get)
+                }
             }
 
             describe("Ferdigbehandle kandidat") {
