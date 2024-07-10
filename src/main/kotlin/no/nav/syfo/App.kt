@@ -7,6 +7,8 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.SenOppfolgingService
+import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
 import no.nav.syfo.infrastructure.cronjob.launchCronjobs
 import no.nav.syfo.infrastructure.database.applicationDatabase
@@ -29,6 +31,13 @@ fun main() {
 
     val wellKnownInternalAzureAD = getWellKnown(
         wellKnownUrl = environment.azure.appWellKnownUrl,
+    )
+    val azureAdClient = AzureAdClient(
+        azureEnvironment = environment.azure
+    )
+    val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
+        azureAdClient = azureAdClient,
+        clientEnvironment = environment.clients.istilgangskontroll
     )
     val kandidatStatusProducer = KandidatStatusProducer(
         producer = KafkaProducer(
@@ -61,6 +70,8 @@ fun main() {
                     environment = environment,
                     wellKnownInternalAzureAD = wellKnownInternalAzureAD,
                     database = applicationDatabase,
+                    veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                    senOppfolgingService = senOppfolgingService,
                 )
             }
         }

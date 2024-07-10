@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.TestDatabase
 import no.nav.syfo.infrastructure.mock.mockHttpClient
@@ -20,6 +21,10 @@ class ExternalMockEnvironment private constructor() {
     val environment = testEnvironment()
     val mockHttpClient = mockHttpClient(environment = environment)
     val wellKnownInternalAzureAD = wellKnownInternalAzureAD()
+    val azureAdClient = AzureAdClient(
+        azureEnvironment = environment.azure,
+        httpClient = mockHttpClient,
+    )
 
     companion object {
         val instance: ExternalMockEnvironment = ExternalMockEnvironment()
