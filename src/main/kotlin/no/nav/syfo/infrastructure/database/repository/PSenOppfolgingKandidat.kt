@@ -29,6 +29,7 @@ data class PSenOppfolgingKandidat(
             varselAt = varselAt,
             svar = svar,
             status = status,
+            publishedAt = publishedAt,
             vurderinger = vurderinger.map { it.toSenOppfolgingVurdering() },
         )
     }

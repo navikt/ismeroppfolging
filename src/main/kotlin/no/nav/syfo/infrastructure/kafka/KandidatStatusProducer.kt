@@ -1,9 +1,7 @@
 package no.nav.syfo.infrastructure.kafka
 
 import no.nav.syfo.application.IKandidatStatusProducer
-import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.SenOppfolgingKandidat
-import no.nav.syfo.domain.SenOppfolgingStatus
+import no.nav.syfo.domain.*
 import no.nav.syfo.util.configuredJacksonMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -15,17 +13,17 @@ import java.util.*
 class KandidatStatusProducer(private val producer: KafkaProducer<String, KandidatStatusRecord>) :
     IKandidatStatusProducer {
 
-    override fun send(kandidatStatus: SenOppfolgingKandidat): Result<SenOppfolgingKandidat> =
+    override fun send(kandidat: SenOppfolgingKandidat): Result<SenOppfolgingKandidat> =
         try {
             val record = ProducerRecord(
                 TOPIC,
-                kandidatStatus.personident.asProducerRecordKey(),
-                KandidatStatusRecord.fromSenOppfolgingKandidat(kandidatStatus),
+                kandidat.personident.asProducerRecordKey(),
+                KandidatStatusRecord.fromKandidat(kandidat = kandidat),
             )
             producer.send(record).get()
-            Result.success(kandidatStatus)
+            Result.success(kandidat)
         } catch (e: Exception) {
-            log.error("Exception was thrown when attempting to send vurdering: ${e.message}")
+            log.error("Exception was thrown when attempting to send kandidat status: ${e.message}")
             Result.failure(e)
         }
 
@@ -42,9 +40,10 @@ data class KandidatStatusRecord(
     val createdAt: OffsetDateTime,
     val personident: String,
     val status: StatusDTO,
+    val sisteVurdering: VurderingDTO?,
 ) {
     companion object {
-        fun fromSenOppfolgingKandidat(kandidat: SenOppfolgingKandidat): KandidatStatusRecord =
+        fun fromKandidat(kandidat: SenOppfolgingKandidat): KandidatStatusRecord =
             KandidatStatusRecord(
                 uuid = kandidat.uuid,
                 createdAt = kandidat.createdAt,
@@ -53,6 +52,14 @@ data class KandidatStatusRecord(
                     value = kandidat.status,
                     isActive = kandidat.status.isActive,
                 ),
+                sisteVurdering = kandidat.getLatestVurdering()?.let {
+                    VurderingDTO(
+                        uuid = it.uuid,
+                        type = it.type,
+                        createdAt = it.createdAt,
+                        veilederident = it.veilederident,
+                    )
+                },
             )
     }
 }
@@ -60,6 +67,13 @@ data class KandidatStatusRecord(
 data class StatusDTO(
     val value: SenOppfolgingStatus,
     val isActive: Boolean,
+)
+
+data class VurderingDTO(
+    val uuid: UUID,
+    val type: VurderingType,
+    val createdAt: OffsetDateTime,
+    val veilederident: String,
 )
 
 class KandidatStatusRecordSerializer : Serializer<KandidatStatusRecord> {

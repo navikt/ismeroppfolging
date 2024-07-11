@@ -19,5 +19,6 @@ data class PSenOppfolgingVurdering(
         createdAt = createdAt,
         veilederident = veilederident,
         type = VurderingType.valueOf(type),
+        publishedAt = publishedAt,
     )
 }
