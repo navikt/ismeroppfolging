@@ -54,6 +54,7 @@ data class KandidatStatusRecord(
                 ),
                 sisteVurdering = kandidat.getLatestUnpublishedVurdering()?.let {
                     VurderingDTO(
+                        uuid = it.uuid,
                         type = it.type,
                         createdAt = it.createdAt,
                         veilederident = it.veilederident,
@@ -69,6 +70,7 @@ data class StatusDTO(
 )
 
 data class VurderingDTO(
+    val uuid: UUID,
     val type: VurderingType,
     val createdAt: OffsetDateTime,
     val veilederident: String,
