@@ -75,6 +75,22 @@ class SenOppfolgingServiceSpek : Spek({
                 pKandidat.publishedAt.shouldNotBeNull()
             }
 
+            it("publishes unpublished kandidat once") {
+                senOppfolgingService.createKandidat(
+                    personident = ARBEIDSTAKER_PERSONIDENT,
+                    varselAt = nowUTC(),
+                )
+                var results = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
+                results.first.size shouldBeEqualTo 1
+                results.second.size shouldBeEqualTo 0
+
+                verify(exactly = 1) { mockKandidatStatusProducer.send(any()) }
+
+                results = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
+                results.first.size shouldBeEqualTo 0
+                results.second.size shouldBeEqualTo 0
+            }
+
             it("publishes unpublished vurdering") {
                 val kandidat = senOppfolgingService.createKandidat(
                     personident = ARBEIDSTAKER_PERSONIDENT,
@@ -109,24 +125,29 @@ class SenOppfolgingServiceSpek : Spek({
                 pVurdering.publishedAt.shouldNotBeNull()
             }
 
-            it("published unpublished kandidat and unpublished vurdering") {
+            it("publishes unpublished vurdering once") {
                 val kandidat = senOppfolgingService.createKandidat(
                     personident = ARBEIDSTAKER_PERSONIDENT,
                     varselAt = nowUTC(),
                 )
+                senOppfolgingRepository.setKandidatPublished(kandidatUuid = kandidat.uuid)
                 senOppfolgingService.vurderKandidat(
                     kandidat = kandidat,
                     veilederident = UserConstants.VEILEDER_IDENT,
                     type = VurderingType.FERDIGBEHANDLET
                 )
 
-                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
-                failed.size shouldBeEqualTo 0
-                success.size shouldBeEqualTo 2
+                var results = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
+                results.first.size shouldBeEqualTo 1
+                results.second.size shouldBeEqualTo 0
 
-                verify(exactly = 2) { mockKandidatStatusProducer.send(any()) }
+                verify(exactly = 1) { mockKandidatStatusProducer.send(any()) }
+
+                results = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
+                results.first.size shouldBeEqualTo 0
+                results.second.size shouldBeEqualTo 0
             }
-
+            
             it("publishes nothing when no unpublished kandidat") {
                 val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
