@@ -36,6 +36,8 @@ data class SenOppfolgingKandidat private constructor(
 
     fun isFerdigbehandlet(): Boolean = status == SenOppfolgingStatus.FERDIGBEHANDLET
 
+    fun getLatestUnpublishedVurdering(): SenOppfolgingVurdering? = vurderinger.filter { it.publishedAt == null }.maxByOrNull { it.createdAt }
+
     companion object {
         fun createFromDatabase(
             uuid: UUID,

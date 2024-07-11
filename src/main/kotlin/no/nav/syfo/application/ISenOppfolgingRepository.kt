@@ -14,7 +14,7 @@ interface ISenOppfolgingRepository {
     fun getKandidat(kandidatUuid: UUID): SenOppfolgingKandidat?
     fun getUnpublishedKandidater(): List<SenOppfolgingKandidat>
     fun getKandidater(personident: Personident): List<SenOppfolgingKandidat>
-    fun getUnpublishedVurderinger(): List<Pair<SenOppfolgingKandidat, SenOppfolgingVurdering>>
+    fun getKandidaterWithUnpublishedVurderinger(): List<SenOppfolgingKandidat>
     fun setKandidatPublished(kandidatUuid: UUID)
     fun setVurderingPublished(vurderingUuid: UUID)
 }

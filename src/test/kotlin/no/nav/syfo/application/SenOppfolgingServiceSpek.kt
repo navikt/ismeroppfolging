@@ -109,6 +109,24 @@ class SenOppfolgingServiceSpek : Spek({
                 pVurdering.publishedAt.shouldNotBeNull()
             }
 
+            it("published unpublished kandidat and unpublished vurdering") {
+                val kandidat = senOppfolgingService.createKandidat(
+                    personident = ARBEIDSTAKER_PERSONIDENT,
+                    varselAt = nowUTC(),
+                )
+                senOppfolgingService.vurderKandidat(
+                    kandidat = kandidat,
+                    veilederident = UserConstants.VEILEDER_IDENT,
+                    type = VurderingType.FERDIGBEHANDLET
+                )
+
+                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 2
+
+                verify(exactly = 2) { mockKandidatStatusProducer.send(any()) }
+            }
+
             it("publishes nothing when no unpublished kandidat") {
                 val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0

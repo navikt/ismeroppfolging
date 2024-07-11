@@ -66,15 +66,12 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             }
         }
 
-    override fun getUnpublishedVurderinger(): List<Pair<SenOppfolgingKandidat, SenOppfolgingVurdering>> {
+    override fun getKandidaterWithUnpublishedVurderinger(): List<SenOppfolgingKandidat> {
         return database.connection.use { connection ->
-            connection.prepareStatement(GET_UNPUBLISHED_VURDERING).use {
-                it.executeQuery().toList { toPSenOppfolgingVurdering() }
+            connection.prepareStatement(GET_KANDIDAT_UNPUBLISHED_VURDERING).use {
+                it.executeQuery().toList { toPSenOppfolgingKandidat() }
             }.map {
-                Pair(
-                    first = connection.getKandidat(it.kandidatId).toSenOppfolgingKandidat(emptyList()),
-                    second = it.toSenOppfolgingVurdering()
-                )
+                it.toSenOppfolgingKandidat(connection.getVurderinger(it.id))
             }
         }
     }
@@ -222,9 +219,13 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
                 SELECT * FROM SEN_OPPFOLGING_KANDIDAT WHERE published_at IS NULL ORDER BY created_at ASC
             """
 
-        private const val GET_UNPUBLISHED_VURDERING =
+        private const val GET_KANDIDAT_UNPUBLISHED_VURDERING =
             """
-                SELECT * FROM SEN_OPPFOLGING_VURDERING WHERE published_at IS NULL ORDER BY created_at ASC
+                SELECT kandidat.* 
+                FROM SEN_OPPFOLGING_KANDIDAT kandidat 
+                INNER JOIN SEN_OPPFOLGING_VURDERING vurdering on vurdering.kandidat_id = kandidat.id 
+                WHERE vurdering.published_at IS NULL
+                ORDER BY kandidat.created_at ASC
             """
 
         private const val UPDATE_KANDIDAT_PUBLISHED_AT =

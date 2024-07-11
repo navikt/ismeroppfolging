@@ -9,6 +9,7 @@ data class SenOppfolgingVurdering(
     val createdAt: OffsetDateTime,
     val veilederident: String,
     val type: VurderingType,
+    val publishedAt: OffsetDateTime?,
 ) {
     constructor(
         veilederident: String,
@@ -18,6 +19,7 @@ data class SenOppfolgingVurdering(
         createdAt = nowUTC(),
         veilederident = veilederident,
         type = type,
+        publishedAt = null,
     )
 
     companion object {
@@ -26,11 +28,13 @@ data class SenOppfolgingVurdering(
             createdAt: OffsetDateTime,
             veilederident: String,
             type: VurderingType,
+            publishedAt: OffsetDateTime?,
         ) = SenOppfolgingVurdering(
             uuid = uuid,
             createdAt = createdAt,
             veilederident = veilederident,
             type = type,
+            publishedAt = publishedAt,
         )
     }
 }
