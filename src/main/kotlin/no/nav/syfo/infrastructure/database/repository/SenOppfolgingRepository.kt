@@ -80,6 +80,15 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             connection.commit()
         }
 
+    override fun getKandidater(personident: Personident): List<SenOppfolgingKandidat> = database.connection.use { connection ->
+        connection.prepareStatement(GET_KANDIDAT_BY_PERSONIDENT).use {
+            it.setString(1, personident.value)
+            it.executeQuery().toList { toPSenOppfolgingKandidat() }
+        }.map {
+            it.toSenOppfolgingKandidat(connection.getVurderinger(it.id))
+        }
+    }
+
     private fun Connection.createKandidat(senOppfolgingKandidat: SenOppfolgingKandidat): PSenOppfolgingKandidat =
         prepareStatement(CREATE_KANDIDAT).use {
             it.setString(1, senOppfolgingKandidat.uuid.toString())
@@ -128,6 +137,10 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
 
         private const val GET_KANDIDAT = """
             SELECT * FROM SEN_OPPFOLGING_KANDIDAT WHERE uuid = ?
+        """
+
+        private const val GET_KANDIDAT_BY_PERSONIDENT = """
+            SELECT * FROM SEN_OPPFOLGING_KANDIDAT WHERE personident = ? ORDER BY created_at DESC
         """
 
         private const val CREATE_VURDERING = """
