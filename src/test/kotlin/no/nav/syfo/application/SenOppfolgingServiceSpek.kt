@@ -12,6 +12,7 @@ import no.nav.syfo.infrastructure.database.getSenOppfolgingVurderinger
 import no.nav.syfo.infrastructure.database.repository.SenOppfolgingRepository
 import no.nav.syfo.infrastructure.kafka.KandidatStatusProducer
 import no.nav.syfo.infrastructure.kafka.KandidatStatusRecord
+import no.nav.syfo.util.millisekundOpplosning
 import no.nav.syfo.util.nowUTC
 import org.amshove.kluent.*
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -48,9 +49,9 @@ class SenOppfolgingServiceSpek : Spek({
             database.dropData()
         }
 
-        describe("publishUnpublishedVurderinger") {
+        describe("publishUnpublishedKandidatStatus") {
 
-            it("publishes unpublished vurdering") {
+            it("publishes unpublished kandidat") {
                 val kandidat = senOppfolgingService.createKandidat(
                     personident = ARBEIDSTAKER_PERSONIDENT,
                     varselAt = nowUTC(),
@@ -68,9 +69,46 @@ class SenOppfolgingServiceSpek : Spek({
                 kandidatStatusRecord.createdAt shouldBeEqualTo kandidat.createdAt
                 kandidatStatusRecord.status.value shouldBeEqualTo kandidat.status
                 kandidatStatusRecord.status.isActive shouldBeEqualTo kandidat.status.isActive
+                kandidatStatusRecord.status.createdAt shouldBeEqualTo kandidat.createdAt
+                kandidatStatusRecord.veilederident.shouldBeNull()
+
+                val pKandidat = database.getSenOppfolgingKandidater().first()
+                pKandidat.publishedAt.shouldNotBeNull()
             }
 
-            it("publishes nothing when no unpublished vurdering") {
+            it("publishes unpublished vurdering") {
+                val kandidat = senOppfolgingService.createKandidat(
+                    personident = ARBEIDSTAKER_PERSONIDENT,
+                    varselAt = nowUTC(),
+                )
+                senOppfolgingRepository.setKandidatPublished(kandidatUuid = kandidat.uuid)
+                val vurdertKandidat = senOppfolgingService.vurderKandidat(
+                    kandidat = kandidat,
+                    veilederident = UserConstants.VEILEDER_IDENT,
+                    type = VurderingType.FERDIGBEHANDLET
+                )
+
+                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 1
+
+                val producerRecordSlot = slot<ProducerRecord<String, KandidatStatusRecord>>()
+                verify(exactly = 1) { mockKandidatStatusProducer.send(capture(producerRecordSlot)) }
+
+                val kandidatStatusRecord = producerRecordSlot.captured.value()
+                kandidatStatusRecord.uuid shouldBeEqualTo kandidat.uuid
+                kandidatStatusRecord.personident shouldBeEqualTo kandidat.personident.value
+                kandidatStatusRecord.createdAt shouldBeEqualTo kandidat.createdAt
+                kandidatStatusRecord.status.value shouldBeEqualTo vurdertKandidat.status
+                kandidatStatusRecord.status.isActive shouldBeEqualTo vurdertKandidat.status.isActive
+                kandidatStatusRecord.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
+                kandidatStatusRecord.status.createdAt.millisekundOpplosning() shouldBeEqualTo vurdertKandidat.vurderinger.first().createdAt.millisekundOpplosning()
+
+                val pVurdering = database.getSenOppfolgingVurderinger().first()
+                pVurdering.publishedAt.shouldNotBeNull()
+            }
+
+            it("publishes nothing when no unpublished kandidat") {
                 val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
                 success.size shouldBeEqualTo 0

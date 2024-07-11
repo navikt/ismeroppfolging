@@ -4,6 +4,7 @@ import no.nav.syfo.application.IKandidatStatusProducer
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.SenOppfolgingKandidat
 import no.nav.syfo.domain.SenOppfolgingStatus
+import no.nav.syfo.domain.SenOppfolgingVurdering
 import no.nav.syfo.util.configuredJacksonMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -15,17 +16,34 @@ import java.util.*
 class KandidatStatusProducer(private val producer: KafkaProducer<String, KandidatStatusRecord>) :
     IKandidatStatusProducer {
 
-    override fun send(kandidatStatus: SenOppfolgingKandidat): Result<SenOppfolgingKandidat> =
+    override fun sendKandidat(kandidat: SenOppfolgingKandidat): Result<SenOppfolgingKandidat> =
         try {
             val record = ProducerRecord(
                 TOPIC,
-                kandidatStatus.personident.asProducerRecordKey(),
-                KandidatStatusRecord.fromSenOppfolgingKandidat(kandidatStatus),
+                kandidat.personident.asProducerRecordKey(),
+                KandidatStatusRecord.fromKandidat(kandidat = kandidat),
             )
             producer.send(record).get()
-            Result.success(kandidatStatus)
+            Result.success(kandidat)
         } catch (e: Exception) {
-            log.error("Exception was thrown when attempting to send vurdering: ${e.message}")
+            log.error("Exception was thrown when attempting to send kandidat status: ${e.message}")
+            Result.failure(e)
+        }
+
+    override fun sendVurdering(
+        vurdering: SenOppfolgingVurdering,
+        kandidat: SenOppfolgingKandidat
+    ): Result<SenOppfolgingKandidat> =
+        try {
+            val record = ProducerRecord(
+                TOPIC,
+                kandidat.personident.asProducerRecordKey(),
+                KandidatStatusRecord.fromVurdering(vurdering = vurdering, kandidat = kandidat),
+            )
+            producer.send(record).get()
+            Result.success(kandidat)
+        } catch (e: Exception) {
+            log.error("Exception was thrown when attempting to send kandidat vurdering status: ${e.message}")
             Result.failure(e)
         }
 
@@ -41,17 +59,33 @@ data class KandidatStatusRecord(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val personident: String,
+    val veilederident: String?,
     val status: StatusDTO,
 ) {
     companion object {
-        fun fromSenOppfolgingKandidat(kandidat: SenOppfolgingKandidat): KandidatStatusRecord =
+        fun fromKandidat(kandidat: SenOppfolgingKandidat): KandidatStatusRecord =
             KandidatStatusRecord(
                 uuid = kandidat.uuid,
                 createdAt = kandidat.createdAt,
                 personident = kandidat.personident.value,
+                veilederident = null,
                 status = StatusDTO(
                     value = kandidat.status,
                     isActive = kandidat.status.isActive,
+                    createdAt = kandidat.createdAt,
+                ),
+            )
+
+        fun fromVurdering(vurdering: SenOppfolgingVurdering, kandidat: SenOppfolgingKandidat): KandidatStatusRecord =
+            KandidatStatusRecord(
+                uuid = kandidat.uuid,
+                createdAt = kandidat.createdAt,
+                personident = kandidat.personident.value,
+                veilederident = vurdering.veilederident,
+                status = StatusDTO(
+                    value = kandidat.status,
+                    isActive = kandidat.status.isActive,
+                    createdAt = vurdering.createdAt,
                 ),
             )
     }
@@ -60,6 +94,7 @@ data class KandidatStatusRecord(
 data class StatusDTO(
     val value: SenOppfolgingStatus,
     val isActive: Boolean,
+    val createdAt: OffsetDateTime,
 )
 
 class KandidatStatusRecordSerializer : Serializer<KandidatStatusRecord> {
