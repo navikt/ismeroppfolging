@@ -49,24 +49,20 @@ class SenOppfolgingService(
     }
 
     fun publishUnpublishedKandidatStatus(): List<Result<SenOppfolgingKandidat>> {
-        val publishedKandidater = senOppfolgingRepository.getUnpublishedKandidater().map { kandidat ->
-            kandidatStatusProducer.send(kandidat = kandidat)
-                .map {
-                    senOppfolgingRepository.setKandidatPublished(it.uuid)
+        val unpublishedKandidatStatuser = senOppfolgingRepository.getUnpublishedKandidatStatuser()
+        return unpublishedKandidatStatuser
+            .filter { it.shouldPublish() }
+            .map { kandidat ->
+                kandidatStatusProducer.send(kandidat = kandidat).map {
+                    val latestVurdering = it.getLatestVurdering()
+                    if (it.publishedAt == null) {
+                        senOppfolgingRepository.setKandidatPublished(it.uuid)
+                    } else if (latestVurdering != null && latestVurdering.publishedAt == null) {
+                        senOppfolgingRepository.setVurderingPublished(latestVurdering.uuid)
+                    }
                     it
                 }
-        }
-        val publishedKandidaterWithVurderinger =
-            senOppfolgingRepository.getKandidaterWithUnpublishedVurderinger().map { kandidat ->
-                kandidatStatusProducer.send(kandidat = kandidat)
-                    .map {
-                        val latestUnpublishedVurdering = kandidat.getLatestUnpublishedVurdering()!!
-                        senOppfolgingRepository.setVurderingPublished(latestUnpublishedVurdering.uuid)
-                        it
-                    }
             }
-
-        return publishedKandidater + publishedKandidaterWithVurderinger
     }
 
     fun getKandidater(personident: Personident): List<SenOppfolgingKandidat> = senOppfolgingRepository.getKandidater(personident = personident)

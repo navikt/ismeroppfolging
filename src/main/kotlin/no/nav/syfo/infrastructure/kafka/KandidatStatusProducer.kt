@@ -52,7 +52,7 @@ data class KandidatStatusRecord(
                     value = kandidat.status,
                     isActive = kandidat.status.isActive,
                 ),
-                sisteVurdering = kandidat.getLatestUnpublishedVurdering()?.let {
+                sisteVurdering = kandidat.getLatestVurdering()?.let {
                     VurderingDTO(
                         uuid = it.uuid,
                         type = it.type,

@@ -84,11 +84,11 @@ class SenOppfolgingServiceSpek : Spek({
                 results.first.size shouldBeEqualTo 1
                 results.second.size shouldBeEqualTo 0
 
-                verify(exactly = 1) { mockKandidatStatusProducer.send(any()) }
-
                 results = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
                 results.first.size shouldBeEqualTo 0
                 results.second.size shouldBeEqualTo 0
+
+                verify(exactly = 1) { mockKandidatStatusProducer.send(any()) }
             }
 
             it("publishes unpublished vurdering") {
@@ -141,13 +141,13 @@ class SenOppfolgingServiceSpek : Spek({
                 results.first.size shouldBeEqualTo 1
                 results.second.size shouldBeEqualTo 0
 
-                verify(exactly = 1) { mockKandidatStatusProducer.send(any()) }
-
                 results = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
                 results.first.size shouldBeEqualTo 0
                 results.second.size shouldBeEqualTo 0
+
+                verify(exactly = 1) { mockKandidatStatusProducer.send(any()) }
             }
-            
+
             it("publishes nothing when no unpublished kandidat") {
                 val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
@@ -168,7 +168,7 @@ class SenOppfolgingServiceSpek : Spek({
                 success.size shouldBeEqualTo 0
                 verify(exactly = 1) { mockKandidatStatusProducer.send(any()) }
 
-                val kandidatList = senOppfolgingRepository.getUnpublishedKandidater()
+                val kandidatList = senOppfolgingRepository.getUnpublishedKandidatStatuser()
                 kandidatList.size shouldBeEqualTo 1
                 kandidatList.first().uuid.shouldBeEqualTo(kandidat.uuid)
             }

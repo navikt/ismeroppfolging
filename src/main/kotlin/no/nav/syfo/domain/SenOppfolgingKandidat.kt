@@ -10,6 +10,7 @@ data class SenOppfolgingKandidat private constructor(
     val varselAt: OffsetDateTime,
     val svar: SenOppfolgingSvar?,
     val status: SenOppfolgingStatus,
+    val publishedAt: OffsetDateTime?,
     val vurderinger: List<SenOppfolgingVurdering>,
 ) {
     constructor(
@@ -22,6 +23,7 @@ data class SenOppfolgingKandidat private constructor(
         varselAt = varselAt,
         svar = null,
         status = SenOppfolgingStatus.KANDIDAT,
+        publishedAt = null,
         vurderinger = emptyList(),
     )
 
@@ -36,7 +38,9 @@ data class SenOppfolgingKandidat private constructor(
 
     fun isFerdigbehandlet(): Boolean = status == SenOppfolgingStatus.FERDIGBEHANDLET
 
-    fun getLatestUnpublishedVurdering(): SenOppfolgingVurdering? = vurderinger.filter { it.publishedAt == null }.maxByOrNull { it.createdAt }
+    fun shouldPublish(): Boolean = publishedAt == null || vurderinger.any { it.publishedAt == null }
+
+    fun getLatestVurdering(): SenOppfolgingVurdering? = vurderinger.maxByOrNull { it.createdAt }
 
     companion object {
         fun createFromDatabase(
@@ -46,6 +50,7 @@ data class SenOppfolgingKandidat private constructor(
             varselAt: OffsetDateTime,
             svar: SenOppfolgingSvar?,
             status: String,
+            publishedAt: OffsetDateTime?,
             vurderinger: List<SenOppfolgingVurdering>,
         ): SenOppfolgingKandidat = SenOppfolgingKandidat(
             uuid = uuid,
@@ -54,6 +59,7 @@ data class SenOppfolgingKandidat private constructor(
             varselAt = varselAt,
             svar = svar,
             status = SenOppfolgingStatus.valueOf(status),
+            publishedAt = publishedAt,
             vurderinger = vurderinger,
         )
     }

@@ -57,7 +57,7 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
         }
     }
 
-    override fun getUnpublishedKandidater(): List<SenOppfolgingKandidat> =
+    override fun getUnpublishedKandidatStatuser(): List<SenOppfolgingKandidat> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_UNPUBLISHED_KANDIDAT).use {
                 it.executeQuery().toList { toPSenOppfolgingKandidat() }
@@ -65,16 +65,6 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
                 it.toSenOppfolgingKandidat(connection.getVurderinger(it.id))
             }
         }
-
-    override fun getKandidaterWithUnpublishedVurderinger(): List<SenOppfolgingKandidat> {
-        return database.connection.use { connection ->
-            connection.prepareStatement(GET_KANDIDAT_UNPUBLISHED_VURDERING).use {
-                it.executeQuery().toList { toPSenOppfolgingKandidat() }
-            }.map {
-                it.toSenOppfolgingKandidat(connection.getVurderinger(it.id))
-            }
-        }
-    }
 
     override fun setKandidatPublished(kandidatUuid: UUID) {
         val now = nowUTC()
@@ -127,12 +117,6 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             it.executeQuery().toList { toPSenOppfolgingKandidat() }.single()
         }
 
-    private fun Connection.getKandidat(kandidatId: Int): PSenOppfolgingKandidat =
-        prepareStatement(GET_KANDIDAT_BY_ID).use {
-            it.setInt(1, kandidatId)
-            it.executeQuery().toList { toPSenOppfolgingKandidat() }.single()
-        }
-
     private fun Connection.updateKandidatStatus(senOppfolgingKandidat: SenOppfolgingKandidat): Int =
         prepareStatement(UPDATE_KANDIDAT_STATUS).use {
             it.setObject(1, senOppfolgingKandidat.status.name)
@@ -167,10 +151,6 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
                 varsel_at
             ) VALUES (DEFAULT, ?, ?, ?, ?, ?)
             RETURNING *
-        """
-
-        private const val GET_KANDIDAT_BY_ID = """
-            SELECT * FROM SEN_OPPFOLGING_KANDIDAT WHERE id = ?
         """
 
         private const val GET_KANDIDAT_BY_UUID = """
@@ -216,15 +196,10 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
 
         private const val GET_UNPUBLISHED_KANDIDAT =
             """
-                SELECT * FROM SEN_OPPFOLGING_KANDIDAT WHERE published_at IS NULL ORDER BY created_at ASC
-            """
-
-        private const val GET_KANDIDAT_UNPUBLISHED_VURDERING =
-            """
                 SELECT kandidat.* 
                 FROM SEN_OPPFOLGING_KANDIDAT kandidat 
-                INNER JOIN SEN_OPPFOLGING_VURDERING vurdering on vurdering.kandidat_id = kandidat.id 
-                WHERE vurdering.published_at IS NULL
+                LEFT JOIN SEN_OPPFOLGING_VURDERING vurdering on vurdering.kandidat_id = kandidat.id 
+                WHERE vurdering.published_at IS NULL OR kandidat.published_at IS NULL
                 ORDER BY kandidat.created_at ASC
             """
 
