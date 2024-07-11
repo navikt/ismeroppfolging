@@ -1,10 +1,7 @@
 package no.nav.syfo.infrastructure.kafka
 
 import no.nav.syfo.application.IKandidatStatusProducer
-import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.SenOppfolgingKandidat
-import no.nav.syfo.domain.SenOppfolgingStatus
-import no.nav.syfo.domain.SenOppfolgingVurdering
+import no.nav.syfo.domain.*
 import no.nav.syfo.util.configuredJacksonMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -59,8 +56,8 @@ data class KandidatStatusRecord(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val personident: String,
-    val veilederident: String?,
     val status: StatusDTO,
+    val sisteVurdering: VurderingDTO?,
 ) {
     companion object {
         fun fromKandidat(kandidat: SenOppfolgingKandidat): KandidatStatusRecord =
@@ -68,12 +65,11 @@ data class KandidatStatusRecord(
                 uuid = kandidat.uuid,
                 createdAt = kandidat.createdAt,
                 personident = kandidat.personident.value,
-                veilederident = null,
                 status = StatusDTO(
                     value = kandidat.status,
                     isActive = kandidat.status.isActive,
-                    createdAt = kandidat.createdAt,
                 ),
+                sisteVurdering = null,
             )
 
         fun fromVurdering(vurdering: SenOppfolgingVurdering, kandidat: SenOppfolgingKandidat): KandidatStatusRecord =
@@ -81,11 +77,14 @@ data class KandidatStatusRecord(
                 uuid = kandidat.uuid,
                 createdAt = kandidat.createdAt,
                 personident = kandidat.personident.value,
-                veilederident = vurdering.veilederident,
                 status = StatusDTO(
                     value = kandidat.status,
                     isActive = kandidat.status.isActive,
+                ),
+                sisteVurdering = VurderingDTO(
+                    type = vurdering.type,
                     createdAt = vurdering.createdAt,
+                    veilederident = vurdering.veilederident,
                 ),
             )
     }
@@ -94,7 +93,12 @@ data class KandidatStatusRecord(
 data class StatusDTO(
     val value: SenOppfolgingStatus,
     val isActive: Boolean,
+)
+
+data class VurderingDTO(
+    val type: VurderingType,
     val createdAt: OffsetDateTime,
+    val veilederident: String,
 )
 
 class KandidatStatusRecordSerializer : Serializer<KandidatStatusRecord> {

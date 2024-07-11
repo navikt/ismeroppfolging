@@ -69,8 +69,7 @@ class SenOppfolgingServiceSpek : Spek({
                 kandidatStatusRecord.createdAt shouldBeEqualTo kandidat.createdAt
                 kandidatStatusRecord.status.value shouldBeEqualTo kandidat.status
                 kandidatStatusRecord.status.isActive shouldBeEqualTo kandidat.status.isActive
-                kandidatStatusRecord.status.createdAt shouldBeEqualTo kandidat.createdAt
-                kandidatStatusRecord.veilederident.shouldBeNull()
+                kandidatStatusRecord.sisteVurdering.shouldBeNull()
 
                 val pKandidat = database.getSenOppfolgingKandidater().first()
                 pKandidat.publishedAt.shouldNotBeNull()
@@ -101,8 +100,10 @@ class SenOppfolgingServiceSpek : Spek({
                 kandidatStatusRecord.createdAt shouldBeEqualTo kandidat.createdAt
                 kandidatStatusRecord.status.value shouldBeEqualTo vurdertKandidat.status
                 kandidatStatusRecord.status.isActive shouldBeEqualTo vurdertKandidat.status.isActive
-                kandidatStatusRecord.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
-                kandidatStatusRecord.status.createdAt.millisekundOpplosning() shouldBeEqualTo vurdertKandidat.vurderinger.first().createdAt.millisekundOpplosning()
+                kandidatStatusRecord.sisteVurdering.shouldNotBeNull()
+                kandidatStatusRecord.sisteVurdering?.createdAt?.millisekundOpplosning() shouldBeEqualTo vurdertKandidat.vurderinger.first().createdAt.millisekundOpplosning()
+                kandidatStatusRecord.sisteVurdering?.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
+                kandidatStatusRecord.sisteVurdering?.type shouldBeEqualTo VurderingType.FERDIGBEHANDLET
 
                 val pVurdering = database.getSenOppfolgingVurderinger().first()
                 pVurdering.publishedAt.shouldNotBeNull()
