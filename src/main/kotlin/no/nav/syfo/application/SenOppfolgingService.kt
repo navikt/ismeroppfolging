@@ -51,7 +51,6 @@ class SenOppfolgingService(
     fun publishUnpublishedKandidatStatus(): List<Result<SenOppfolgingKandidat>> {
         val unpublishedKandidatStatuser = senOppfolgingRepository.getUnpublishedKandidatStatuser()
         return unpublishedKandidatStatuser
-            .filter { it.shouldPublish() }
             .map { kandidat ->
                 kandidatStatusProducer.send(kandidat = kandidat).map {
                     val latestVurdering = it.getLatestVurdering()

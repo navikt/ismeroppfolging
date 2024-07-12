@@ -38,8 +38,6 @@ data class SenOppfolgingKandidat private constructor(
 
     fun isFerdigbehandlet(): Boolean = status == SenOppfolgingStatus.FERDIGBEHANDLET
 
-    fun shouldPublish(): Boolean = publishedAt == null || vurderinger.any { it.publishedAt == null }
-
     fun getLatestVurdering(): SenOppfolgingVurdering? = vurderinger.maxByOrNull { it.createdAt }
 
     companion object {
