@@ -197,9 +197,10 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
         private const val GET_UNPUBLISHED_KANDIDAT =
             """
                 SELECT kandidat.* 
-                FROM SEN_OPPFOLGING_KANDIDAT kandidat 
-                LEFT JOIN SEN_OPPFOLGING_VURDERING vurdering on vurdering.kandidat_id = kandidat.id 
-                WHERE vurdering.published_at IS NULL OR kandidat.published_at IS NULL
+                FROM SEN_OPPFOLGING_KANDIDAT kandidat
+                WHERE kandidat.published_at IS NULL OR EXISTS (
+                    SELECT 1 FROM SEN_OPPFOLGING_VURDERING vurdering WHERE vurdering.kandidat_id = kandidat.id AND vurdering.published_at IS NULL
+                )
                 ORDER BY kandidat.created_at ASC
             """
 
