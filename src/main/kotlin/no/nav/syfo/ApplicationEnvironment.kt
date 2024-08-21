@@ -32,7 +32,6 @@ data class Environment(
             openidConfigTokenEndpoint = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT")
         ),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
-    val senOppfolgingSvarConsumerEnabled: Boolean = getEnvVar("SENOPPFOLGING_SVAR_CONSUMER_ENABLED").toBoolean(),
     val clients: ClientsEnvironment =
         ClientsEnvironment(
             istilgangskontroll = ClientEnvironment(

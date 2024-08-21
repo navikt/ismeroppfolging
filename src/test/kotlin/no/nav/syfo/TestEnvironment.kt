@@ -35,7 +35,6 @@ fun testEnvironment() = Environment(
         ),
     ),
     electorPath = "electorPath",
-    senOppfolgingSvarConsumerEnabled = true,
 )
 
 fun testAppState() = ApplicationState(
