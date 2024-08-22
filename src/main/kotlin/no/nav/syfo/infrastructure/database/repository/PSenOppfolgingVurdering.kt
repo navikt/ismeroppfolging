@@ -11,14 +11,16 @@ data class PSenOppfolgingVurdering(
     val kandidatId: Int,
     val createdAt: OffsetDateTime,
     val veilederident: String,
-    val type: String,
+    val begrunnelse: String,
+    val type: VurderingType,
     val publishedAt: OffsetDateTime?,
 ) {
     fun toSenOppfolgingVurdering() = SenOppfolgingVurdering.createFromDatabase(
         uuid = uuid,
         createdAt = createdAt,
         veilederident = veilederident,
-        type = VurderingType.valueOf(type),
+        begrunnelse = begrunnelse,
+        type = type,
         publishedAt = publishedAt,
     )
 }

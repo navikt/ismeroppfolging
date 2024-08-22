@@ -3,8 +3,10 @@ package no.nav.syfo.infrastructure.database.repository
 import no.nav.syfo.application.ISenOppfolgingRepository
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.SenOppfolgingKandidat
+import no.nav.syfo.domain.SenOppfolgingStatus
 import no.nav.syfo.domain.SenOppfolgingSvar
 import no.nav.syfo.domain.SenOppfolgingVurdering
+import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.util.nowUTC
@@ -46,16 +48,16 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             connection.commit()
         }
 
-    override fun addVurdering(senOppfolgingKandidat: SenOppfolgingKandidat, vurdering: SenOppfolgingVurdering) {
+    override fun addVurdering(senOppfolgingKandidat: SenOppfolgingKandidat, vurdering: SenOppfolgingVurdering): SenOppfolgingVurdering =
         database.connection.use { connection ->
             val kandidatId = connection.updateKandidatStatus(senOppfolgingKandidat = senOppfolgingKandidat)
-            connection.createVurdering(
+            val savedVurdering = connection.createVurdering(
                 kandidatId = kandidatId,
                 senOppfolgingVurdering = vurdering
             )
             connection.commit()
+            savedVurdering.toSenOppfolgingVurdering()
         }
-    }
 
     override fun getUnpublishedKandidatStatuser(): List<SenOppfolgingKandidat> =
         database.connection.use { connection ->
@@ -124,13 +126,18 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             it.executeQuery().toList { getInt("id") }.single()
         }
 
-    private fun Connection.createVurdering(kandidatId: Int, senOppfolgingVurdering: SenOppfolgingVurdering) =
+    private fun Connection.createVurdering(kandidatId: Int, senOppfolgingVurdering: SenOppfolgingVurdering): PSenOppfolgingVurdering =
         prepareStatement(CREATE_VURDERING).use {
             it.setString(1, senOppfolgingVurdering.uuid.toString())
             it.setInt(2, kandidatId)
             it.setObject(3, senOppfolgingVurdering.createdAt)
             it.setString(4, senOppfolgingVurdering.veilederident)
-            it.setString(5, senOppfolgingVurdering.type.name)
+            if (senOppfolgingVurdering.begrunnelse != null) {
+                it.setString(5, senOppfolgingVurdering.begrunnelse)
+            } else {
+                it.setString(5, "")
+            }
+            it.setString(6, senOppfolgingVurdering.type.name)
             it.executeQuery().toList { toPSenOppfolgingVurdering() }.single()
         }
 
@@ -168,8 +175,9 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
                 kandidat_id,
                 created_at,
                 veilederident,
+                begrunnelse,
                 type
-            ) VALUES (DEFAULT, ?, ?, ?, ?, ?)
+            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?)
             RETURNING *
         """
 
@@ -226,7 +234,7 @@ internal fun ResultSet.toPSenOppfolgingKandidat(): PSenOppfolgingKandidat = PSen
     svarAt = getObject("svar_at", OffsetDateTime::class.java),
     onskerOppfolging = getString("onsker_oppfolging"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
-    status = getString("status"),
+    status = SenOppfolgingStatus.valueOf(getString("status")),
 )
 
 internal fun ResultSet.toPSenOppfolgingVurdering(): PSenOppfolgingVurdering = PSenOppfolgingVurdering(
@@ -236,5 +244,6 @@ internal fun ResultSet.toPSenOppfolgingVurdering(): PSenOppfolgingVurdering = PS
     createdAt = getObject("created_at", OffsetDateTime::class.java),
     veilederident = getString("veilederident"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
-    type = getString("type"),
+    begrunnelse = getString("begrunnelse"),
+    type = VurderingType.valueOf(getString("type")),
 )
