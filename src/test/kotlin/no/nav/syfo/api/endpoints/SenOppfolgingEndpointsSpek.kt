@@ -107,7 +107,7 @@ object SenOppfolgingEndpointsSpek : Spek({
                 val kandidatUuid = senOppfolgingKandidat.uuid
                 val ferdigbehandlingUrl = "$senOppfolgingApiBasePath/kandidater/$kandidatUuid/vurderinger"
                 val vurderingRequestDTO =
-                    SenOppfolgingVurderingRequestDTO(type = VurderingType.FERDIGBEHANDLET)
+                    SenOppfolgingVurderingRequestDTO(begrunnelse = "Begrunnelse", type = VurderingType.FERDIGBEHANDLET)
 
                 it("Returns OK if request is successful") {
                     senOppfolgingRepository.createKandidat(senOppfolgingKandidat = senOppfolgingKandidat)
@@ -120,11 +120,12 @@ object SenOppfolgingEndpointsSpek : Spek({
                             setBody(objectMapper.writeValueAsString(vurderingRequestDTO))
                         }
                     ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        response.status() shouldBeEqualTo HttpStatusCode.Created
 
                         val kandidatResponse = objectMapper.readValue(response.content, SenOppfolgingKandidatResponseDTO::class.java)
                         kandidatResponse.uuid shouldBeEqualTo kandidatUuid
                         kandidatResponse.status shouldBeEqualTo SenOppfolgingStatus.FERDIGBEHANDLET
+                        kandidatResponse.vurderinger.first().begrunnelse shouldBeEqualTo "Begrunnelse"
                         val ferdigbehandletVurdering =
                             kandidatResponse.vurderinger.first { it.type == VurderingType.FERDIGBEHANDLET }
                         ferdigbehandletVurdering.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
@@ -155,7 +156,7 @@ object SenOppfolgingEndpointsSpek : Spek({
                             setBody(objectMapper.writeValueAsString(vurderingRequestDTO))
                         }
                     ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        response.status() shouldBeEqualTo HttpStatusCode.Created
                     }
 
                     with(

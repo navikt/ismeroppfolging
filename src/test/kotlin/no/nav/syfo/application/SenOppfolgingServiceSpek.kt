@@ -100,7 +100,8 @@ class SenOppfolgingServiceSpek : Spek({
                 val vurdertKandidat = senOppfolgingService.vurderKandidat(
                     kandidat = kandidat,
                     veilederident = UserConstants.VEILEDER_IDENT,
-                    type = VurderingType.FERDIGBEHANDLET
+                    begrunnelse = "Begrunnelse",
+                    type = VurderingType.FERDIGBEHANDLET,
                 )
 
                 val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
@@ -134,6 +135,7 @@ class SenOppfolgingServiceSpek : Spek({
                 senOppfolgingService.vurderKandidat(
                     kandidat = kandidat,
                     veilederident = UserConstants.VEILEDER_IDENT,
+                    begrunnelse = "Begrunnelse",
                     type = VurderingType.FERDIGBEHANDLET
                 )
 
@@ -183,6 +185,7 @@ class SenOppfolgingServiceSpek : Spek({
                 val ferdigbehandletKandidat = senOppfolgingService.vurderKandidat(
                     kandidat = kandidat,
                     veilederident = UserConstants.VEILEDER_IDENT,
+                    begrunnelse = "Begrunnelse",
                     type = VurderingType.FERDIGBEHANDLET,
                 )
 
@@ -194,12 +197,13 @@ class SenOppfolgingServiceSpek : Spek({
 
                 val pKandidat = database.getSenOppfolgingKandidater().first()
                 pKandidat.uuid shouldBeEqualTo kandidat.uuid
-                pKandidat.status shouldBeEqualTo SenOppfolgingStatus.FERDIGBEHANDLET.name
+                pKandidat.status shouldBeEqualTo SenOppfolgingStatus.FERDIGBEHANDLET
                 val pVurdering = database.getSenOppfolgingVurderinger().first()
                 pVurdering.kandidatId shouldBeEqualTo pKandidat.id
-                pVurdering.type shouldBeEqualTo VurderingType.FERDIGBEHANDLET.name
+                pVurdering.type shouldBeEqualTo VurderingType.FERDIGBEHANDLET
                 pVurdering.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
                 pVurdering.publishedAt.shouldBeNull()
+                pVurdering.begrunnelse shouldBeEqualTo vurdering.begrunnelse
             }
         }
     }

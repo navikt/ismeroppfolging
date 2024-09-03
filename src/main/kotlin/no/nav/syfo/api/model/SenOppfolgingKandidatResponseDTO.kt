@@ -16,6 +16,7 @@ data class SenOppfolgingKandidatResponseDTO(
 
 data class SenOppfolgingVurderingResponseDTO(
     val uuid: UUID,
+    val begrunnelse: String?,
     val type: VurderingType,
     val veilederident: String,
     val createdAt: LocalDateTime,
@@ -29,6 +30,7 @@ fun SenOppfolgingKandidat.toResponseDTO(): SenOppfolgingKandidatResponseDTO = Se
     vurderinger = this.vurderinger.map {
         SenOppfolgingVurderingResponseDTO(
             uuid = it.uuid,
+            begrunnelse = it.begrunnelse,
             type = it.type,
             veilederident = it.veilederident,
             createdAt = it.createdAt.toLocalDateTime(),

@@ -47,7 +47,7 @@ data class SenOppfolgingKandidat private constructor(
             createdAt: OffsetDateTime,
             varselAt: OffsetDateTime,
             svar: SenOppfolgingSvar?,
-            status: String,
+            status: SenOppfolgingStatus,
             publishedAt: OffsetDateTime?,
             vurderinger: List<SenOppfolgingVurdering>,
         ): SenOppfolgingKandidat = SenOppfolgingKandidat(
@@ -56,7 +56,7 @@ data class SenOppfolgingKandidat private constructor(
             createdAt = createdAt,
             varselAt = varselAt,
             svar = svar,
-            status = SenOppfolgingStatus.valueOf(status),
+            status = status,
             publishedAt = publishedAt,
             vurderinger = vurderinger,
         )

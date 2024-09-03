@@ -32,13 +32,19 @@ class SenOppfolgingService(
         return kandidatWithSvar
     }
 
-    fun vurderKandidat(kandidat: SenOppfolgingKandidat, veilederident: String, type: VurderingType): SenOppfolgingKandidat {
+    fun vurderKandidat(
+        kandidat: SenOppfolgingKandidat,
+        veilederident: String,
+        begrunnelse: String?,
+        type: VurderingType,
+    ): SenOppfolgingKandidat {
         if (type == VurderingType.FERDIGBEHANDLET && kandidat.isFerdigbehandlet()) {
             throw ConflictException("Kandidat med uuid ${kandidat.uuid} er allerede ferdigbehandlet")
         }
 
         val vurdering = SenOppfolgingVurdering(
             veilederident = veilederident,
+            begrunnelse = begrunnelse,
             type = type,
         )
         val updatedKandidat = kandidat.addVurdering(vurdering = vurdering).also {
@@ -64,5 +70,6 @@ class SenOppfolgingService(
             }
     }
 
-    fun getKandidater(personident: Personident): List<SenOppfolgingKandidat> = senOppfolgingRepository.getKandidater(personident = personident)
+    fun getKandidater(personident: Personident): List<SenOppfolgingKandidat> =
+        senOppfolgingRepository.getKandidater(personident = personident)
 }

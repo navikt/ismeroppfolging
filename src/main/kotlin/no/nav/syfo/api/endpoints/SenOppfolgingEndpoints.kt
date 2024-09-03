@@ -60,10 +60,11 @@ fun Route.registerSenOppfolgingEndpoints(
                     val vurdertKandidat = senOppfolgingService.vurderKandidat(
                         kandidat = senOppfolgingKandidat,
                         veilederident = veilederIdent,
+                        begrunnelse = requestDTO.begrunnelse,
                         type = requestDTO.type,
                     )
 
-                    call.respond(HttpStatusCode.OK, vurdertKandidat.toResponseDTO())
+                    call.respond(HttpStatusCode.Created, vurdertKandidat.toResponseDTO())
                 }
             }
         }
