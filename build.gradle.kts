@@ -1,26 +1,24 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val flywayVersion = "10.13.0"
+val flywayVersion = "10.17.2"
 val hikariVersion = "5.1.0"
-val postgresVersion = "42.7.3"
+val postgresVersion = "42.7.4"
 val postgresEmbeddedVersion = "2.0.7"
 val kafkaVersion = "3.7.0"
-val logbackVersion = "1.5.6"
+val logbackVersion = "1.5.7"
 val logstashEncoderVersion = "7.4"
 val micrometerRegistryVersion = "1.12.2"
-val jacksonDatatypeVersion = "2.17.1"
-val ktorVersion = "2.3.11"
+val jacksonDatatypeVersion = "2.17.2"
+val ktorVersion = "2.3.12"
 val spekVersion = "2.0.19"
-val mockkVersion = "1.13.11"
-val nimbusJoseJwtVersion = "9.39.3"
+val mockkVersion = "1.13.12"
+val nimbusJoseJwtVersion = "9.40"
 val kluentVersion = "1.73"
 
 plugins {
-    kotlin("jvm") version "2.0.10"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    kotlin("jvm") version "2.0.20"
+    id("com.gradleup.shadow") version "8.3.1"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
 
@@ -77,7 +75,7 @@ kotlin {
 }
 
 tasks {
-    withType<Jar> {
+    jar {
         manifest.attributes["Main-Class"] = "no.nav.syfo.AppKt"
     }
 
@@ -87,14 +85,14 @@ tasks {
         }
     }
 
-    withType<ShadowJar> {
+    shadowJar {
         mergeServiceFiles()
         archiveBaseName.set("app")
         archiveClassifier.set("")
         archiveVersion.set("")
     }
 
-    withType<Test> {
+    test {
         useJUnitPlatform {
             includeEngines("spek2")
         }
