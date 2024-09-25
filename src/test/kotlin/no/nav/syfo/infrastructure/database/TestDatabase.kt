@@ -49,7 +49,7 @@ fun TestDatabase.dropData() {
 
 fun TestDatabase.getSenOppfolgingKandidater(): List<PSenOppfolgingKandidat> =
     this.connection.use { connection ->
-        connection.prepareStatement("SELECT * FROM SEN_OPPFOLGING_KANDIDAT").use {
+        connection.prepareStatement("SELECT * FROM SEN_OPPFOLGING_KANDIDAT ORDER BY created_at DESC").use {
             it.executeQuery().toList { toPSenOppfolgingKandidat() }
         }
     }

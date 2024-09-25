@@ -6,9 +6,14 @@ import no.nav.syfo.infrastructure.kafka.senoppfolging.SenOppfolgingSvarRecord
 import java.time.LocalDateTime
 import java.util.*
 
-fun generateSenOppfolgingSvarRecord(question: SenOppfolgingQuestion): SenOppfolgingSvarRecord = SenOppfolgingSvarRecord(
+fun generateSenOppfolgingSvarRecord(
+    personIdent: String = UserConstants.ARBEIDSTAKER_PERSONIDENT.value,
+    question: SenOppfolgingQuestion,
+    varselId: UUID? = null,
+): SenOppfolgingSvarRecord = SenOppfolgingSvarRecord(
     id = UUID.randomUUID(),
-    personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENT.value,
+    personIdent = personIdent,
     createdAt = LocalDateTime.now(),
     response = listOf(question),
+    varselId = varselId,
 )

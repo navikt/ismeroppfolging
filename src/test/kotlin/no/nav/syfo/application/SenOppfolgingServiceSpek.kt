@@ -4,6 +4,7 @@ import io.mockk.*
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
+import no.nav.syfo.domain.OnskerOppfolging
 import no.nav.syfo.domain.SenOppfolgingStatus
 import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.infrastructure.database.dropData
@@ -20,6 +21,8 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.OffsetDateTime
+import java.util.*
 import java.util.concurrent.Future
 
 class SenOppfolgingServiceSpek : Spek({
@@ -54,7 +57,11 @@ class SenOppfolgingServiceSpek : Spek({
             it("publishes unpublished kandidat") {
                 val kandidat = senOppfolgingService.createKandidat(
                     personident = ARBEIDSTAKER_PERSONIDENT,
-                    varselAt = nowUTC(),
+                )
+                senOppfolgingService.addSvar(
+                    kandidat = kandidat,
+                    svarAt = OffsetDateTime.now(),
+                    onskerOppfolging = OnskerOppfolging.JA,
                 )
                 val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
@@ -76,9 +83,13 @@ class SenOppfolgingServiceSpek : Spek({
             }
 
             it("publishes unpublished kandidat once") {
-                senOppfolgingService.createKandidat(
+                val kandidat = senOppfolgingService.createKandidat(
                     personident = ARBEIDSTAKER_PERSONIDENT,
-                    varselAt = nowUTC(),
+                )
+                senOppfolgingService.addSvar(
+                    kandidat = kandidat,
+                    svarAt = OffsetDateTime.now(),
+                    onskerOppfolging = OnskerOppfolging.JA,
                 )
                 var results = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
                 results.first.size shouldBeEqualTo 1
@@ -91,10 +102,29 @@ class SenOppfolgingServiceSpek : Spek({
                 verify(exactly = 1) { mockKandidatStatusProducer.send(any()) }
             }
 
+            it("does not publish unpublished kandidat with no svar") {
+                senOppfolgingService.createKandidat(
+                    personident = ARBEIDSTAKER_PERSONIDENT,
+                    varselAt = nowUTC(),
+                )
+                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 0
+
+                val pKandidat = database.getSenOppfolgingKandidater().first()
+                pKandidat.publishedAt.shouldBeNull()
+            }
+
             it("publishes unpublished vurdering") {
                 val kandidat = senOppfolgingService.createKandidat(
                     personident = ARBEIDSTAKER_PERSONIDENT,
                     varselAt = nowUTC(),
+                    varselId = UUID.randomUUID(),
+                )
+                senOppfolgingService.addSvar(
+                    kandidat = kandidat,
+                    svarAt = OffsetDateTime.now(),
+                    onskerOppfolging = OnskerOppfolging.JA,
                 )
                 senOppfolgingRepository.setKandidatPublished(kandidatUuid = kandidat.uuid)
                 val vurdertKandidat = senOppfolgingService.vurderKandidat(
@@ -130,6 +160,12 @@ class SenOppfolgingServiceSpek : Spek({
                 val kandidat = senOppfolgingService.createKandidat(
                     personident = ARBEIDSTAKER_PERSONIDENT,
                     varselAt = nowUTC(),
+                    varselId = UUID.randomUUID(),
+                )
+                senOppfolgingService.addSvar(
+                    kandidat = kandidat,
+                    svarAt = OffsetDateTime.now(),
+                    onskerOppfolging = OnskerOppfolging.JA,
                 )
                 senOppfolgingRepository.setKandidatPublished(kandidatUuid = kandidat.uuid)
                 senOppfolgingService.vurderKandidat(
@@ -161,6 +197,12 @@ class SenOppfolgingServiceSpek : Spek({
                 val kandidat = senOppfolgingService.createKandidat(
                     personident = ARBEIDSTAKER_PERSONIDENT,
                     varselAt = nowUTC(),
+                    varselId = UUID.randomUUID(),
+                )
+                senOppfolgingService.addSvar(
+                    kandidat = kandidat,
+                    svarAt = OffsetDateTime.now(),
+                    onskerOppfolging = OnskerOppfolging.JA,
                 )
 
                 every { mockKandidatStatusProducer.send(any()) } throws Exception("Error producing to kafka")
