@@ -93,12 +93,12 @@ fun main() {
             kafkaEnvironment = environment.kafka,
             senOppfolgingService = senOppfolgingService,
         )
-
+        /*
         launchSenOppfolgingVarselConsumer(
             applicationState = applicationState,
             kafkaEnvironment = environment.kafka,
             senOppfolgingService = senOppfolgingService,
-        )
+        )*/
     }
 
     val server = embeddedServer(
