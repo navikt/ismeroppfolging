@@ -18,7 +18,6 @@ import no.nav.syfo.infrastructure.kafka.KandidatStatusProducer
 import no.nav.syfo.infrastructure.kafka.KandidatStatusRecordSerializer
 import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
 import no.nav.syfo.infrastructure.kafka.senoppfolging.launchSenOppfolgingSvarConsumer
-import no.nav.syfo.infrastructure.kafka.senoppfolging.launchSenOppfolgingVarselConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
