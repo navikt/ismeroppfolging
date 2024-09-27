@@ -9,6 +9,7 @@ import no.nav.syfo.UserConstants
 import no.nav.syfo.application.SenOppfolgingService
 import no.nav.syfo.domain.OnskerOppfolging
 import no.nav.syfo.domain.SenOppfolgingKandidat
+import no.nav.syfo.domain.SenOppfolgingSvar
 import no.nav.syfo.generators.generateSenOppfolgingSvarRecord
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getSenOppfolgingKandidater
@@ -137,6 +138,47 @@ class SenOppfolgingSvarConsumerSpek : Spek({
             pKandidat.svarAt.shouldNotBeNull()
             pKandidat.onskerOppfolging shouldBeEqualTo OnskerOppfolging.JA.name
         }
+        it("Does not update existing kandidat with svar when svar already stored") {
+            val kandidat = senOppfolgingRepository.createKandidat(
+                SenOppfolgingKandidat(
+                    personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+                    varselAt = OffsetDateTime.now(),
+                )
+            )
+            senOppfolgingRepository.updateKandidatSvar(
+                senOppfolgingSvar = SenOppfolgingSvar(
+                    svarAt = OffsetDateTime.now(),
+                    onskerOppfolging = OnskerOppfolging.NEI,
+                ),
+                senOppfolgingKandidaUuid = kandidat.uuid,
+            )
+            val recordKey = UUID.randomUUID().toString()
+            val question = SenOppfolgingQuestion(
+                questionType = SenOppfolgingQuestionType.BEHOV_FOR_OPPFOLGING.name,
+                answerType = BehovForOppfolgingSvar.JA.name,
+            )
+            val senOppfolgingSvarRecord = generateSenOppfolgingSvarRecord(
+                personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENT.value,
+                question = question,
+            )
+
+            kafkaConsumer.mockPollConsumerRecords(
+                records = listOf(recordKey to senOppfolgingSvarRecord),
+                topic = SENOPPFOLGING_SVAR_TOPIC,
+            )
+
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+
+            verify(exactly = 1) {
+                kafkaConsumer.commitSync()
+            }
+
+            val kandidater = database.getSenOppfolgingKandidater()
+            kandidater.size shouldBeEqualTo 1
+            val pKandidat = kandidater.first()
+            pKandidat.svarAt.shouldNotBeNull()
+            pKandidat.onskerOppfolging shouldBeEqualTo OnskerOppfolging.NEI.name
+        }
         it("updates existing kandidat with with correct varselId") {
             val kandidatWithoutVarselId = senOppfolgingRepository.createKandidat(
                 SenOppfolgingKandidat(
@@ -179,6 +221,7 @@ class SenOppfolgingSvarConsumerSpek : Spek({
             pKandidat.varselId shouldBeEqualTo kandidatWithVarselId.varselId
             pKandidat.svarAt.shouldNotBeNull()
             pKandidat.onskerOppfolging shouldBeEqualTo OnskerOppfolging.JA.name
+            kandidater[1].uuid shouldBeEqualTo kandidatWithoutVarselId.uuid
             kandidater[1].svarAt.shouldBeNull()
         }
     }

@@ -1,0 +1,1 @@
+UPDATE SEN_OPPFOLGING_KANDIDAT SET varsel_at=null;
