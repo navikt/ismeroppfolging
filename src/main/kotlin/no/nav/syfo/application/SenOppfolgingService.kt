@@ -11,10 +11,15 @@ class SenOppfolgingService(
     private val kandidatStatusProducer: KandidatStatusProducer,
 ) {
 
-    fun createKandidat(personident: Personident, varselAt: OffsetDateTime): SenOppfolgingKandidat {
+    fun createKandidat(
+        personident: Personident,
+        varselAt: OffsetDateTime? = null,
+        varselId: UUID? = null,
+    ): SenOppfolgingKandidat {
         val senOppfolgingKandidat = SenOppfolgingKandidat(
             personident = personident,
             varselAt = varselAt,
+            varselId = varselId,
         )
         val createdKandidat = senOppfolgingRepository.createKandidat(senOppfolgingKandidat = senOppfolgingKandidat)
 
@@ -22,6 +27,15 @@ class SenOppfolgingService(
     }
 
     fun getKandidat(kandidatUuid: UUID): SenOppfolgingKandidat? = senOppfolgingRepository.getKandidat(kandidatUuid = kandidatUuid)
+
+    fun findKandidatFromVarselId(varselId: UUID): SenOppfolgingKandidat? =
+        senOppfolgingRepository.findKandidatFromVarselId(varselId = varselId)
+
+    fun findRecentKandidatFromPersonIdent(personident: Personident): SenOppfolgingKandidat? {
+        return getKandidater(personident).firstOrNull()?.takeIf { kandidat ->
+            kandidat.createdAt > OffsetDateTime.now().minusMonths(3)
+        }
+    }
 
     fun addSvar(kandidat: SenOppfolgingKandidat, svarAt: OffsetDateTime, onskerOppfolging: OnskerOppfolging): SenOppfolgingKandidat {
         val svar = SenOppfolgingSvar(svarAt = svarAt, onskerOppfolging = onskerOppfolging)

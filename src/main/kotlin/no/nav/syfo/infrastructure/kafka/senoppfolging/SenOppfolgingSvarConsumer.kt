@@ -11,7 +11,6 @@ import no.nav.syfo.util.toOffsetDateTimeUTC
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 import java.time.Duration
-import java.time.OffsetDateTime
 
 class SenOppfolgingSvarConsumer(private val senOppfolgingService: SenOppfolgingService) : KafkaConsumerService<SenOppfolgingSvarRecord> {
 
@@ -31,22 +30,37 @@ class SenOppfolgingSvarConsumer(private val senOppfolgingService: SenOppfolgingS
     }
 
     private fun processRecord(senOppfolgingSvarRecord: SenOppfolgingSvarRecord) {
-        // TODO: createKandidat should be moved to varsel consumer
-        val kandidat = senOppfolgingService.createKandidat(
+        val kandidatForVarsel = senOppfolgingSvarRecord.varselId?.let {
+            senOppfolgingService.findKandidatFromVarselId(it)
+        }
+        val recentKandidat = senOppfolgingService.findRecentKandidatFromPersonIdent(
             personident = Personident(senOppfolgingSvarRecord.personIdent),
-            varselAt = OffsetDateTime.now()
-        ).also { Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_CREATED.increment() }
-
-        // TODO: Should get kandidat based on varsel associated with svar, then add svar to that kandidat
-        val onskerOppfolging = senOppfolgingSvarRecord.response.toOnskerOppfolging()
-        senOppfolgingService.addSvar(
-            kandidat = kandidat,
-            svarAt = senOppfolgingSvarRecord.createdAt.toOffsetDateTimeUTC(),
-            onskerOppfolging = onskerOppfolging
         )
-        when (onskerOppfolging) {
-            OnskerOppfolging.JA -> Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_ONSKER_OPPFOLGING.increment()
-            OnskerOppfolging.NEI -> Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_ONSKER_IKKE_OPPFOLGING.increment()
+        val kandidat = if (kandidatForVarsel != null) {
+            kandidatForVarsel
+        } else if (recentKandidat != null) {
+            recentKandidat
+        } else {
+            senOppfolgingService.createKandidat(
+                personident = Personident(senOppfolgingSvarRecord.personIdent),
+            ).also {
+                Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_CREATED.increment()
+            }
+        }
+
+        val onskerOppfolging = senOppfolgingSvarRecord.response.toOnskerOppfolging()
+        if (kandidat.svar != null) {
+            log.error("Duplicate svar $onskerOppfolging received for kandidat ${kandidat.uuid}")
+        } else {
+            senOppfolgingService.addSvar(
+                kandidat = kandidat,
+                svarAt = senOppfolgingSvarRecord.createdAt.toOffsetDateTimeUTC(),
+                onskerOppfolging = onskerOppfolging,
+            )
+            when (onskerOppfolging) {
+                OnskerOppfolging.JA -> Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_ONSKER_OPPFOLGING.increment()
+                OnskerOppfolging.NEI -> Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_ONSKER_IKKE_OPPFOLGING.increment()
+            }
         }
     }
 

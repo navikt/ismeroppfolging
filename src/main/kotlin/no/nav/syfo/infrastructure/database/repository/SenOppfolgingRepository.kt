@@ -34,6 +34,16 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
         }.firstOrNull()
     }
 
+    override fun findKandidatFromVarselId(varselId: UUID): SenOppfolgingKandidat? =
+        database.connection.use { connection ->
+            connection.prepareStatement(FIND_KANDIDAT_BY_VARSEL_ID).use {
+                it.setString(1, varselId.toString())
+                it.executeQuery().toList { toPSenOppfolgingKandidat() }
+            }.map {
+                it.toSenOppfolgingKandidat(connection.getVurderinger(it.id))
+            }.firstOrNull()
+        }
+
     override fun updateKandidatSvar(senOppfolgingSvar: SenOppfolgingSvar, senOppfolgingKandidaUuid: UUID) =
         database.connection.use { connection ->
             connection.prepareStatement(UPDATE_KANDIDAT_SVAR).use {
@@ -116,6 +126,7 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             it.setObject(3, senOppfolgingKandidat.createdAt)
             it.setString(4, senOppfolgingKandidat.personident.value)
             it.setObject(5, senOppfolgingKandidat.varselAt)
+            it.setString(6, senOppfolgingKandidat.varselId?.toString())
             it.executeQuery().toList { toPSenOppfolgingKandidat() }.single()
         }
 
@@ -155,13 +166,18 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
                 created_at,
                 updated_at,
                 personident,
-                varsel_at
-            ) VALUES (DEFAULT, ?, ?, ?, ?, ?)
+                varsel_at,
+                varsel_id
+            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?)
             RETURNING *
         """
 
         private const val GET_KANDIDAT_BY_UUID = """
             SELECT * FROM SEN_OPPFOLGING_KANDIDAT WHERE uuid = ?
+        """
+
+        private const val FIND_KANDIDAT_BY_VARSEL_ID = """
+            SELECT * FROM SEN_OPPFOLGING_KANDIDAT WHERE varsel_id = ? ORDER BY created_at DESC
         """
 
         private const val GET_KANDIDAT_BY_PERSONIDENT = """
@@ -206,8 +222,10 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             """
                 SELECT kandidat.* 
                 FROM SEN_OPPFOLGING_KANDIDAT kandidat
-                WHERE kandidat.published_at IS NULL OR EXISTS (
-                    SELECT 1 FROM SEN_OPPFOLGING_VURDERING vurdering WHERE vurdering.kandidat_id = kandidat.id AND vurdering.published_at IS NULL
+                WHERE svar_at IS NOT NULL AND (
+                    kandidat.published_at IS NULL OR EXISTS (
+                        SELECT 1 FROM SEN_OPPFOLGING_VURDERING vurdering WHERE vurdering.kandidat_id = kandidat.id AND vurdering.published_at IS NULL
+                    )
                 )
                 ORDER BY kandidat.created_at ASC
             """
@@ -231,6 +249,7 @@ internal fun ResultSet.toPSenOppfolgingKandidat(): PSenOppfolgingKandidat = PSen
     updatedAt = getObject("updated_at", OffsetDateTime::class.java),
     personident = Personident(getString("personident")),
     varselAt = getObject("varsel_at", OffsetDateTime::class.java),
+    varselId = getString("varsel_id")?.let { UUID.fromString(it) },
     svarAt = getObject("svar_at", OffsetDateTime::class.java),
     onskerOppfolging = getString("onsker_oppfolging"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
