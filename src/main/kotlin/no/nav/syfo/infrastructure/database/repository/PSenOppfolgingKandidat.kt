@@ -14,7 +14,7 @@ data class PSenOppfolgingKandidat(
     val createdAt: OffsetDateTime,
     val updatedAt: OffsetDateTime,
     val personident: Personident,
-    val varselAt: OffsetDateTime,
+    val varselAt: OffsetDateTime?,
     val svarAt: OffsetDateTime?,
     val onskerOppfolging: String?,
     val publishedAt: OffsetDateTime?,
