@@ -179,7 +179,7 @@ class SenOppfolgingSvarConsumerSpek : Spek({
             pKandidat.svarAt.shouldNotBeNull()
             pKandidat.onskerOppfolging shouldBeEqualTo OnskerOppfolging.NEI.name
         }
-        it("updates existing kandidat with with correct varselId") {
+        it("updates existing kandidat with correct varselId") {
             val kandidatWithoutVarselId = senOppfolgingRepository.createKandidat(
                 SenOppfolgingKandidat(
                     personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
