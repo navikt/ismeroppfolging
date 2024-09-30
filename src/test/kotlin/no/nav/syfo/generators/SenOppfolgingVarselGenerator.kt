@@ -10,6 +10,6 @@ fun generateSenOppfolgingVarselRecord(
     varselId: UUID = UUID.randomUUID(),
 ): KSenOppfolgingVarselDTO = KSenOppfolgingVarselDTO(
     uuid = varselId,
-    fnr = personIdent,
+    personident = personIdent,
     createdAt = LocalDateTime.now(),
 )

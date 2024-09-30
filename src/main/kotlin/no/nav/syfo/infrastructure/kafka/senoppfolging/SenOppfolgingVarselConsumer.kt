@@ -33,7 +33,7 @@ class SenOppfolgingVarselConsumer(private val senOppfolgingService: SenOppfolgin
         val existing = senOppfolgingService.findKandidatFromVarselId(senOppfolgingVarselRecord.uuid)
         if (existing == null) {
             senOppfolgingService.createKandidat(
-                personident = Personident(senOppfolgingVarselRecord.fnr),
+                personident = Personident(senOppfolgingVarselRecord.personident),
                 varselAt = senOppfolgingVarselRecord.createdAt.toOffsetDateTimeUTC(),
                 varselId = senOppfolgingVarselRecord.uuid,
             )
