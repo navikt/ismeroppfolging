@@ -71,6 +71,7 @@ class SenOppfolgingService(
     fun publishUnpublishedKandidatStatus(): List<Result<SenOppfolgingKandidat>> {
         val unpublishedKandidatStatuser = senOppfolgingRepository.getUnpublishedKandidatStatuser()
         return unpublishedKandidatStatuser
+            .filter { kandidat -> kandidat.svar != null || kandidat.isVarsletForMinstTiDagerSiden() }
             .map { kandidat ->
                 kandidatStatusProducer.send(kandidat = kandidat).map {
                     val latestVurdering = it.getLatestVurdering()

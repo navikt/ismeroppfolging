@@ -222,10 +222,8 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             """
                 SELECT kandidat.* 
                 FROM SEN_OPPFOLGING_KANDIDAT kandidat
-                WHERE svar_at IS NOT NULL AND (
-                    kandidat.published_at IS NULL OR EXISTS (
-                        SELECT 1 FROM SEN_OPPFOLGING_VURDERING vurdering WHERE vurdering.kandidat_id = kandidat.id AND vurdering.published_at IS NULL
-                    )
+                WHERE kandidat.published_at IS NULL OR EXISTS (
+                    SELECT 1 FROM SEN_OPPFOLGING_VURDERING vurdering WHERE vurdering.kandidat_id = kandidat.id AND vurdering.published_at IS NULL
                 )
                 ORDER BY kandidat.created_at ASC
             """

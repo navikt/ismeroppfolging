@@ -1,5 +1,6 @@
 package no.nav.syfo.domain
 
+import no.nav.syfo.util.isMoreThanDaysAgo
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -42,6 +43,8 @@ data class SenOppfolgingKandidat private constructor(
     fun isFerdigbehandlet(): Boolean = status == SenOppfolgingStatus.FERDIGBEHANDLET
 
     fun getLatestVurdering(): SenOppfolgingVurdering? = vurderinger.maxByOrNull { it.createdAt }
+
+    fun isVarsletForMinstTiDagerSiden() = varselAt != null && varselAt isMoreThanDaysAgo 10
 
     companion object {
         fun createFromDatabase(
