@@ -108,6 +108,22 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
         }
     }
 
+    override fun getKandidaterForPersoner(personidenter: List<Personident>): Map<Personident, SenOppfolgingKandidat> {
+        return database.connection.use { connection ->
+            connection.prepareStatement(GET_KANDIDATER).use { preparedStatement ->
+                preparedStatement.setString(1, personidenter.joinToString(",") { it.value })
+                preparedStatement.executeQuery().toList {
+                    toPSenOppfolgingKandidat().toSenOppfolgingKandidat(
+                        vurdering = if (getString("vurdering_uuid") != null) {
+                            toPSenOppfolgingVurdering(colNamePrefix = "vurdering_")
+                        } else null
+                    )
+                }
+                    .associateBy { it.personident }
+            }
+        }
+    }
+
     override fun getKandidater(personident: Personident): List<SenOppfolgingKandidat> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_KANDIDAT_BY_PERSONIDENT).use {
@@ -239,6 +255,29 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             """
                 UPDATE SEN_OPPFOLGING_VURDERING SET updated_at=?, published_at=? WHERE uuid=?
             """
+
+        private const val GET_KANDIDATER =
+            """
+                SELECT k.*,
+                   v.id as vurdering_id,
+                   v.uuid as vurdering_uuid,
+                   v.kandidat_id as vurdering_kandidat_id,
+                   v.created_at as vurdering_created_at,
+                   v.veilederident as vurdering_veilederident,
+                   v.type as vurdering_type,
+                   v.published_at as vurdering_published_at,
+                   v.updated_at as vurdering_updated_at,
+                   v.begrunnelse as vurdering_begrunnelse
+                FROM (
+                    SELECT DISTINCT ON (personident) *
+                    FROM SEN_OPPFOLGING_KANDIDAT
+                    WHERE personident = ANY (string_to_array(?, ','))
+                    ORDER BY personident, created_at DESC
+                ) k
+                LEFT JOIN SEN_OPPFOLGING_VURDERING v ON k.id = v.kandidat_id
+                ORDER BY k.created_at DESC;
+                
+            """
     }
 }
 
@@ -256,13 +295,19 @@ internal fun ResultSet.toPSenOppfolgingKandidat(): PSenOppfolgingKandidat = PSen
     status = SenOppfolgingStatus.valueOf(getString("status")),
 )
 
-internal fun ResultSet.toPSenOppfolgingVurdering(): PSenOppfolgingVurdering = PSenOppfolgingVurdering(
-    id = getInt("id"),
-    uuid = UUID.fromString(getString("uuid")),
-    kandidatId = getInt("kandidat_id"),
-    createdAt = getObject("created_at", OffsetDateTime::class.java),
-    veilederident = getString("veilederident"),
-    publishedAt = getObject("published_at", OffsetDateTime::class.java),
-    begrunnelse = getString("begrunnelse"),
-    type = VurderingType.valueOf(getString("type")),
-)
+internal fun ResultSet.toPSenOppfolgingVurdering(
+    colNamePrefix: String = "",
+): PSenOppfolgingVurdering {
+    val vurderingId = getInt("${colNamePrefix}id")
+
+    return PSenOppfolgingVurdering(
+        id = vurderingId,
+        uuid = UUID.fromString(getString("${colNamePrefix}uuid")),
+        kandidatId = getInt("${colNamePrefix}kandidat_id"),
+        createdAt = getObject("${colNamePrefix}created_at", OffsetDateTime::class.java),
+        veilederident = getString("${colNamePrefix}veilederident"),
+        publishedAt = getObject("${colNamePrefix}published_at", OffsetDateTime::class.java),
+        begrunnelse = getString("${colNamePrefix}begrunnelse"),
+        type = VurderingType.valueOf(getString("${colNamePrefix}type")),
+    )
+}

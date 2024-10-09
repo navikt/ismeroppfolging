@@ -19,4 +19,6 @@ interface ISenOppfolgingRepository {
     fun getKandidater(personident: Personident): List<SenOppfolgingKandidat>
     fun setKandidatPublished(kandidatUuid: UUID)
     fun setVurderingPublished(vurderingUuid: UUID)
+
+    fun getKandidaterForPersoner(personidenter: List<Personident>): Map<Personident, SenOppfolgingKandidat>
 }
