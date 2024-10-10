@@ -54,7 +54,7 @@ class SenOppfolgingServiceSpek : Spek({
 
         describe("publishUnpublishedKandidatStatus") {
 
-            it("publishes unpublished kandidat") {
+            it("publishes unpublished kandidat with svar") {
                 val kandidat = senOppfolgingService.createKandidat(
                     personident = ARBEIDSTAKER_PERSONIDENT,
                 )
@@ -102,7 +102,7 @@ class SenOppfolgingServiceSpek : Spek({
                 verify(exactly = 1) { mockKandidatStatusProducer.send(any()) }
             }
 
-            it("does not publish unpublished kandidat with no svar") {
+            it("does not publish unpublished kandidat with no svar and less than 10 days passed since varsel") {
                 senOppfolgingService.createKandidat(
                     personident = ARBEIDSTAKER_PERSONIDENT,
                     varselAt = nowUTC(),
@@ -113,6 +113,30 @@ class SenOppfolgingServiceSpek : Spek({
 
                 val pKandidat = database.getSenOppfolgingKandidater().first()
                 pKandidat.publishedAt.shouldBeNull()
+            }
+
+            it("publishes unpublished kandidat with no svar and 10 days since varsel") {
+                val kandidatIkkeSvart = senOppfolgingService.createKandidat(
+                    personident = ARBEIDSTAKER_PERSONIDENT,
+                    varselAt = OffsetDateTime.now().minusDays(10),
+                )
+                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 1
+
+                val producerRecordSlot = slot<ProducerRecord<String, KandidatStatusRecord>>()
+                verify(exactly = 1) { mockKandidatStatusProducer.send(capture(producerRecordSlot)) }
+
+                val kandidatStatusRecord = producerRecordSlot.captured.value()
+                kandidatStatusRecord.uuid shouldBeEqualTo kandidatIkkeSvart.uuid
+                kandidatStatusRecord.personident shouldBeEqualTo kandidatIkkeSvart.personident.value
+                kandidatStatusRecord.createdAt shouldBeEqualTo kandidatIkkeSvart.createdAt
+                kandidatStatusRecord.status.value shouldBeEqualTo kandidatIkkeSvart.status
+                kandidatStatusRecord.status.isActive shouldBeEqualTo kandidatIkkeSvart.status.isActive
+                kandidatStatusRecord.sisteVurdering.shouldBeNull()
+
+                val pKandidat = database.getSenOppfolgingKandidater().first()
+                pKandidat.publishedAt.shouldNotBeNull()
             }
 
             it("publishes unpublished vurdering") {
