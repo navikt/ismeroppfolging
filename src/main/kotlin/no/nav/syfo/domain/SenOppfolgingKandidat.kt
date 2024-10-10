@@ -1,5 +1,6 @@
 package no.nav.syfo.domain
 
+import no.nav.syfo.util.nowUTC
 import no.nav.syfo.util.isMoreThanDaysAgo
 import java.time.OffsetDateTime
 import java.util.*
@@ -22,7 +23,7 @@ data class SenOppfolgingKandidat private constructor(
     ) : this(
         uuid = UUID.randomUUID(),
         personident = personident,
-        createdAt = OffsetDateTime.now(),
+        createdAt = nowUTC(),
         varselAt = varselAt,
         varselId = varselId,
         svar = null,
