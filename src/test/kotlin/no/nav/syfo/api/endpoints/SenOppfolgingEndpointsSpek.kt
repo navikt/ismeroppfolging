@@ -9,26 +9,31 @@ import no.nav.syfo.UserConstants
 import no.nav.syfo.api.*
 import no.nav.syfo.api.model.SenOppfolgingKandidatResponseDTO
 import no.nav.syfo.api.model.SenOppfolgingVurderingRequestDTO
-import no.nav.syfo.domain.SenOppfolgingKandidat
-import no.nav.syfo.domain.SenOppfolgingStatus
-import no.nav.syfo.domain.VurderingType
+import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.bearerHeader
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.repository.SenOppfolgingRepository
 import no.nav.syfo.util.configuredJacksonMapper
+import no.nav.syfo.util.millisekundOpplosning
+import no.nav.syfo.util.nowUTC
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
+import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.OffsetDateTime
 import java.util.UUID
 
 object SenOppfolgingEndpointsSpek : Spek({
 
+    val kandidatVarselAt = nowUTC()
     val senOppfolgingKandidat = SenOppfolgingKandidat(
         personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-        varselAt = OffsetDateTime.now(),
+        varselAt = kandidatVarselAt,
     )
+    val kandidatSvarAt = nowUTC()
+    val svar = SenOppfolgingSvar(svarAt = kandidatSvarAt, onskerOppfolging = OnskerOppfolging.JA)
+
     val objectMapper: ObjectMapper = configuredJacksonMapper()
 
     describe(SenOppfolgingEndpointsSpek::class.java.simpleName) {
@@ -83,6 +88,32 @@ object SenOppfolgingEndpointsSpek : Spek({
                         val kandidat = responseDTOs.first()
                         kandidat.uuid shouldBeEqualTo senOppfolgingKandidat.uuid
                         kandidat.personident shouldBeEqualTo senOppfolgingKandidat.personident.value
+                        kandidat.createdAt.millisekundOpplosning() shouldBeEqualTo senOppfolgingKandidat.createdAt.toLocalDateTime().millisekundOpplosning()
+                        kandidat.varselAt?.millisekundOpplosning() shouldBeEqualTo kandidatVarselAt.toLocalDateTime().millisekundOpplosning()
+                        kandidat.svar.shouldBeNull()
+                    }
+                }
+
+                it("Returns kandidat with svar") {
+                    senOppfolgingRepository.createKandidat(senOppfolgingKandidat = senOppfolgingKandidat)
+                    senOppfolgingRepository.updateKandidatSvar(senOppfolgingSvar = svar, senOppfolgingKandidaUuid = senOppfolgingKandidat.uuid)
+
+                    with(
+                        handleRequest(HttpMethod.Get, kandidaterUrl) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val responseDTOs = objectMapper.readValue<List<SenOppfolgingKandidatResponseDTO>>(response.content!!)
+                        responseDTOs.size shouldBeEqualTo 1
+
+                        val kandidat = responseDTOs.first()
+                        kandidat.uuid shouldBeEqualTo senOppfolgingKandidat.uuid
+                        kandidat.svar.shouldNotBeNull()
+                        kandidat.svar!!.svarAt.millisekundOpplosning() shouldBeEqualTo kandidatSvarAt.toLocalDateTime().millisekundOpplosning()
+                        kandidat.svar!!.onskerOppfolging shouldBeEqualTo svar.onskerOppfolging
                     }
                 }
 

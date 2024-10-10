@@ -13,3 +13,5 @@ fun LocalDateTime.toOffsetDateTimeUTC(): OffsetDateTime = this.atZone(osloTimeZo
 fun OffsetDateTime.millisekundOpplosning(): OffsetDateTime = this.truncatedTo(ChronoUnit.MILLIS)
 
 infix fun OffsetDateTime.isMoreThanDaysAgo(days: Long): Boolean = this.isBefore(OffsetDateTime.now().minusDays(days))
+
+fun LocalDateTime.millisekundOpplosning(): LocalDateTime = this.truncatedTo(ChronoUnit.MILLIS)
