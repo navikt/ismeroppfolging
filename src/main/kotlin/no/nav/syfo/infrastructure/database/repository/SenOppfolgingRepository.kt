@@ -1,12 +1,7 @@
 package no.nav.syfo.infrastructure.database.repository
 
 import no.nav.syfo.application.ISenOppfolgingRepository
-import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.SenOppfolgingKandidat
-import no.nav.syfo.domain.SenOppfolgingStatus
-import no.nav.syfo.domain.SenOppfolgingSvar
-import no.nav.syfo.domain.SenOppfolgingVurdering
-import no.nav.syfo.domain.VurderingType
+import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.util.nowUTC
@@ -22,7 +17,7 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
         database.connection.use { connection ->
             val pSenOppfolgingKandidat = connection.createKandidat(senOppfolgingKandidat)
             connection.commit()
-            pSenOppfolgingKandidat.toSenOppfolgingKandidat(vurderinger = emptyList())
+            pSenOppfolgingKandidat.toSenOppfolgingKandidat(vurdering = null)
         }
 
     override fun getKandidat(kandidatUuid: UUID): SenOppfolgingKandidat? = database.connection.use { connection ->
@@ -30,7 +25,7 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             it.setString(1, kandidatUuid.toString())
             it.executeQuery().toList { toPSenOppfolgingKandidat() }
         }.map {
-            it.toSenOppfolgingKandidat(connection.getVurderinger(it.id))
+            it.toSenOppfolgingKandidat(vurdering = connection.getVurdering(it.id))
         }.firstOrNull()
     }
 
@@ -40,7 +35,7 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
                 it.setString(1, varselId.toString())
                 it.executeQuery().toList { toPSenOppfolgingKandidat() }
             }.map {
-                it.toSenOppfolgingKandidat(connection.getVurderinger(it.id))
+                it.toSenOppfolgingKandidat(vurdering = connection.getVurdering(it.id))
             }.firstOrNull()
         }
 
@@ -58,7 +53,10 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             connection.commit()
         }
 
-    override fun addVurdering(senOppfolgingKandidat: SenOppfolgingKandidat, vurdering: SenOppfolgingVurdering): SenOppfolgingVurdering =
+    override fun vurderKandidat(
+        senOppfolgingKandidat: SenOppfolgingKandidat,
+        vurdering: SenOppfolgingVurdering,
+    ): SenOppfolgingVurdering =
         database.connection.use { connection ->
             val kandidatId = connection.updateKandidatStatus(senOppfolgingKandidat = senOppfolgingKandidat)
             val savedVurdering = connection.createVurdering(
@@ -74,7 +72,7 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             connection.prepareStatement(GET_UNPUBLISHED_KANDIDAT).use {
                 it.executeQuery().toList { toPSenOppfolgingKandidat() }
             }.map {
-                it.toSenOppfolgingKandidat(connection.getVurderinger(it.id))
+                it.toSenOppfolgingKandidat(vurdering = connection.getVurdering(it.id))
             }
         }
 
@@ -110,14 +108,15 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
         }
     }
 
-    override fun getKandidater(personident: Personident): List<SenOppfolgingKandidat> = database.connection.use { connection ->
-        connection.prepareStatement(GET_KANDIDAT_BY_PERSONIDENT).use {
-            it.setString(1, personident.value)
-            it.executeQuery().toList { toPSenOppfolgingKandidat() }
-        }.map {
-            it.toSenOppfolgingKandidat(connection.getVurderinger(it.id))
+    override fun getKandidater(personident: Personident): List<SenOppfolgingKandidat> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_KANDIDAT_BY_PERSONIDENT).use {
+                it.setString(1, personident.value)
+                it.executeQuery().toList { toPSenOppfolgingKandidat() }
+            }.map {
+                it.toSenOppfolgingKandidat(vurdering = connection.getVurdering(it.id))
+            }
         }
-    }
 
     private fun Connection.createKandidat(senOppfolgingKandidat: SenOppfolgingKandidat): PSenOppfolgingKandidat =
         prepareStatement(CREATE_KANDIDAT).use {
@@ -137,7 +136,10 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             it.executeQuery().toList { getInt("id") }.single()
         }
 
-    private fun Connection.createVurdering(kandidatId: Int, senOppfolgingVurdering: SenOppfolgingVurdering): PSenOppfolgingVurdering =
+    private fun Connection.createVurdering(
+        kandidatId: Int,
+        senOppfolgingVurdering: SenOppfolgingVurdering,
+    ): PSenOppfolgingVurdering =
         prepareStatement(CREATE_VURDERING).use {
             it.setString(1, senOppfolgingVurdering.uuid.toString())
             it.setInt(2, kandidatId)
@@ -152,10 +154,10 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
             it.executeQuery().toList { toPSenOppfolgingVurdering() }.single()
         }
 
-    private fun Connection.getVurderinger(kandidatId: Int) =
+    private fun Connection.getVurdering(kandidatId: Int) =
         prepareStatement(GET_VURDERINGER).use {
             it.setInt(1, kandidatId)
-            it.executeQuery().toList { toPSenOppfolgingVurdering() }
+            it.executeQuery().toList { toPSenOppfolgingVurdering() }.firstOrNull()
         }
 
     companion object {

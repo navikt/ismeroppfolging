@@ -5,7 +5,7 @@ import no.nav.syfo.domain.SenOppfolgingKandidat
 import no.nav.syfo.domain.SenOppfolgingStatus
 import no.nav.syfo.domain.VurderingType
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 data class SenOppfolgingKandidatResponseDTO(
     val uuid: UUID,
@@ -42,13 +42,15 @@ fun SenOppfolgingKandidat.toResponseDTO(): SenOppfolgingKandidatResponseDTO = Se
             onskerOppfolging = it.onskerOppfolging,
         )
     },
-    vurderinger = this.vurderinger.map {
-        SenOppfolgingVurderingResponseDTO(
-            uuid = it.uuid,
-            begrunnelse = it.begrunnelse,
-            type = it.type,
-            veilederident = it.veilederident,
-            createdAt = it.createdAt.toLocalDateTime(),
+    vurderinger = this.vurdering?.let {
+        listOf(
+            SenOppfolgingVurderingResponseDTO(
+                uuid = it.uuid,
+                begrunnelse = it.begrunnelse,
+                type = it.type,
+                veilederident = it.veilederident,
+                createdAt = it.createdAt.toLocalDateTime(),
+            )
         )
-    }
+    } ?: emptyList()
 )

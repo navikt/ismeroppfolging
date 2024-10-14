@@ -26,7 +26,8 @@ class SenOppfolgingService(
         return createdKandidat
     }
 
-    fun getKandidat(kandidatUuid: UUID): SenOppfolgingKandidat? = senOppfolgingRepository.getKandidat(kandidatUuid = kandidatUuid)
+    fun getKandidat(kandidatUuid: UUID): SenOppfolgingKandidat? =
+        senOppfolgingRepository.getKandidat(kandidatUuid = kandidatUuid)
 
     fun findKandidatFromVarselId(varselId: UUID): SenOppfolgingKandidat? =
         senOppfolgingRepository.findKandidatFromVarselId(varselId = varselId)
@@ -37,11 +38,18 @@ class SenOppfolgingService(
         }
     }
 
-    fun addSvar(kandidat: SenOppfolgingKandidat, svarAt: OffsetDateTime, onskerOppfolging: OnskerOppfolging): SenOppfolgingKandidat {
+    fun addSvar(
+        kandidat: SenOppfolgingKandidat,
+        svarAt: OffsetDateTime,
+        onskerOppfolging: OnskerOppfolging,
+    ): SenOppfolgingKandidat {
         val svar = SenOppfolgingSvar(svarAt = svarAt, onskerOppfolging = onskerOppfolging)
         val kandidatWithSvar = kandidat.addSvar(svar = svar)
 
-        senOppfolgingRepository.updateKandidatSvar(senOppfolgingSvar = svar, senOppfolgingKandidaUuid = kandidatWithSvar.uuid)
+        senOppfolgingRepository.updateKandidatSvar(
+            senOppfolgingSvar = svar,
+            senOppfolgingKandidaUuid = kandidatWithSvar.uuid,
+        )
 
         return kandidatWithSvar
     }
@@ -61,8 +69,8 @@ class SenOppfolgingService(
             begrunnelse = begrunnelse,
             type = type,
         )
-        val updatedKandidat = kandidat.addVurdering(vurdering = vurdering).also {
-            senOppfolgingRepository.addVurdering(it, vurdering)
+        val updatedKandidat = kandidat.vurder(newVurdering = vurdering).also {
+            senOppfolgingRepository.vurderKandidat(it, vurdering)
         }
 
         return updatedKandidat
@@ -74,11 +82,10 @@ class SenOppfolgingService(
             .filter { kandidat -> kandidat.svar != null || kandidat.isVarsletForMinstTiDagerSiden() }
             .map { kandidat ->
                 kandidatStatusProducer.send(kandidat = kandidat).map {
-                    val latestVurdering = it.getLatestVurdering()
                     if (it.publishedAt == null) {
                         senOppfolgingRepository.setKandidatPublished(it.uuid)
-                    } else if (latestVurdering != null && latestVurdering.publishedAt == null) {
-                        senOppfolgingRepository.setVurderingPublished(latestVurdering.uuid)
+                    } else if (it.vurdering != null && it.vurdering.publishedAt == null) {
+                        senOppfolgingRepository.setVurderingPublished(it.vurdering.uuid)
                     }
                     it
                 }

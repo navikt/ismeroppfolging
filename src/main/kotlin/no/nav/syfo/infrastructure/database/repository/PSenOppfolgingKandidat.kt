@@ -1,10 +1,6 @@
 package no.nav.syfo.infrastructure.database.repository
 
-import no.nav.syfo.domain.OnskerOppfolging
-import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.SenOppfolgingKandidat
-import no.nav.syfo.domain.SenOppfolgingStatus
-import no.nav.syfo.domain.SenOppfolgingSvar
+import no.nav.syfo.domain.*
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -21,7 +17,7 @@ data class PSenOppfolgingKandidat(
     val publishedAt: OffsetDateTime?,
     val status: SenOppfolgingStatus,
 ) {
-    fun toSenOppfolgingKandidat(vurderinger: List<PSenOppfolgingVurdering>): SenOppfolgingKandidat {
+    fun toSenOppfolgingKandidat(vurdering: PSenOppfolgingVurdering?): SenOppfolgingKandidat {
         val svar = if (svarAt != null && onskerOppfolging != null) SenOppfolgingSvar.createFromDatabase(
             svarAt = svarAt,
             onskerOppfolging = OnskerOppfolging.valueOf(onskerOppfolging)
@@ -36,7 +32,7 @@ data class PSenOppfolgingKandidat(
             svar = svar,
             status = status,
             publishedAt = publishedAt,
-            vurderinger = vurderinger.map { it.toSenOppfolgingVurdering() },
+            vurdering = vurdering?.toSenOppfolgingVurdering(),
         )
     }
 }

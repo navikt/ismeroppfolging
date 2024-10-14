@@ -15,7 +15,10 @@ import no.nav.syfo.infrastructure.kafka.KandidatStatusProducer
 import no.nav.syfo.infrastructure.kafka.KandidatStatusRecord
 import no.nav.syfo.util.millisekundOpplosning
 import no.nav.syfo.util.nowUTC
-import org.amshove.kluent.*
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
+import org.amshove.kluent.shouldNotBeEqualTo
+import org.amshove.kluent.shouldNotBeNull
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
@@ -63,7 +66,8 @@ class SenOppfolgingServiceSpek : Spek({
                     svarAt = OffsetDateTime.now(),
                     onskerOppfolging = OnskerOppfolging.JA,
                 )
-                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
+                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus()
+                    .partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
                 success.size shouldBeEqualTo 1
 
@@ -107,7 +111,8 @@ class SenOppfolgingServiceSpek : Spek({
                     personident = ARBEIDSTAKER_PERSONIDENT,
                     varselAt = nowUTC(),
                 )
-                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
+                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus()
+                    .partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
                 success.size shouldBeEqualTo 0
 
@@ -120,7 +125,8 @@ class SenOppfolgingServiceSpek : Spek({
                     personident = ARBEIDSTAKER_PERSONIDENT,
                     varselAt = OffsetDateTime.now().minusDays(10),
                 )
-                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
+                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus()
+                    .partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
                 success.size shouldBeEqualTo 1
 
@@ -158,7 +164,8 @@ class SenOppfolgingServiceSpek : Spek({
                     type = VurderingType.FERDIGBEHANDLET,
                 )
 
-                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
+                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus()
+                    .partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
                 success.size shouldBeEqualTo 1
 
@@ -172,7 +179,7 @@ class SenOppfolgingServiceSpek : Spek({
                 kandidatStatusRecord.status.value shouldBeEqualTo vurdertKandidat.status
                 kandidatStatusRecord.status.isActive shouldBeEqualTo vurdertKandidat.status.isActive
                 kandidatStatusRecord.sisteVurdering.shouldNotBeNull()
-                kandidatStatusRecord.sisteVurdering?.createdAt?.millisekundOpplosning() shouldBeEqualTo vurdertKandidat.vurderinger.first().createdAt.millisekundOpplosning()
+                kandidatStatusRecord.sisteVurdering?.createdAt?.millisekundOpplosning() shouldBeEqualTo vurdertKandidat.vurdering?.createdAt?.millisekundOpplosning()
                 kandidatStatusRecord.sisteVurdering?.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
                 kandidatStatusRecord.sisteVurdering?.type shouldBeEqualTo VurderingType.FERDIGBEHANDLET
 
@@ -211,7 +218,8 @@ class SenOppfolgingServiceSpek : Spek({
             }
 
             it("publishes nothing when no unpublished kandidat") {
-                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
+                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus()
+                    .partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
                 success.size shouldBeEqualTo 0
                 verify(exactly = 0) { mockKandidatStatusProducer.send(any()) }
@@ -231,7 +239,8 @@ class SenOppfolgingServiceSpek : Spek({
 
                 every { mockKandidatStatusProducer.send(any()) } throws Exception("Error producing to kafka")
 
-                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus().partition { it.isSuccess }
+                val (success, failed) = senOppfolgingService.publishUnpublishedKandidatStatus()
+                    .partition { it.isSuccess }
                 failed.size shouldBeEqualTo 1
                 success.size shouldBeEqualTo 0
                 verify(exactly = 1) { mockKandidatStatusProducer.send(any()) }
@@ -256,8 +265,8 @@ class SenOppfolgingServiceSpek : Spek({
                 )
 
                 ferdigbehandletKandidat.status shouldBeEqualTo SenOppfolgingStatus.FERDIGBEHANDLET
-                ferdigbehandletKandidat.vurderinger.size shouldBeEqualTo 1
-                val vurdering = ferdigbehandletKandidat.vurderinger.first()
+                ferdigbehandletKandidat.vurdering shouldNotBeEqualTo null
+                val vurdering = ferdigbehandletKandidat.vurdering!!
                 vurdering.type shouldBeEqualTo VurderingType.FERDIGBEHANDLET
                 vurdering.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
 

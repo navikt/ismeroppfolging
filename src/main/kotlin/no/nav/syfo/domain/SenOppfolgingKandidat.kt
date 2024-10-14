@@ -1,7 +1,7 @@
 package no.nav.syfo.domain
 
-import no.nav.syfo.util.nowUTC
 import no.nav.syfo.util.isMoreThanDaysAgo
+import no.nav.syfo.util.nowUTC
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -14,7 +14,7 @@ data class SenOppfolgingKandidat private constructor(
     val svar: SenOppfolgingSvar?,
     val status: SenOppfolgingStatus,
     val publishedAt: OffsetDateTime?,
-    val vurderinger: List<SenOppfolgingVurdering>,
+    val vurdering: SenOppfolgingVurdering?,
 ) {
     constructor(
         personident: Personident,
@@ -29,21 +29,22 @@ data class SenOppfolgingKandidat private constructor(
         svar = null,
         status = SenOppfolgingStatus.KANDIDAT,
         publishedAt = null,
-        vurderinger = emptyList(),
+        vurdering = null,
     )
 
     fun addSvar(svar: SenOppfolgingSvar): SenOppfolgingKandidat = this.copy(
         svar = svar,
     )
 
-    fun addVurdering(vurdering: SenOppfolgingVurdering): SenOppfolgingKandidat = this.copy(
-        status = SenOppfolgingStatus.from(vurdering.type),
-        vurderinger = listOf(vurdering) + this.vurderinger,
-    )
+    fun vurder(newVurdering: SenOppfolgingVurdering): SenOppfolgingKandidat {
+        if (vurdering != null) throw IllegalStateException("Kandidat already has a vurdering with kandidatuuid = $uuid")
+        return this.copy(
+            status = SenOppfolgingStatus.from(newVurdering.type),
+            vurdering = newVurdering,
+        )
+    }
 
     fun isFerdigbehandlet(): Boolean = status == SenOppfolgingStatus.FERDIGBEHANDLET
-
-    fun getLatestVurdering(): SenOppfolgingVurdering? = vurderinger.maxByOrNull { it.createdAt }
 
     fun isVarsletForMinstTiDagerSiden() = varselAt != null && varselAt isMoreThanDaysAgo 10
 
@@ -57,7 +58,7 @@ data class SenOppfolgingKandidat private constructor(
             svar: SenOppfolgingSvar?,
             status: SenOppfolgingStatus,
             publishedAt: OffsetDateTime?,
-            vurderinger: List<SenOppfolgingVurdering>,
+            vurdering: SenOppfolgingVurdering?,
         ): SenOppfolgingKandidat = SenOppfolgingKandidat(
             uuid = uuid,
             personident = personident,
@@ -67,7 +68,7 @@ data class SenOppfolgingKandidat private constructor(
             svar = svar,
             status = status,
             publishedAt = publishedAt,
-            vurderinger = vurderinger,
+            vurdering = vurdering,
         )
     }
 }

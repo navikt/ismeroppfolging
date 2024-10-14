@@ -9,7 +9,7 @@ import java.util.*
 interface ISenOppfolgingRepository {
     fun createKandidat(senOppfolgingKandidat: SenOppfolgingKandidat): SenOppfolgingKandidat
     fun updateKandidatSvar(senOppfolgingSvar: SenOppfolgingSvar, senOppfolgingKandidaUuid: UUID)
-    fun addVurdering(senOppfolgingKandidat: SenOppfolgingKandidat, vurdering: SenOppfolgingVurdering): SenOppfolgingVurdering
+    fun vurderKandidat(senOppfolgingKandidat: SenOppfolgingKandidat, vurdering: SenOppfolgingVurdering): SenOppfolgingVurdering
 
     fun getKandidat(kandidatUuid: UUID): SenOppfolgingKandidat?
 

@@ -1,7 +1,10 @@
 package no.nav.syfo.infrastructure.kafka
 
 import no.nav.syfo.application.IKandidatStatusProducer
-import no.nav.syfo.domain.*
+import no.nav.syfo.domain.Personident
+import no.nav.syfo.domain.SenOppfolgingKandidat
+import no.nav.syfo.domain.SenOppfolgingStatus
+import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.util.configuredJacksonMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -52,7 +55,7 @@ data class KandidatStatusRecord(
                     value = kandidat.status,
                     isActive = kandidat.status.isActive,
                 ),
-                sisteVurdering = kandidat.getLatestVurdering()?.let {
+                sisteVurdering = kandidat.vurdering?.let {
                     VurderingDTO(
                         uuid = it.uuid,
                         type = it.type,
