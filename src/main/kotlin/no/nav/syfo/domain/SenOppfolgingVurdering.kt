@@ -2,9 +2,9 @@ package no.nav.syfo.domain
 
 import no.nav.syfo.util.nowUTC
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 
-data class SenOppfolgingVurdering(
+data class SenOppfolgingVurdering private constructor(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val veilederident: String,
