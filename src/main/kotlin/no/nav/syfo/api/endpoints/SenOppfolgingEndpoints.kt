@@ -5,12 +5,17 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import no.nav.syfo.api.model.SenOppfolgingKandidaterRequestDTO
+import no.nav.syfo.api.model.SenOppfolgingKandidaterResponseDTO
 import no.nav.syfo.api.model.SenOppfolgingVurderingRequestDTO
 import no.nav.syfo.api.model.toResponseDTO
 import no.nav.syfo.application.SenOppfolgingService
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.validateVeilederAccess
+import no.nav.syfo.util.getBearerHeader
+import no.nav.syfo.util.getCallId
 import no.nav.syfo.util.getNAVIdent
 import no.nav.syfo.util.getPersonident
 import java.util.*
@@ -66,6 +71,36 @@ fun Route.registerSenOppfolgingEndpoints(
 
                     call.respond(HttpStatusCode.Created, vurdertKandidat.toResponseDTO())
                 }
+            }
+        }
+        post("/get-kandidater") {
+            val token = call.getBearerHeader()
+                ?: throw IllegalArgumentException("Failed to get kandidater for personer. No Authorization header supplied.")
+            val requestDTO = call.receive<SenOppfolgingKandidaterRequestDTO>()
+
+            val personerVeilederHasAccessTo = veilederTilgangskontrollClient.veilederPersonerAccess(
+                personidenter = requestDTO.personidenter.map { Personident(it) },
+                token = token,
+                callId = call.getCallId()
+            )
+
+            val kandidater = if (personerVeilederHasAccessTo.isNullOrEmpty()) {
+                emptyMap()
+            } else {
+                senOppfolgingService.getKandidaterForPersoner(
+                    personidenter = personerVeilederHasAccessTo,
+                )
+            }
+
+            if (kandidater.isEmpty()) {
+                call.respond(HttpStatusCode.NoContent)
+            } else {
+                val kandidaterResponse = kandidater.map {
+                    it.key.value to it.value.toResponseDTO()
+                }.associate { it }
+                call.respond(
+                    SenOppfolgingKandidaterResponseDTO(kandidater = kandidaterResponse)
+                )
             }
         }
     }
