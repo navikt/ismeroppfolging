@@ -44,9 +44,6 @@ data class SenOppfolgingVurdering private constructor(
     }
 }
 
-fun SenOppfolgingVurdering.isFerdigBehandlet() =
-    this.type == VurderingType.FERDIGBEHANDLET
-
 enum class VurderingType {
     FERDIGBEHANDLET,
 }
