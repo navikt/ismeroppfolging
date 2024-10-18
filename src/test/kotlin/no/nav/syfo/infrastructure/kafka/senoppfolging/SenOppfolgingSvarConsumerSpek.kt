@@ -7,12 +7,11 @@ import io.mockk.verify
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.application.SenOppfolgingService
-import no.nav.syfo.domain.OnskerOppfolging
-import no.nav.syfo.domain.SenOppfolgingKandidat
-import no.nav.syfo.domain.SenOppfolgingSvar
+import no.nav.syfo.domain.*
 import no.nav.syfo.generators.generateSenOppfolgingSvarRecord
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getSenOppfolgingKandidater
+import no.nav.syfo.infrastructure.database.getSenOppfolgingVurderinger
 import no.nav.syfo.infrastructure.database.repository.SenOppfolgingRepository
 import no.nav.syfo.infrastructure.kafka.KandidatStatusProducer
 import no.nav.syfo.infrastructure.kafka.KandidatStatusRecord
@@ -138,7 +137,7 @@ class SenOppfolgingSvarConsumerSpek : Spek({
             pKandidat.svarAt.shouldNotBeNull()
             pKandidat.onskerOppfolging shouldBeEqualTo OnskerOppfolging.JA.name
         }
-        it("Does not update existing kandidat with svar when svar already stored") {
+        it("Does update existing kandidat with svar when svar already stored") {
             val kandidat = senOppfolgingRepository.createKandidat(
                 SenOppfolgingKandidat(
                     personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
@@ -177,7 +176,99 @@ class SenOppfolgingSvarConsumerSpek : Spek({
             kandidater.size shouldBeEqualTo 1
             val pKandidat = kandidater.first()
             pKandidat.svarAt.shouldNotBeNull()
-            pKandidat.onskerOppfolging shouldBeEqualTo OnskerOppfolging.NEI.name
+            pKandidat.onskerOppfolging shouldBeEqualTo OnskerOppfolging.JA.name
+        }
+        it("Creates new kandidat with svar when existing ferdigbehandlet") {
+            val varselId = UUID.randomUUID()
+            val kandidat = senOppfolgingService.createKandidat(
+                personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+                varselAt = OffsetDateTime.now(),
+                varselId = varselId,
+            )
+            senOppfolgingService.vurderKandidat(
+                kandidat = kandidat,
+                veilederident = UserConstants.VEILEDER_IDENT,
+                begrunnelse = "begrunnelse",
+                type = VurderingType.FERDIGBEHANDLET,
+            )
+
+            val recordKey = UUID.randomUUID().toString()
+            val question = SenOppfolgingQuestion(
+                questionType = SenOppfolgingQuestionType.BEHOV_FOR_OPPFOLGING.name,
+                answerType = BehovForOppfolgingSvar.JA.name,
+            )
+            val senOppfolgingSvarRecord = generateSenOppfolgingSvarRecord(
+                personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENT.value,
+                question = question,
+                varselId = varselId,
+            )
+
+            kafkaConsumer.mockPollConsumerRecords(
+                records = listOf(recordKey to senOppfolgingSvarRecord),
+                topic = SENOPPFOLGING_SVAR_TOPIC,
+            )
+
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+
+            verify(exactly = 1) {
+                kafkaConsumer.commitSync()
+            }
+
+            val kandidater = database.getSenOppfolgingKandidater()
+            kandidater.size shouldBeEqualTo 2
+            val pKandidat = kandidater[0]
+            pKandidat.svarAt.shouldNotBeNull()
+            pKandidat.onskerOppfolging shouldBeEqualTo OnskerOppfolging.JA.name
+            val pKandidatOldest = kandidater[1]
+            val pVurdering = database.getSenOppfolgingVurderinger().first()
+            pVurdering.kandidatId shouldBeEqualTo pKandidatOldest.id
+        }
+        it("Creates new kandidat with svar when existing with svar ferdigbehandlet") {
+            val varselId = UUID.randomUUID()
+            val kandidat = senOppfolgingService.createKandidat(
+                personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+                varselAt = OffsetDateTime.now(),
+                varselId = varselId,
+            )
+            senOppfolgingService.addSvar(kandidat, OffsetDateTime.now(), OnskerOppfolging.NEI)
+            senOppfolgingService.vurderKandidat(
+                kandidat = kandidat,
+                veilederident = UserConstants.VEILEDER_IDENT,
+                begrunnelse = "begrunnelse",
+                type = VurderingType.FERDIGBEHANDLET,
+            )
+
+            val recordKey = UUID.randomUUID().toString()
+            val question = SenOppfolgingQuestion(
+                questionType = SenOppfolgingQuestionType.BEHOV_FOR_OPPFOLGING.name,
+                answerType = BehovForOppfolgingSvar.JA.name,
+            )
+            val senOppfolgingSvarRecord = generateSenOppfolgingSvarRecord(
+                personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENT.value,
+                question = question,
+                varselId = varselId,
+            )
+
+            kafkaConsumer.mockPollConsumerRecords(
+                records = listOf(recordKey to senOppfolgingSvarRecord),
+                topic = SENOPPFOLGING_SVAR_TOPIC,
+            )
+
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+
+            verify(exactly = 1) {
+                kafkaConsumer.commitSync()
+            }
+
+            val kandidater = database.getSenOppfolgingKandidater()
+            kandidater.size shouldBeEqualTo 2
+            val pKandidat = kandidater[0]
+            pKandidat.svarAt.shouldNotBeNull()
+            pKandidat.onskerOppfolging shouldBeEqualTo OnskerOppfolging.JA.name
+            val pKandidatOldest = kandidater[1]
+            pKandidatOldest.onskerOppfolging shouldBeEqualTo OnskerOppfolging.NEI.name
+            val pVurdering = database.getSenOppfolgingVurderinger().first()
+            pVurdering.kandidatId shouldBeEqualTo pKandidatOldest.id
         }
         it("updates existing kandidat with correct varselId") {
             val kandidatWithoutVarselId = senOppfolgingRepository.createKandidat(

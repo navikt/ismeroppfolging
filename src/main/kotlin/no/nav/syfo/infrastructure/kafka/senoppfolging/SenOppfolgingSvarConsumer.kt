@@ -36,31 +36,29 @@ class SenOppfolgingSvarConsumer(private val senOppfolgingService: SenOppfolgingS
         val recentKandidat = senOppfolgingService.findRecentKandidatFromPersonIdent(
             personident = Personident(senOppfolgingSvarRecord.personIdent),
         )
-        val kandidat = if (kandidatForVarsel != null) {
+        val kandidat = if (kandidatForVarsel != null && !kandidatForVarsel.isFerdigbehandlet()) {
             kandidatForVarsel
-        } else if (recentKandidat != null) {
+        } else if (recentKandidat != null && !recentKandidat.isFerdigbehandlet()) {
             recentKandidat
         } else {
             senOppfolgingService.createKandidat(
                 personident = Personident(senOppfolgingSvarRecord.personIdent),
+                varselAt = kandidatForVarsel?.varselAt,
+                varselId = kandidatForVarsel?.varselId,
             ).also {
                 Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_CREATED.increment()
             }
         }
 
         val onskerOppfolging = senOppfolgingSvarRecord.response.toOnskerOppfolging()
-        if (kandidat.svar != null) {
-            log.error("Duplicate svar $onskerOppfolging received for kandidat ${kandidat.uuid}")
-        } else {
-            senOppfolgingService.addSvar(
-                kandidat = kandidat,
-                svarAt = senOppfolgingSvarRecord.createdAt.toOffsetDateTimeUTC(),
-                onskerOppfolging = onskerOppfolging,
-            )
-            when (onskerOppfolging) {
-                OnskerOppfolging.JA -> Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_ONSKER_OPPFOLGING.increment()
-                OnskerOppfolging.NEI -> Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_ONSKER_IKKE_OPPFOLGING.increment()
-            }
+        senOppfolgingService.addSvar(
+            kandidat = kandidat,
+            svarAt = senOppfolgingSvarRecord.createdAt.toOffsetDateTimeUTC(),
+            onskerOppfolging = onskerOppfolging,
+        )
+        when (onskerOppfolging) {
+            OnskerOppfolging.JA -> Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_ONSKER_OPPFOLGING.increment()
+            OnskerOppfolging.NEI -> Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_KANDIDAT_ONSKER_IKKE_OPPFOLGING.increment()
         }
     }
 
