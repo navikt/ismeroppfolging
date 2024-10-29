@@ -36,7 +36,7 @@ class SenOppfolgingVarselConsumer(private val senOppfolgingService: SenOppfolgin
                 personident = Personident(senOppfolgingVarselRecord.personident)
             )
             if (recentKandidat != null) {
-                log.warn("Found recent kandidat for person with uuid ${recentKandidat.uuid} - creating possible duplicate")
+                log.error("Found recent kandidat for person with uuid ${recentKandidat.uuid} - creating possible duplicate")
             }
 
             senOppfolgingService.createKandidat(
