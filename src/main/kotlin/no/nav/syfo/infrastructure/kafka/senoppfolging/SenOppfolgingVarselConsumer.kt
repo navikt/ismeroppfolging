@@ -30,8 +30,15 @@ class SenOppfolgingVarselConsumer(private val senOppfolgingService: SenOppfolgin
     }
 
     private fun processRecord(senOppfolgingVarselRecord: KSenOppfolgingVarselDTO) {
-        val existing = senOppfolgingService.findKandidatFromVarselId(senOppfolgingVarselRecord.uuid)
-        if (existing == null) {
+        val existingKandidatForVarsel = senOppfolgingService.findKandidatFromVarselId(varselId = senOppfolgingVarselRecord.uuid)
+        if (existingKandidatForVarsel == null) {
+            val recentKandidat = senOppfolgingService.findRecentKandidatFromPersonIdent(
+                personident = Personident(senOppfolgingVarselRecord.personident)
+            )
+            if (recentKandidat != null) {
+                log.error("Found recent kandidat for person with uuid ${recentKandidat.uuid} - creating possible duplicate")
+            }
+
             senOppfolgingService.createKandidat(
                 personident = Personident(senOppfolgingVarselRecord.personident),
                 varselAt = senOppfolgingVarselRecord.createdAt.toOffsetDateTimeUTC(),
