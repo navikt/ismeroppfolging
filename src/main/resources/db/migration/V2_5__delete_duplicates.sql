@@ -1,4 +1,4 @@
-delete from sen_oppfolging_kandidat where varsel_id in
+delete from sen_oppfolging_kandidat where svar_at is null and varsel_id in
                                                       ('4184f74f-3fa0-44b2-851b-a1bd306627cf',
                                                        '43053a55-913f-4733-af6e-f960fce2a641',
                                                        'f38e2b23-c0e8-49bb-be13-69621f67023c',
