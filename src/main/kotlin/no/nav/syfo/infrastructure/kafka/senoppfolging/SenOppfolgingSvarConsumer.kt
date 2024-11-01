@@ -21,7 +21,7 @@ class SenOppfolgingSvarConsumer(private val senOppfolgingService: SenOppfolgingS
         if (records.count() > 0) {
             records.requireNoNulls().forEach { record ->
                 val senOppfolgingSvarRecord = record.value()
-                log.info("Received sen oppfolging svar record with id: ${senOppfolgingSvarRecord.id}")
+                log.info("Received sen oppfolging svar record with id: ${senOppfolgingSvarRecord.id} for varselId: ${senOppfolgingSvarRecord.varselId}")
                 Metrics.COUNT_KAFKA_CONSUMER_SEN_OPPFOLGING_SVAR_READ.increment()
                 processRecord(senOppfolgingSvarRecord = senOppfolgingSvarRecord)
             }
