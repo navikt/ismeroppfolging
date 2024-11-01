@@ -56,7 +56,8 @@ class SenOppfolgingSvarConsumerSpek : Spek({
                 answerType = BehovForOppfolgingSvar.JA.name,
             )
             val senOppfolgingSvarRecord = generateSenOppfolgingSvarRecord(
-                question = question
+                question = question,
+                varselId = UUID.randomUUID(),
             )
 
             kafkaConsumer.mockPollConsumerRecords(
@@ -83,7 +84,7 @@ class SenOppfolgingSvarConsumerSpek : Spek({
                 questionType = SenOppfolgingQuestionType.BEHOV_FOR_OPPFOLGING.name,
                 answerType = BehovForOppfolgingSvar.NEI.name,
             )
-            val senOppfolgingSvarRecord = generateSenOppfolgingSvarRecord(question = question)
+            val senOppfolgingSvarRecord = generateSenOppfolgingSvarRecord(question = question, varselId = UUID.randomUUID())
 
             kafkaConsumer.mockPollConsumerRecords(
                 records = listOf(recordKey to senOppfolgingSvarRecord),
@@ -118,6 +119,7 @@ class SenOppfolgingSvarConsumerSpek : Spek({
             val senOppfolgingSvarRecord = generateSenOppfolgingSvarRecord(
                 personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENT.value,
                 question = question,
+                varselId = UUID.randomUUID(),
             )
 
             kafkaConsumer.mockPollConsumerRecords(
@@ -159,6 +161,7 @@ class SenOppfolgingSvarConsumerSpek : Spek({
             val senOppfolgingSvarRecord = generateSenOppfolgingSvarRecord(
                 personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENT.value,
                 question = question,
+                varselId = UUID.randomUUID(),
             )
 
             kafkaConsumer.mockPollConsumerRecords(
@@ -277,11 +280,12 @@ class SenOppfolgingSvarConsumerSpek : Spek({
                     varselAt = OffsetDateTime.now(),
                 )
             )
+            val varselId = UUID.randomUUID()
             val kandidatWithVarselId = senOppfolgingRepository.createKandidat(
                 SenOppfolgingKandidat(
                     personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
                     varselAt = OffsetDateTime.now(),
-                    varselId = UUID.randomUUID(),
+                    varselId = varselId,
                 )
             )
             val recordKey = UUID.randomUUID().toString()
@@ -292,7 +296,7 @@ class SenOppfolgingSvarConsumerSpek : Spek({
             val senOppfolgingSvarRecord = generateSenOppfolgingSvarRecord(
                 personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENT.value,
                 question = question,
-                varselId = kandidatWithVarselId.varselId,
+                varselId = varselId,
             )
 
             kafkaConsumer.mockPollConsumerRecords(

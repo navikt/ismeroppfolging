@@ -9,7 +9,7 @@ import java.util.*
 fun generateSenOppfolgingSvarRecord(
     personIdent: String = UserConstants.ARBEIDSTAKER_PERSONIDENT.value,
     question: SenOppfolgingQuestion,
-    varselId: UUID? = null,
+    varselId: UUID,
 ): SenOppfolgingSvarRecord = SenOppfolgingSvarRecord(
     id = UUID.randomUUID(),
     personIdent = personIdent,
