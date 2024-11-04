@@ -6,7 +6,7 @@ import java.util.*
 
 data class SenOppfolgingSvarRecord(
     val id: UUID,
-    val varselId: UUID? = null,
+    val varselId: UUID,
     val personIdent: String,
     val createdAt: LocalDateTime,
     val response: List<SenOppfolgingQuestion>,

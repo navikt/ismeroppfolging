@@ -30,9 +30,7 @@ class SenOppfolgingSvarConsumer(private val senOppfolgingService: SenOppfolgingS
     }
 
     private fun processRecord(senOppfolgingSvarRecord: SenOppfolgingSvarRecord) {
-        val kandidatForVarsel = senOppfolgingSvarRecord.varselId?.let {
-            senOppfolgingService.findKandidatFromVarselId(it)
-        }
+        val kandidatForVarsel = senOppfolgingService.findKandidatFromVarselId(senOppfolgingSvarRecord.varselId)
         val recentKandidat = senOppfolgingService.findRecentKandidatFromPersonIdent(
             personident = Personident(senOppfolgingSvarRecord.personIdent),
         )
