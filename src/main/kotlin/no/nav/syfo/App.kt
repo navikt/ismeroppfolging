@@ -49,65 +49,64 @@ fun main() {
     lateinit var senOppfolgingService: SenOppfolgingService
 
     val applicationEngineEnvironment =
-        applicationEngineEnvironment {
+        applicationEnvironment {
             log = logger
             config = HoconApplicationConfig(ConfigFactory.load())
+        }
+    val server = embeddedServer(
+        factory = Netty,
+        environment = applicationEngineEnvironment,
+        configure = {
             connector {
                 port = applicationPort
             }
-            module {
-                databaseModule(
-                    databaseEnvironment = environment.database,
-                )
+            connectionGroupSize = 8
+            workerGroupSize = 8
+            callGroupSize = 16
+        },
+        module = {
+            databaseModule(
+                databaseEnvironment = environment.database,
+            )
 
-                val senOppfolgingRepository = SenOppfolgingRepository(database = applicationDatabase)
+            val senOppfolgingRepository = SenOppfolgingRepository(database = applicationDatabase)
 
-                senOppfolgingService = SenOppfolgingService(
-                    senOppfolgingRepository = senOppfolgingRepository,
-                    kandidatStatusProducer = kandidatStatusProducer,
-                )
+            senOppfolgingService = SenOppfolgingService(
+                senOppfolgingRepository = senOppfolgingRepository,
+                kandidatStatusProducer = kandidatStatusProducer,
+            )
 
-                apiModule(
+            apiModule(
+                applicationState = applicationState,
+                environment = environment,
+                wellKnownInternalAzureAD = wellKnownInternalAzureAD,
+                database = applicationDatabase,
+                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                senOppfolgingService = senOppfolgingService,
+            )
+            monitor.subscribe(ApplicationStarted) {
+                applicationState.ready = true
+                logger.info("Application is ready, running Java VM ${Runtime.version()}")
+
+                launchCronjobs(
                     applicationState = applicationState,
                     environment = environment,
-                    wellKnownInternalAzureAD = wellKnownInternalAzureAD,
-                    database = applicationDatabase,
-                    veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                    senOppfolgingService = senOppfolgingService,
+                )
+
+                launchSenOppfolgingSvarConsumer(
+                    applicationState = applicationState,
+                    kafkaEnvironment = environment.kafka,
+                    senOppfolgingService = senOppfolgingService,
+                )
+                launchSenOppfolgingVarselConsumer(
+                    applicationState = applicationState,
+                    kafkaEnvironment = environment.kafka,
                     senOppfolgingService = senOppfolgingService,
                 )
             }
         }
-
-    applicationEngineEnvironment.monitor.subscribe(ApplicationStarted) {
-        applicationState.ready = true
-        logger.info("Application is ready, running Java VM ${Runtime.version()}")
-
-        launchCronjobs(
-            applicationState = applicationState,
-            environment = environment,
-            senOppfolgingService = senOppfolgingService,
-        )
-
-        launchSenOppfolgingSvarConsumer(
-            applicationState = applicationState,
-            kafkaEnvironment = environment.kafka,
-            senOppfolgingService = senOppfolgingService,
-        )
-        launchSenOppfolgingVarselConsumer(
-            applicationState = applicationState,
-            kafkaEnvironment = environment.kafka,
-            senOppfolgingService = senOppfolgingService,
-        )
-    }
-
-    val server = embeddedServer(
-        factory = Netty,
-        environment = applicationEngineEnvironment
-    ) {
-        connectionGroupSize = 8
-        workerGroupSize = 8
-        callGroupSize = 16
-    }
+    )
 
     Runtime.getRuntime().addShutdownHook(
         Thread { server.stop(10, 10, TimeUnit.SECONDS) }

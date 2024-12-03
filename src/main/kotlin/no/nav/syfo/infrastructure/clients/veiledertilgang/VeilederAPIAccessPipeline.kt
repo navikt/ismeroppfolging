@@ -1,13 +1,12 @@
 package no.nav.syfo.infrastructure.clients.veiledertilgang
 
-import io.ktor.server.application.*
-import io.ktor.util.pipeline.*
+import io.ktor.server.routing.*
 import no.nav.syfo.application.exception.ForbiddenAccessVeilederException
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.util.getBearerHeader
 import no.nav.syfo.util.getCallId
 
-suspend fun PipelineContext<out Unit, ApplicationCall>.validateVeilederAccess(
+suspend fun RoutingContext.validateVeilederAccess(
     action: String,
     personident: Personident,
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
