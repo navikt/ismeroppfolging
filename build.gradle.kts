@@ -10,7 +10,7 @@ val logbackVersion = "1.5.7"
 val logstashEncoderVersion = "7.4"
 val micrometerRegistryVersion = "1.12.2"
 val jacksonDatatypeVersion = "2.17.2"
-val ktorVersion = "2.3.12"
+val ktorVersion = "3.0.1"
 val spekVersion = "2.0.19"
 val mockkVersion = "1.13.12"
 val nimbusJoseJwtVersion = "9.40"
@@ -61,7 +61,7 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonDatatypeVersion")
 
     // Tests
-    testImplementation("io.ktor:ktor-server-tests:$ktorVersion")
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusJoseJwtVersion")
