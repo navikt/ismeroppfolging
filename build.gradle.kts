@@ -1,14 +1,14 @@
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val flywayVersion = "11.1.1"
+val flywayVersion = "11.3.0"
 val hikariVersion = "6.2.1"
-val postgresVersion = "42.7.4"
+val postgresVersion = "42.7.5"
 val postgresEmbeddedVersion = "2.1.0"
 val kafkaVersion = "3.9.0"
 val logbackVersion = "1.5.16"
 val logstashEncoderVersion = "8.0"
-val micrometerRegistryVersion = "1.12.13"
+val micrometerRegistryVersion = "1.14.3"
 val jacksonDatatypeVersion = "2.18.2"
 val ktorVersion = "3.0.3"
 val spekVersion = "2.0.19"
@@ -17,8 +17,8 @@ val nimbusJoseJwtVersion = "10.0.1"
 val kluentVersion = "1.73"
 
 plugins {
-    kotlin("jvm") version "2.1.0"
-    id("com.gradleup.shadow") version "8.3.5"
+    kotlin("jvm") version "2.1.10"
+    id("com.gradleup.shadow") version "8.3.6"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
 
