@@ -29,6 +29,22 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
         }.firstOrNull()
     }
 
+    override fun updateKandidatPersonident(kandidater: List<SenOppfolgingKandidat>, newPersonident: Personident) {
+        database.connection.use { connection ->
+            connection.prepareStatement(UPDATE_KANDIDAT_PERSONIDENT).use {
+                kandidater.forEach { kandidat ->
+                    it.setString(1, newPersonident.value)
+                    it.setString(2, kandidat.uuid.toString())
+                    val updated = it.executeUpdate()
+                    if (updated != 1) {
+                        throw SQLException("Expected a single row to be updated, got update count $updated")
+                    }
+                }
+            }
+            connection.commit()
+        }
+    }
+
     override fun findKandidatFromVarselId(varselId: UUID): SenOppfolgingKandidat? =
         database.connection.use { connection ->
             connection.prepareStatement(FIND_KANDIDAT_BY_VARSEL_ID).use {
@@ -200,6 +216,9 @@ class SenOppfolgingRepository(private val database: DatabaseInterface) : ISenOpp
 
         private const val GET_KANDIDAT_BY_PERSONIDENT = """
             SELECT * FROM SEN_OPPFOLGING_KANDIDAT WHERE personident = ? ORDER BY created_at DESC
+        """
+        private const val UPDATE_KANDIDAT_PERSONIDENT = """
+            UPDATE SEN_OPPFOLGING_KANDIDAT SET personident = ? WHERE uuid = ?
         """
 
         private const val CREATE_VURDERING = """
