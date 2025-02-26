@@ -7,6 +7,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.SenOppfolgingService
+import no.nav.syfo.identhendelse.kafka.launchKafkaTaskIdenthendelse
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
@@ -103,6 +104,11 @@ fun main() {
                     applicationState = applicationState,
                     kafkaEnvironment = environment.kafka,
                     senOppfolgingService = senOppfolgingService,
+                )
+                launchKafkaTaskIdenthendelse(
+                    applicationState = applicationState,
+                    kafkaEnvironment = environment.kafka,
+                    senOppfolgingRepository = senOppfolgingRepository,
                 )
             }
         }
