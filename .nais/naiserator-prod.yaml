@@ -51,7 +51,7 @@ spec:
         - application: istilgangskontroll
   gcp:
     sqlInstances:
-      - type: POSTGRES_15
+      - type: POSTGRES_17
         tier: db-custom-1-3840
         databases:
           - name: ismeroppfolging-db
