@@ -18,6 +18,9 @@ fun mockHttpClient(environment: Environment) = HttpClient(MockEngine) {
                 requestUrl.startsWith("/${environment.clients.syfobehandlendeenhet.baseUrl}") -> behandlendeenhetResponse(
                     request
                 )
+                requestUrl.startsWith("/${environment.clients.pdl.baseUrl}") -> pdlMockResponse(
+                    request
+                )
                 else -> error("Unhandled ${request.url.encodedPath}")
             }
         }
