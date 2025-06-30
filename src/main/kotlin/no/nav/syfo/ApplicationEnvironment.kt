@@ -39,8 +39,12 @@ data class Environment(
         ClientsEnvironment(
             istilgangskontroll = ClientEnvironment(
                 baseUrl = getEnvVar("ISTILGANGSKONTROLL_URL"),
-                clientId = getEnvVar("ISTILGANGSKONTROLL_CLIENT_ID")
+                clientId = getEnvVar("ISTILGANGSKONTROLL_CLIENT_ID"),
             ),
+            syfobehandlendeenhet = ClientEnvironment(
+                baseUrl = getEnvVar("SYFOBEHANDLENDEENHET_URL"),
+                clientId = getEnvVar("SYFOBEHANDLENDEENHET_CLIENT_ID"),
+            )
         ),
 )
 
