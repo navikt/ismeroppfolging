@@ -15,6 +15,9 @@ fun mockHttpClient(environment: Environment) = HttpClient(MockEngine) {
                 requestUrl.startsWith("/${environment.clients.istilgangskontroll.baseUrl}") -> tilgangskontrollResponse(
                     request
                 )
+                requestUrl.startsWith("/${environment.clients.syfobehandlendeenhet.baseUrl}") -> behandlendeenhetResponse(
+                    request
+                )
                 else -> error("Unhandled ${request.url.encodedPath}")
             }
         }

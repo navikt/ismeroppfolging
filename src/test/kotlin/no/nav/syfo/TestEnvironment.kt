@@ -36,6 +36,10 @@ fun testEnvironment() = Environment(
             baseUrl = "isTilgangskontrollUrl",
             clientId = "dev-gcp.teamsykefravr.istilgangskontroll",
         ),
+        syfobehandlendeenhet = ClientEnvironment(
+            baseUrl = "syfobehandlendeenhetUrl",
+            clientId = "dev-gcp.teamsykefravr.syfobehandlendeenhet",
+        ),
     ),
     electorPath = "electorPath",
 )
