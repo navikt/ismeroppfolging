@@ -84,6 +84,7 @@ dependencies {
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
+    testImplementation(kotlin("test"))
 }
 
 kotlin {
@@ -108,9 +109,25 @@ tasks {
         archiveVersion.set("")
     }
 
-    test {
+    val junitTest by creating(Test::class) {
+        useJUnitPlatform {
+            includeEngines("junit-jupiter")
+        }
+        include("**/*Test.class")
+        testLogging.showStandardStreams = true
+    }
+
+    val spekTest by creating(Test::class) {
         useJUnitPlatform {
             includeEngines("spek2")
+        }
+        include("**/*Spek.class")
+        testLogging.showStandardStreams = true
+    }
+
+    test {
+        useJUnitPlatform {
+            includeEngines("spek2", "junit-jupiter")
         }
         testLogging.showStandardStreams = true
     }
