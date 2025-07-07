@@ -15,13 +15,12 @@ Applikasjon for prosessering av sykmeldte som har oppgitt at de trenger mer oppf
 
 ##### Test Libraries:
 
-* Kluent
 * Mockk
-* Spek
+* JUnit
 
 #### Requirements
 
-* JDK 17
+* JDK 21
 
 ### Build
 

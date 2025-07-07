@@ -12,10 +12,8 @@ val logstashEncoderVersion = "8.1"
 val micrometerRegistryVersion = "1.12.13"
 val jacksonDatatypeVersion = "2.18.3"
 val ktorVersion = "3.1.2"
-val spekVersion = "2.0.19"
 val mockkVersion = "1.13.17"
 val nimbusJoseJwtVersion = "10.1"
-val kluentVersion = "1.73"
 
 plugins {
     kotlin("jvm") version "2.1.20"
@@ -81,9 +79,6 @@ dependencies {
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusJoseJwtVersion")
-    testImplementation("org.amshove.kluent:kluent:$kluentVersion")
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
-    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
     testImplementation(kotlin("test"))
 }
 
@@ -109,26 +104,8 @@ tasks {
         archiveVersion.set("")
     }
 
-    val junitTest by creating(Test::class) {
-        useJUnitPlatform {
-            includeEngines("junit-jupiter")
-        }
-        include("**/*Test.class")
-        testLogging.showStandardStreams = true
-    }
-
-    val spekTest by creating(Test::class) {
-        useJUnitPlatform {
-            includeEngines("spek2")
-        }
-        include("**/*Spek.class")
-        testLogging.showStandardStreams = true
-    }
-
     test {
-        useJUnitPlatform {
-            includeEngines("spek2", "junit-jupiter")
-        }
+        useJUnitPlatform()
         testLogging.showStandardStreams = true
     }
 }

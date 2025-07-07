@@ -15,8 +15,16 @@ class TestDatabase : DatabaseInterface {
         EmbeddedPostgres.builder().start()
     }
 
-    override val connection: Connection
+    private var shouldSimulateError = false
+    private val workingConnection: Connection
         get() = pg.postgresDatabase.connection.apply { autoCommit = false }
+
+    override val connection: Connection
+        get() = if (shouldSimulateError) {
+            throw Exception("Simulated database connection failure")
+        } else {
+            workingConnection
+        }
 
     init {
 
@@ -27,6 +35,19 @@ class TestDatabase : DatabaseInterface {
 
     fun stop() {
         pg.close()
+    }
+
+    fun simulateDatabaseError() {
+        shouldSimulateError = true
+    }
+
+    fun restoreDatabase() {
+        shouldSimulateError = false
+    }
+
+    fun resetDatabase() {
+        restoreDatabase()
+        dropData()
     }
 }
 
@@ -60,9 +81,3 @@ fun TestDatabase.getSenOppfolgingVurderinger(): List<PSenOppfolgingVurdering> =
             it.executeQuery().toList { toPSenOppfolgingVurdering() }
         }
     }
-
-class TestDatabaseNotResponding : DatabaseInterface {
-
-    override val connection: Connection
-        get() = throw Exception("Not working")
-}
