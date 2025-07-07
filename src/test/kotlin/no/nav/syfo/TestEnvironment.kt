@@ -40,6 +40,10 @@ fun testEnvironment() = Environment(
             baseUrl = "syfobehandlendeenhetUrl",
             clientId = "dev-gcp.teamsykefravr.syfobehandlendeenhet",
         ),
+        pdl = ClientEnvironment(
+            baseUrl = "pdlUrl",
+            clientId = "dev-fss.pdl.pdl-api",
+        ),
     ),
     electorPath = "electorPath",
 )
