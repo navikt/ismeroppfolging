@@ -3,11 +3,10 @@ package no.nav.syfo.identhendelse
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.domain.SenOppfolgingKandidat
 import no.nav.syfo.generators.generateKafkaIdenthendelseDTO
-import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.repository.SenOppfolgingRepository
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 
 class IdenthendelseServiceTest {
 
@@ -21,7 +20,7 @@ class IdenthendelseServiceTest {
 
     @AfterEach
     fun tearDown() {
-        database.dropData()
+        database.resetDatabase()
     }
 
     @Test

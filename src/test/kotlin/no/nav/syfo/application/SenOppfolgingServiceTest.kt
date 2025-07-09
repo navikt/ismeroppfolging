@@ -7,7 +7,6 @@ import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.domain.OnskerOppfolging
 import no.nav.syfo.domain.SenOppfolgingStatus
 import no.nav.syfo.domain.VurderingType
-import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getSenOppfolgingKandidater
 import no.nav.syfo.infrastructure.database.getSenOppfolgingVurderinger
 import no.nav.syfo.infrastructure.database.repository.SenOppfolgingRepository
@@ -19,11 +18,11 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import java.time.OffsetDateTime
 import java.util.*
 import java.util.concurrent.Future
@@ -53,7 +52,7 @@ class SenOppfolgingServiceTest {
 
     @AfterEach
     fun tearDown() {
-        database.dropData()
+        database.resetDatabase()
     }
 
     @Nested
