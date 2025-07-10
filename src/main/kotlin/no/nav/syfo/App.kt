@@ -17,6 +17,7 @@ import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.repository.SenOppfolgingRepository
 import no.nav.syfo.infrastructure.kafka.KandidatStatusProducer
 import no.nav.syfo.infrastructure.kafka.KandidatStatusRecordSerializer
+import no.nav.syfo.infrastructure.kafka.jobbforventning.launchOppfolgingstilfelleConsumer
 import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
 import no.nav.syfo.infrastructure.kafka.senoppfolging.launchSenOppfolgingSvarConsumer
 import no.nav.syfo.infrastructure.kafka.senoppfolging.launchSenOppfolgingVarselConsumer
@@ -110,6 +111,12 @@ fun main() {
                     kafkaEnvironment = environment.kafka,
                     senOppfolgingRepository = senOppfolgingRepository,
                 )
+                if (environment.isOppfolgingstilfelleConsumerEnabled) {
+                    launchOppfolgingstilfelleConsumer(
+                        applicationState = applicationState,
+                        kafkaEnvironment = environment.kafka,
+                    )
+                }
             }
         }
     )

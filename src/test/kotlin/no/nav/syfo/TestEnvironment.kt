@@ -46,6 +46,7 @@ fun testEnvironment() = Environment(
         ),
     ),
     electorPath = "electorPath",
+    isOppfolgingstilfelleConsumerEnabled = true,
 )
 
 fun testAppState() = ApplicationState(
