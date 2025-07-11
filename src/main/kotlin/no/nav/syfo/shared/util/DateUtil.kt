@@ -6,6 +6,8 @@ import java.time.temporal.ChronoUnit
 val defaultZoneOffset: ZoneOffset = ZoneOffset.UTC
 val osloTimeZone: ZoneId = ZoneId.of("Europe/Oslo")
 
+const val DAYS_IN_WEEK = 7
+
 fun nowUTC(): OffsetDateTime = OffsetDateTime.now(defaultZoneOffset)
 
 fun LocalDateTime.toOffsetDateTimeUTC(): OffsetDateTime = this.atZone(osloTimeZone).withZoneSameInstant(defaultZoneOffset).toOffsetDateTime()
@@ -13,3 +15,7 @@ fun LocalDateTime.toOffsetDateTimeUTC(): OffsetDateTime = this.atZone(osloTimeZo
 fun OffsetDateTime.millisekundOpplosning(): OffsetDateTime = this.truncatedTo(ChronoUnit.MILLIS)
 
 infix fun OffsetDateTime.isMoreThanDaysAgo(days: Long): Boolean = this.isBefore(OffsetDateTime.now().minusDays(days))
+
+infix fun LocalDate.isMoreThanDaysAgo(days: Long): Boolean = this.isBefore(LocalDate.now().minusDays(days))
+
+fun tomorrow(): LocalDate = LocalDate.now().plusDays(1)

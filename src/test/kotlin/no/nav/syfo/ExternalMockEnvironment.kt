@@ -1,8 +1,9 @@
 package no.nav.syfo
 
+import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.shared.infrastructure.clients.azuread.AzureAdClient
-import no.nav.syfo.jobbforventning.infrastructure.clients.pdl.PdlClient
-import no.nav.syfo.jobbforventning.infrastructure.clients.vedtak14a.Vedtak14aClient
+import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.PdlClient
+import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aClient
 import no.nav.syfo.shared.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.shared.infrastructure.database.TestDatabase
 import no.nav.syfo.shared.infrastructure.mock.mockHttpClient
@@ -35,6 +36,11 @@ class ExternalMockEnvironment private constructor() {
     val vedtak14aClient = Vedtak14aClient(
         azureAdClient = azureAdClient,
         clientEnvironment = environment.clients.veilarbvedtaksstotte,
+        httpClient = mockHttpClient,
+    )
+    val behandlendeEnhetClient = BehandlendeEnhetClient(
+        azureAdClient = azureAdClient,
+        clientEnvironment = environment.clients.syfobehandlendeenhet,
         httpClient = mockHttpClient,
     )
 
