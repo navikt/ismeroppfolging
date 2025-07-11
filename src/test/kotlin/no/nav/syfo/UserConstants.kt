@@ -9,4 +9,5 @@ object UserConstants {
     val ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET = Personident("11111111333")
     val ARBEIDSTAKER_NO_FODSELSDATO = Personident("12311111111")
     const val VEILEDER_IDENT = "Z999999"
+    const val VIRKSOMHETSNUMMER = "123456789"
 }

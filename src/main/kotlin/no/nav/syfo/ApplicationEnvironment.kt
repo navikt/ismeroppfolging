@@ -50,6 +50,10 @@ data class Environment(
                 clientId = getEnvVar("PDL_CLIENT_ID"),
             ),
         ),
+    val isOppfolgingstilfelleConsumerEnabled: Boolean = getEnvVar(
+        varName = "IS_OPPFOLGINGSTILFELLE_CONSUMER_ENABLED",
+        defaultValue = "false",
+    ).toBoolean(),
 )
 
 fun getEnvVar(
