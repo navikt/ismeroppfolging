@@ -1,6 +1,6 @@
 package no.nav.syfo
 
-import no.nav.syfo.domain.Personident
+import no.nav.syfo.shared.domain.Personident
 
 object UserConstants {
     val ARBEIDSTAKER_PERSONIDENT = Personident("12345678910")
