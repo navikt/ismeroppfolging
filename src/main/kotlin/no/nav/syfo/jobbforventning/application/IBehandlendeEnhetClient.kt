@@ -1,4 +1,4 @@
-package no.nav.syfo.senoppfolging.application
+package no.nav.syfo.jobbforventning.application
 
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.jobbforventning.infrastructure.clients.behandlendeenhet.BehandlendeEnhetResponseDTO

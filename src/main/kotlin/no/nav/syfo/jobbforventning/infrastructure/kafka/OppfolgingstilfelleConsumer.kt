@@ -1,6 +1,7 @@
 package no.nav.syfo.jobbforventning.infrastructure.kafka
 
 import io.micrometer.core.instrument.Counter
+import no.nav.syfo.jobbforventning.application.JobbforventningService
 import no.nav.syfo.shared.infrastructure.kafka.KafkaConsumerService
 import no.nav.syfo.shared.infrastructure.metric.METRICS_NS
 import no.nav.syfo.shared.infrastructure.metric.METRICS_REGISTRY
@@ -8,7 +9,9 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 import java.time.Duration
 
-class OppfolgingstilfelleConsumer() : KafkaConsumerService<KafkaOppfolgingstilfellePersonDTO> {
+class OppfolgingstilfelleConsumer(
+    private val jobbforventningService: JobbforventningService,
+) : KafkaConsumerService<KafkaOppfolgingstilfellePersonDTO> {
 
     override val pollDurationInMillis: Long = 1000
 
@@ -32,8 +35,16 @@ class OppfolgingstilfelleConsumer() : KafkaConsumerService<KafkaOppfolgingstilfe
     }
 
     private fun processRecord(oppfolgingstilfellePersonDTO: KafkaOppfolgingstilfellePersonDTO) {
-        // TODO: Implement processing
-        return
+        val oppfolgingstilfelle = oppfolgingstilfellePersonDTO.toLatestOppfolgingstilfelle()
+
+        if (oppfolgingstilfelle != null) {
+            jobbforventningService.processOppfolgingstilfelle(
+                oppfolgingstilfelle = oppfolgingstilfelle,
+            )
+        } else {
+            log.warn("No valid oppfolgingstilfelle found for record with uuid: ${oppfolgingstilfellePersonDTO.uuid}")
+            return
+        }
     }
 
     companion object {

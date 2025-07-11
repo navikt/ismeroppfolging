@@ -5,7 +5,7 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import no.nav.syfo.senoppfolging.application.IPdlClient
+import no.nav.syfo.jobbforventning.application.IPdlClient
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.util.bearerHeader
 import no.nav.syfo.shared.infrastructure.clients.ClientEnvironment

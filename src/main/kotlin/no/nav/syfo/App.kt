@@ -5,6 +5,8 @@ import io.ktor.server.application.*
 import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import no.nav.syfo.jobbforventning.application.JobbforventningService
+import no.nav.syfo.jobbforventning.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.shared.api.apiModule
 import no.nav.syfo.senoppfolging.application.SenOppfolgingService
 import no.nav.syfo.shared.infrastructure.kafka.identhendelse.kafka.launchKafkaTaskIdenthendelse
@@ -44,6 +46,10 @@ fun main() {
         azureAdClient = azureAdClient,
         clientEnvironment = environment.clients.istilgangskontroll
     )
+    val behandlendeEnhetClient = BehandlendeEnhetClient(
+        azureAdClient = azureAdClient,
+        clientEnvironment = environment.clients.syfobehandlendeenhet,
+    )
     val kandidatStatusProducer = KandidatStatusProducer(
         producer = KafkaProducer(
             kafkaAivenProducerConfig<KandidatStatusRecordSerializer>(kafkaEnvironment = environment.kafka)
@@ -51,6 +57,7 @@ fun main() {
     )
 
     lateinit var senOppfolgingService: SenOppfolgingService
+    lateinit var jobbforventningService: JobbforventningService
 
     val applicationEngineEnvironment =
         applicationEnvironment {
@@ -78,6 +85,9 @@ fun main() {
             senOppfolgingService = SenOppfolgingService(
                 senOppfolgingRepository = senOppfolgingRepository,
                 kandidatStatusProducer = kandidatStatusProducer,
+            )
+            jobbforventningService = JobbforventningService(
+                behandlendeEnhetClient = behandlendeEnhetClient,
             )
 
             apiModule(
@@ -121,6 +131,7 @@ fun main() {
                     launchOppfolgingstilfelleConsumer(
                         applicationState = applicationState,
                         kafkaEnvironment = environment.kafka,
+                        jobbforventningService = jobbforventningService,
                     )
                 }
             }

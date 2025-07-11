@@ -17,21 +17,36 @@ fun createKafkaOppfolgingstilfellePerson(
     gradert: Boolean = false,
     dodsdato: LocalDate? = null,
     arbeidstakerAtTilfelleEnd: Boolean = true,
+    extraOppfolgingstilfeller: List<KafkaOppfolgingstilfelle> = emptyList(),
 ): KafkaOppfolgingstilfellePersonDTO = KafkaOppfolgingstilfellePersonDTO(
     uuid = UUID.randomUUID().toString(),
     createdAt = nowUTC(),
     personIdentNumber = personident.value,
     oppfolgingstilfelleList = listOf(
-        KafkaOppfolgingstilfelle(
+        createKafkaOppfolgingstilfelle(
+            tilfelleStart = tilfelleStart,
+            tilfelleEnd = tilfelleEnd,
+            gradert = gradert,
+            virksomhetsnummerList = listOf(VIRKSOMHETSNUMMER),
             arbeidstakerAtTilfelleEnd = arbeidstakerAtTilfelleEnd,
-            start = tilfelleStart,
-            end = tilfelleEnd,
-            antallSykedager = ChronoUnit.DAYS.between(tilfelleStart, tilfelleEnd).toInt() + 1,
-            virksomhetsnummerList = if (arbeidstakerAtTilfelleEnd) listOf(VIRKSOMHETSNUMMER) else emptyList(),
-            gradertAtTilfelleEnd = gradert,
         ),
-    ),
+    ) + extraOppfolgingstilfeller,
     referanseTilfelleBitUuid = UUID.randomUUID().toString(),
     referanseTilfelleBitInntruffet = nowUTC().minusDays(1),
     dodsdato = dodsdato,
+)
+
+fun createKafkaOppfolgingstilfelle(
+    tilfelleStart: LocalDate = LocalDate.now().minusDays(10),
+    tilfelleEnd: LocalDate = LocalDate.now().plusDays(20),
+    gradert: Boolean = false,
+    virksomhetsnummerList: List<String> = listOf(VIRKSOMHETSNUMMER),
+    arbeidstakerAtTilfelleEnd: Boolean = true,
+): KafkaOppfolgingstilfelle = KafkaOppfolgingstilfelle(
+    arbeidstakerAtTilfelleEnd = arbeidstakerAtTilfelleEnd,
+    start = tilfelleStart,
+    end = tilfelleEnd,
+    antallSykedager = ChronoUnit.DAYS.between(tilfelleStart, tilfelleEnd).toInt() + 1,
+    virksomhetsnummerList = virksomhetsnummerList,
+    gradertAtTilfelleEnd = gradert,
 )

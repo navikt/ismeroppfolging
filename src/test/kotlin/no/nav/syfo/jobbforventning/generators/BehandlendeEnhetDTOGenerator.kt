@@ -7,7 +7,7 @@ import no.nav.syfo.jobbforventning.infrastructure.clients.behandlendeenhet.Oppfo
 import java.time.LocalDateTime
 
 fun getBehandlendeEnhetDTO(
-    geografiskEnhetId: String = "1234",
+    geografiskEnhetId: String = "0314",
     oppfolgingsenhetId: String? = null,
 ) = BehandlendeEnhetResponseDTO(
     geografiskEnhet = Enhet(

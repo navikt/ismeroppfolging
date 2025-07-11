@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import no.nav.syfo.jobbforventning.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.shared.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.jobbforventning.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.shared.infrastructure.clients.wellknown.WellKnown
@@ -29,6 +30,12 @@ class ExternalMockEnvironment private constructor() {
     val pdlClient = PdlClient(
         azureAdClient = azureAdClient,
         clientEnvironment = environment.clients.pdl,
+        httpClient = mockHttpClient,
+    )
+
+    val behandlendeEnhetClient = BehandlendeEnhetClient(
+        azureAdClient = azureAdClient,
+        clientEnvironment = environment.clients.syfobehandlendeenhet,
         httpClient = mockHttpClient,
     )
 
