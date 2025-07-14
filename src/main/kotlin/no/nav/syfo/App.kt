@@ -5,22 +5,24 @@ import io.ktor.server.application.*
 import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import no.nav.syfo.api.apiModule
-import no.nav.syfo.application.SenOppfolgingService
-import no.nav.syfo.identhendelse.kafka.launchKafkaTaskIdenthendelse
-import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
-import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
-import no.nav.syfo.infrastructure.cronjob.launchCronjobs
-import no.nav.syfo.infrastructure.database.applicationDatabase
-import no.nav.syfo.infrastructure.database.databaseModule
-import no.nav.syfo.infrastructure.database.repository.SenOppfolgingRepository
-import no.nav.syfo.infrastructure.kafka.KandidatStatusProducer
-import no.nav.syfo.infrastructure.kafka.KandidatStatusRecordSerializer
-import no.nav.syfo.infrastructure.kafka.jobbforventning.launchOppfolgingstilfelleConsumer
-import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
-import no.nav.syfo.infrastructure.kafka.senoppfolging.launchSenOppfolgingSvarConsumer
-import no.nav.syfo.infrastructure.kafka.senoppfolging.launchSenOppfolgingVarselConsumer
+import no.nav.syfo.shared.api.apiModule
+import no.nav.syfo.senoppfolging.application.SenOppfolgingService
+import no.nav.syfo.shared.infrastructure.kafka.identhendelse.kafka.launchKafkaTaskIdenthendelse
+import no.nav.syfo.senoppfolging.infrastructure.cronjob.PublishKandidatStatusCronjob
+import no.nav.syfo.shared.infrastructure.clients.azuread.AzureAdClient
+import no.nav.syfo.shared.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.shared.infrastructure.clients.wellknown.getWellKnown
+import no.nav.syfo.shared.infrastructure.cronjob.launchCronjobs
+import no.nav.syfo.shared.infrastructure.database.applicationDatabase
+import no.nav.syfo.shared.infrastructure.database.databaseModule
+import no.nav.syfo.senoppfolging.infrastructure.database.repository.SenOppfolgingRepository
+import no.nav.syfo.senoppfolging.infrastructure.kafka.producer.KandidatStatusProducer
+import no.nav.syfo.senoppfolging.infrastructure.kafka.producer.KandidatStatusRecordSerializer
+import no.nav.syfo.jobbforventning.infrastructure.kafka.launchOppfolgingstilfelleConsumer
+import no.nav.syfo.shared.infrastructure.kafka.kafkaAivenProducerConfig
+import no.nav.syfo.senoppfolging.infrastructure.kafka.consumer.launchSenOppfolgingSvarConsumer
+import no.nav.syfo.senoppfolging.infrastructure.kafka.consumer.launchSenOppfolgingVarselConsumer
+import no.nav.syfo.shared.infrastructure.cronjob.Cronjob
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
@@ -90,10 +92,14 @@ fun main() {
                 applicationState.ready = true
                 logger.info("Application is ready, running Java VM ${Runtime.version()}")
 
+                val cronjobs = listOf<Cronjob>(
+                    PublishKandidatStatusCronjob(senOppfolgingService),
+                )
+
                 launchCronjobs(
                     applicationState = applicationState,
                     environment = environment,
-                    senOppfolgingService = senOppfolgingService,
+                    cronjobs = cronjobs,
                 )
 
                 launchSenOppfolgingSvarConsumer(

@@ -1,10 +1,10 @@
 package no.nav.syfo
 
-import no.nav.syfo.infrastructure.clients.ClientEnvironment
-import no.nav.syfo.infrastructure.clients.ClientsEnvironment
-import no.nav.syfo.infrastructure.clients.azuread.AzureEnvironment
-import no.nav.syfo.infrastructure.database.DatabaseEnvironment
-import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
+import no.nav.syfo.shared.infrastructure.clients.ClientEnvironment
+import no.nav.syfo.shared.infrastructure.clients.ClientsEnvironment
+import no.nav.syfo.shared.infrastructure.clients.azuread.AzureEnvironment
+import no.nav.syfo.shared.infrastructure.database.DatabaseEnvironment
+import no.nav.syfo.shared.infrastructure.kafka.KafkaEnvironment
 
 fun testEnvironment() = Environment(
     database = DatabaseEnvironment(
