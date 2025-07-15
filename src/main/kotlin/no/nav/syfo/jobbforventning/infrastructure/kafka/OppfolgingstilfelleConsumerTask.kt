@@ -1,6 +1,7 @@
 package no.nav.syfo.jobbforventning.infrastructure.kafka
 
 import no.nav.syfo.ApplicationState
+import no.nav.syfo.jobbforventning.application.JobbforventningService
 import no.nav.syfo.shared.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.shared.infrastructure.kafka.kafkaAivenConsumerConfig
 import no.nav.syfo.shared.infrastructure.kafka.launchKafkaConsumer
@@ -15,6 +16,7 @@ const val OPPFOLGINGSTILFELLE_PERSON_TOPIC =
 fun launchOppfolgingstilfelleConsumer(
     applicationState: ApplicationState,
     kafkaEnvironment: KafkaEnvironment,
+    jobbforventningService: JobbforventningService,
 ) {
     val consumerProperties = kafkaAivenConsumerConfig<KafkaOppfolgingstilfellePersonDeserializer>(
         kafkaEnvironment = kafkaEnvironment,
@@ -24,7 +26,7 @@ fun launchOppfolgingstilfelleConsumer(
         this[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
     }
 
-    val oppfolgingstilfelleConsumer = OppfolgingstilfelleConsumer()
+    val oppfolgingstilfelleConsumer = OppfolgingstilfelleConsumer(jobbforventningService)
 
     launchKafkaConsumer(
         applicationState = applicationState,

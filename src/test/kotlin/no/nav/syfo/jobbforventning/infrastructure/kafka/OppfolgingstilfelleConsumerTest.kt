@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.syfo.ExternalMockEnvironment
+import no.nav.syfo.jobbforventning.application.JobbforventningService
 import no.nav.syfo.jobbforventning.generators.createKafkaOppfolgingstilfellePerson
 import no.nav.syfo.shared.infrastructure.kafka.mockPollConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -19,7 +20,10 @@ class OppfolgingstilfelleConsumerTest {
     private val database = externalMockEnvironment.database
     private val kafkaConsumer = mockk<KafkaConsumer<String, KafkaOppfolgingstilfellePersonDTO>>()
 
-    private val oppfolgingstilfelleConsumer = OppfolgingstilfelleConsumer()
+    private val jobbforventningService = JobbforventningService(
+        behandlendeEnhetClient = externalMockEnvironment.behandlendeEnhetClient,
+    )
+    private val oppfolgingstilfelleConsumer = OppfolgingstilfelleConsumer(jobbforventningService)
 
     @BeforeEach
     fun setUp() {
