@@ -44,6 +44,10 @@ fun testEnvironment() = Environment(
             baseUrl = "pdlUrl",
             clientId = "dev-fss.pdl.pdl-api",
         ),
+        veilarbvedtaksstotte = ClientEnvironment(
+            baseUrl = "veilarbvedtaksstotteUrl",
+            clientId = "dev-gcp.obo.veilarbvedtaksstotte",
+        ),
     ),
     electorPath = "electorPath",
     isOppfolgingstilfelleConsumerEnabled = true,

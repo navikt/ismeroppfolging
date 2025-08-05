@@ -5,6 +5,7 @@ import io.ktor.client.engine.mock.*
 import no.nav.syfo.Environment
 import no.nav.syfo.jobbforventning.infrastructure.mock.behandlendeenhetResponse
 import no.nav.syfo.jobbforventning.infrastructure.mock.pdlMockResponse
+import no.nav.syfo.jobbforventning.infrastructure.mock.vedtak14aMockResponse
 import no.nav.syfo.shared.infrastructure.clients.commonConfig
 
 fun mockHttpClient(environment: Environment) = HttpClient(MockEngine) {
@@ -21,6 +22,9 @@ fun mockHttpClient(environment: Environment) = HttpClient(MockEngine) {
                     request
                 )
                 requestUrl.startsWith("/${environment.clients.pdl.baseUrl}") -> pdlMockResponse(
+                    request
+                )
+                requestUrl.startsWith("/${environment.clients.veilarbvedtaksstotte.baseUrl}") -> vedtak14aMockResponse(
                     request
                 )
                 else -> error("Unhandled ${request.url.encodedPath}")

@@ -50,6 +50,8 @@ spec:
       rules:
         - application: istilgangskontroll
         - application: syfobehandlendeenhet
+        - application: veilarbvedtaksstotte
+          namespace: obo
   gcp:
     sqlInstances:
       - type: POSTGRES_17
@@ -91,3 +93,7 @@ spec:
       value: "https://pdl-api.prod-fss-pub.nais.io/graphql"
     - name: IS_OPPFOLGINGSTILFELLE_CONSUMER_ENABLED
       value: "false"
+    - name: VEILARBVEDTAKSSTOTTE_CLIENT_ID
+      value: "prod-gcp.obo.veilarbvedtaksstotte"
+    - name: VEILARBVEDTAKSSTOTTE_URL
+      value: "http://veilarbvedtaksstotte.obo"
