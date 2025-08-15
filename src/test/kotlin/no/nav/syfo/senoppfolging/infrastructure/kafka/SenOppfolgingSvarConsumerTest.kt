@@ -4,6 +4,7 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.senoppfolging.application.SenOppfolgingService
@@ -69,7 +70,9 @@ class SenOppfolgingSvarConsumerTest {
             topic = SENOPPFOLGING_SVAR_TOPIC,
         )
 
-        senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        runBlocking {
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        }
 
         verify(exactly = 1) {
             kafkaConsumer.commitSync()
@@ -96,7 +99,9 @@ class SenOppfolgingSvarConsumerTest {
             topic = SENOPPFOLGING_SVAR_TOPIC,
         )
 
-        senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        runBlocking {
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        }
 
         verify(exactly = 1) {
             kafkaConsumer.commitSync()
@@ -133,7 +138,9 @@ class SenOppfolgingSvarConsumerTest {
             topic = SENOPPFOLGING_SVAR_TOPIC,
         )
 
-        senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        runBlocking {
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        }
 
         verify(exactly = 1) {
             kafkaConsumer.commitSync()
@@ -177,7 +184,9 @@ class SenOppfolgingSvarConsumerTest {
             topic = SENOPPFOLGING_SVAR_TOPIC,
         )
 
-        senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        runBlocking {
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        }
 
         verify(exactly = 1) {
             kafkaConsumer.commitSync()
@@ -221,7 +230,9 @@ class SenOppfolgingSvarConsumerTest {
             topic = SENOPPFOLGING_SVAR_TOPIC,
         )
 
-        senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        runBlocking {
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        }
 
         verify(exactly = 1) {
             kafkaConsumer.commitSync()
@@ -269,7 +280,9 @@ class SenOppfolgingSvarConsumerTest {
             topic = SENOPPFOLGING_SVAR_TOPIC,
         )
 
-        senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        runBlocking {
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        }
 
         verify(exactly = 1) {
             kafkaConsumer.commitSync()
@@ -318,7 +331,9 @@ class SenOppfolgingSvarConsumerTest {
             topic = SENOPPFOLGING_SVAR_TOPIC,
         )
 
-        senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        runBlocking {
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        }
 
         verify(exactly = 1) {
             kafkaConsumer.commitSync()
