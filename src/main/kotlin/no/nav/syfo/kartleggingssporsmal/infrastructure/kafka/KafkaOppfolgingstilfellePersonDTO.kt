@@ -38,6 +38,7 @@ private fun KafkaOppfolgingstilfellePersonDTO.toOppfolgingstilfelle(
     uuid = UUID.fromString(this.uuid),
     personident = Personident(this.personIdentNumber),
     tilfelleGenerert = this.createdAt,
+    tilfelleBitReferanseUuid = UUID.fromString(this.referanseTilfelleBitUuid),
     tilfelleStart = latestOppfolgingsTilfelle.start,
     tilfelleEnd = latestOppfolgingsTilfelle.end,
     antallSykedager = latestOppfolgingsTilfelle.antallSykedager,

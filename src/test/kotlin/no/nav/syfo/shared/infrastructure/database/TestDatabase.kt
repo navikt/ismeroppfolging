@@ -59,6 +59,12 @@ fun TestDatabase.dropData() {
         """
         DELETE FROM SEN_OPPFOLGING_VURDERING
         """.trimIndent(),
+        """
+        DELETE FROM KARTLEGGINGSSPORSMAL_STOPPUNKT
+        """.trimIndent(),
+        """
+        DELETE FROM KARTLEGGINGSSPORSMAL_KANDIDAT
+        """.trimIndent(),
     )
     this.connection.use { connection ->
         queryList.forEach { query ->
