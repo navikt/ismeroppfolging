@@ -1,6 +1,8 @@
 package no.nav.syfo.shared.infrastructure.database
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
+import no.nav.syfo.kartleggingssporsmal.infrastructure.database.PKartleggingssporsmalStoppunkt
+import no.nav.syfo.kartleggingssporsmal.infrastructure.database.toPKartleggingssporsmalStoppunkt
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.PSenOppfolgingKandidat
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.PSenOppfolgingVurdering
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.toPSenOppfolgingKandidat
@@ -85,5 +87,12 @@ fun TestDatabase.getSenOppfolgingVurderinger(): List<PSenOppfolgingVurdering> =
     this.connection.use { connection ->
         connection.prepareStatement("SELECT * FROM SEN_OPPFOLGING_VURDERING").use {
             it.executeQuery().toList { toPSenOppfolgingVurdering() }
+        }
+    }
+
+fun TestDatabase.getKartleggingssporsmalStoppunkt(): List<PKartleggingssporsmalStoppunkt> =
+    this.connection.use { connection ->
+        connection.prepareStatement("SELECT * FROM KARTLEGGINGSSPORSMAL_STOPPUNKT").use {
+            it.executeQuery().toList { toPKartleggingssporsmalStoppunkt() }
         }
     }
