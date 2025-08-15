@@ -1,6 +1,8 @@
 package no.nav.syfo.kartleggingssporsmal.domain
 
 import no.nav.syfo.shared.domain.Personident
+import no.nav.syfo.shared.util.isAfterOrEqual
+import no.nav.syfo.shared.util.isBeforeOrEqual
 import no.nav.syfo.shared.util.isMoreThanDaysAgo
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -31,4 +33,7 @@ data class Oppfolgingstilfelle(
             ChronoUnit.DAYS.between(this.tilfelleStart, this.tilfelleEnd) + 1
         }
     }
+
+    fun datoInsideCurrentTilfelle(dato: LocalDate): Boolean =
+        dato isAfterOrEqual this.tilfelleStart && dato isBeforeOrEqual this.tilfelleEnd
 }

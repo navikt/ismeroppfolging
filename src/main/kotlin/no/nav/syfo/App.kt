@@ -7,6 +7,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
+import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
 import no.nav.syfo.shared.api.apiModule
 import no.nav.syfo.senoppfolging.application.SenOppfolgingService
 import no.nav.syfo.shared.infrastructure.kafka.identhendelse.kafka.launchKafkaTaskIdenthendelse
@@ -81,6 +82,7 @@ fun main() {
             )
 
             val senOppfolgingRepository = SenOppfolgingRepository(database = applicationDatabase)
+            val kartleggingssporsmalRepository = KartleggingssporsmalRepository(database = applicationDatabase)
 
             senOppfolgingService = SenOppfolgingService(
                 senOppfolgingRepository = senOppfolgingRepository,
@@ -88,6 +90,7 @@ fun main() {
             )
             kartleggingssporsmalService = KartleggingssporsmalService(
                 behandlendeEnhetClient = behandlendeEnhetClient,
+                kartleggingssporsmalRepository = kartleggingssporsmalRepository,
             )
 
             apiModule(
