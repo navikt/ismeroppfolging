@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 import java.util.*
 
 class KartleggingssporsmalService(
@@ -13,7 +14,19 @@ class KartleggingssporsmalService(
     // TODO: Change return type after testing is done and we start persisting data
     fun processOppfolgingstilfelle(oppfolgingstilfelle: Oppfolgingstilfelle): Boolean {
         return if (isRelevantForPlanlagtKandidat(oppfolgingstilfelle)) {
-            log.info("Oppfolgingstilfelle with uuid: ${oppfolgingstilfelle.uuid} is relevant for planlagt kandidat")
+            val stoppunkt = calculateStoppunktDato(
+                tilfelleStart = oppfolgingstilfelle.tilfelleStart,
+                tilfelleEnd = oppfolgingstilfelle.tilfelleEnd,
+            )
+            log.info(
+                """
+                Oppfolgingstilfelle with uuid: ${oppfolgingstilfelle.uuid} is relevant for planlagt kandidat
+                Stoppunkt dato: $stoppunkt
+                Tilfelle start: ${oppfolgingstilfelle.tilfelleStart}
+                Tilfelle end: ${oppfolgingstilfelle.tilfelleEnd}
+                Antall sykedager: ${oppfolgingstilfelle.antallSykedager}
+                """.trimIndent()
+            )
             true
         } else {
             log.info("Oppfolgingstilfelle with uuid: ${oppfolgingstilfelle.uuid} is not relevant for planlagt kandidat")
@@ -47,14 +60,28 @@ class KartleggingssporsmalService(
 
     private fun isInPilot(enhetId: String) = enhetId in pilotkontorer
 
+    // TODO: Move to Kartleggingssporsmal domain class
+    private fun calculateStoppunktDato(
+        tilfelleStart: LocalDate,
+        tilfelleEnd: LocalDate,
+    ): LocalDate {
+        val today = LocalDate.now()
+        val stoppunkt = tilfelleStart.plusDays(KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS)
+        return if (stoppunkt.isBefore(today) && today.isBefore(tilfelleEnd)) {
+            today
+        } else {
+            stoppunkt
+        }
+    }
+
     companion object {
         private val log = LoggerFactory.getLogger(KartleggingssporsmalService::class.java)
         private const val PILOTKONTOR_TEST = "0314"
         private val pilotkontorer = listOf(PILOTKONTOR_TEST)
 
         // TODO: Move to Kartleggingssporsmal domain class
+        private const val KARTLEGGINGSSPORSMAL_STOPPUNKT_INTERVAL_DAYS = 30L
         const val KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS = 6L * DAYS_IN_WEEK
-        const val KARTLEGGINGSSPORSMAL_STOPPUNKT_INTERVAL_DAYS = 30L
         const val KARTLEGGINGSSPORSMAL_STOPPUNKT_END_DAYS =
             KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS + KARTLEGGINGSSPORSMAL_STOPPUNKT_INTERVAL_DAYS
     }
