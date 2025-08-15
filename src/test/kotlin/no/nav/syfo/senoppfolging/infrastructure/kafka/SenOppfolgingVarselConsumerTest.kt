@@ -4,6 +4,7 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.senoppfolging.application.SenOppfolgingService
@@ -59,7 +60,9 @@ class SenOppfolgingVarselConsumerTest {
             topic = SENOPPFOLGING_VARSEL_TOPIC,
         )
 
-        senOppfolgingVarselConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        runBlocking {
+            senOppfolgingVarselConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        }
 
         verify(exactly = 1) {
             kafkaConsumer.commitSync()
@@ -85,14 +88,20 @@ class SenOppfolgingVarselConsumerTest {
             topic = SENOPPFOLGING_VARSEL_TOPIC,
         )
 
-        senOppfolgingVarselConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        runBlocking {
+            senOppfolgingVarselConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        }
+
         verify(exactly = 1) {
             kafkaConsumer.commitSync()
         }
 
         assertEquals(1, database.getSenOppfolgingKandidater().size)
 
-        senOppfolgingVarselConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        runBlocking {
+            senOppfolgingVarselConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        }
+
         verify(exactly = 2) {
             kafkaConsumer.commitSync()
         }
@@ -107,7 +116,10 @@ class SenOppfolgingVarselConsumerTest {
             topic = SENOPPFOLGING_VARSEL_TOPIC,
         )
 
-        senOppfolgingVarselConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        runBlocking {
+            senOppfolgingVarselConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+        }
+
         verify(exactly = 0) {
             kafkaConsumer.commitSync()
         }
