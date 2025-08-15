@@ -21,6 +21,7 @@ fun createOppfolgingstilfelle(
     uuid = uuid,
     personident = personident,
     tilfelleGenerert = OffsetDateTime.now(),
+    tilfelleBitReferanseUuid = UUID.randomUUID(),
     tilfelleStart = tilfelleStart,
     tilfelleEnd = tilfelleEnd,
     antallSykedager = antallSykedager,

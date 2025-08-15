@@ -2,8 +2,8 @@ package no.nav.syfo.kartleggingssporsmal.application
 
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET
-import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_END_DAYS
-import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_END_DAYS
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelle
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
