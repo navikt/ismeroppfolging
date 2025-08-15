@@ -1,6 +1,7 @@
 package no.nav.syfo.kartleggingssporsmal.application
 
 import kotlinx.coroutines.runBlocking
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import org.slf4j.LoggerFactory
@@ -9,11 +10,11 @@ import java.util.*
 
 class KartleggingssporsmalService(
     private val behandlendeEnhetClient: IBehandlendeEnhetClient,
+    private val kartleggingssporsmalRepository: IKartleggingssporsmalRepository,
 ) {
 
-    // TODO: Change return type after testing is done and we start persisting data
-    fun processOppfolgingstilfelle(oppfolgingstilfelle: Oppfolgingstilfelle): Boolean {
-        return if (isRelevantForPlanlagtKandidat(oppfolgingstilfelle)) {
+    fun processOppfolgingstilfelle(oppfolgingstilfelle: Oppfolgingstilfelle) {
+        if (isRelevantForPlanlagtKandidat(oppfolgingstilfelle)) {
             val stoppunkt = calculateStoppunktDato(
                 tilfelleStart = oppfolgingstilfelle.tilfelleStart,
                 tilfelleEnd = oppfolgingstilfelle.tilfelleEnd,
@@ -27,10 +28,14 @@ class KartleggingssporsmalService(
                 Antall sykedager: ${oppfolgingstilfelle.antallSykedager}
                 """.trimIndent()
             )
-            true
+            val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt(
+                personident = oppfolgingstilfelle.personident,
+                tilfelleBitReferanseUuid = oppfolgingstilfelle.tilfelleBitReferanseUuid,
+                stoppunktAt = LocalDate.now(), // TODO
+            )
+            kartleggingssporsmalRepository.createStoppunkt(stoppunkt = kartleggingssporsmalStoppunkt)
         } else {
             log.info("Oppfolgingstilfelle with uuid: ${oppfolgingstilfelle.uuid} is not relevant for planlagt kandidat")
-            false
         }
     }
 

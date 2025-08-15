@@ -11,6 +11,7 @@ data class Oppfolgingstilfelle(
     val uuid: UUID,
     val personident: Personident,
     val tilfelleGenerert: OffsetDateTime,
+    val tilfelleBitReferanseUuid: UUID,
     val tilfelleStart: LocalDate,
     val tilfelleEnd: LocalDate,
     val antallSykedager: Int?,

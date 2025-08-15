@@ -7,6 +7,7 @@ import io.mockk.verify
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.kartleggingssporsmal.generators.createKafkaOppfolgingstilfellePerson
+import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
 import no.nav.syfo.shared.infrastructure.kafka.mockPollConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.junit.jupiter.api.AfterEach
@@ -20,8 +21,10 @@ class OppfolgingstilfelleConsumerTest {
     private val database = externalMockEnvironment.database
     private val kafkaConsumer = mockk<KafkaConsumer<String, KafkaOppfolgingstilfellePersonDTO>>()
 
+    private val kartleggingssporsmalRepository = KartleggingssporsmalRepository(database)
     private val kartleggingssporsmalService = KartleggingssporsmalService(
         behandlendeEnhetClient = externalMockEnvironment.behandlendeEnhetClient,
+        kartleggingssporsmalRepository = kartleggingssporsmalRepository,
     )
     private val oppfolgingstilfelleConsumer = OppfolgingstilfelleConsumer(kartleggingssporsmalService)
 

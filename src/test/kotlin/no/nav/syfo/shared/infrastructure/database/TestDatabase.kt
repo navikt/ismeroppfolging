@@ -1,6 +1,8 @@
 package no.nav.syfo.shared.infrastructure.database
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
+import no.nav.syfo.kartleggingssporsmal.infrastructure.database.PKartleggingssporsmalStoppunkt
+import no.nav.syfo.kartleggingssporsmal.infrastructure.database.toPKartleggingssporsmalStoppunkt
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.PSenOppfolgingKandidat
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.PSenOppfolgingVurdering
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.toPSenOppfolgingKandidat
@@ -59,6 +61,12 @@ fun TestDatabase.dropData() {
         """
         DELETE FROM SEN_OPPFOLGING_VURDERING
         """.trimIndent(),
+        """
+        DELETE FROM KARTLEGGINGSSPORSMAL_STOPPUNKT
+        """.trimIndent(),
+        """
+        DELETE FROM KARTLEGGINGSSPORSMAL_KANDIDAT
+        """.trimIndent(),
     )
     this.connection.use { connection ->
         queryList.forEach { query ->
@@ -79,5 +87,12 @@ fun TestDatabase.getSenOppfolgingVurderinger(): List<PSenOppfolgingVurdering> =
     this.connection.use { connection ->
         connection.prepareStatement("SELECT * FROM SEN_OPPFOLGING_VURDERING").use {
             it.executeQuery().toList { toPSenOppfolgingVurdering() }
+        }
+    }
+
+fun TestDatabase.getKartleggingssporsmalStoppunkt(): List<PKartleggingssporsmalStoppunkt> =
+    this.connection.use { connection ->
+        connection.prepareStatement("SELECT * FROM KARTLEGGINGSSPORSMAL_STOPPUNKT").use {
+            it.executeQuery().toList { toPKartleggingssporsmalStoppunkt() }
         }
     }
