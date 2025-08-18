@@ -16,7 +16,7 @@ class SenOppfolgingVarselConsumer(private val senOppfolgingService: SenOppfolgin
 
     override val pollDurationInMillis: Long = 1000
 
-    override fun pollAndProcessRecords(kafkaConsumer: KafkaConsumer<String, KSenOppfolgingVarselDTO>) {
+    override suspend fun pollAndProcessRecords(kafkaConsumer: KafkaConsumer<String, KSenOppfolgingVarselDTO>) {
         val records = kafkaConsumer.poll(Duration.ofMillis(pollDurationInMillis))
         if (records.count() > 0) {
             records.requireNoNulls().forEach { record ->

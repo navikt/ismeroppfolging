@@ -15,7 +15,7 @@ class OppfolgingstilfelleConsumer(
 
     override val pollDurationInMillis: Long = 1000
 
-    override fun pollAndProcessRecords(kafkaConsumer: KafkaConsumer<String, KafkaOppfolgingstilfellePersonDTO>) {
+    override suspend fun pollAndProcessRecords(kafkaConsumer: KafkaConsumer<String, KafkaOppfolgingstilfellePersonDTO>) {
         val records = kafkaConsumer.poll(Duration.ofMillis(pollDurationInMillis))
         if (records.count() > 0) {
             records.requireNoNulls().forEach { record ->
@@ -34,7 +34,7 @@ class OppfolgingstilfelleConsumer(
         }
     }
 
-    private fun processRecord(oppfolgingstilfellePersonDTO: KafkaOppfolgingstilfellePersonDTO) {
+    private suspend fun processRecord(oppfolgingstilfellePersonDTO: KafkaOppfolgingstilfellePersonDTO) {
         val oppfolgingstilfelle = oppfolgingstilfellePersonDTO.toLatestOppfolgingstilfelle()
 
         if (oppfolgingstilfelle != null) {

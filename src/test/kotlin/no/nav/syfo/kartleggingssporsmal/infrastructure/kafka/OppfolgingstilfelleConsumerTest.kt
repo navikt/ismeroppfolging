@@ -4,6 +4,7 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.kartleggingssporsmal.generators.createKafkaOppfolgingstilfellePerson
@@ -45,7 +46,9 @@ class OppfolgingstilfelleConsumerTest {
             topic = OPPFOLGINGSTILFELLE_PERSON_TOPIC,
         )
 
-        oppfolgingstilfelleConsumer.pollAndProcessRecords(kafkaConsumer)
+        runBlocking {
+            oppfolgingstilfelleConsumer.pollAndProcessRecords(kafkaConsumer)
+        }
 
         verify(exactly = 1) {
             kafkaConsumer.commitSync()
@@ -59,7 +62,9 @@ class OppfolgingstilfelleConsumerTest {
             topic = OPPFOLGINGSTILFELLE_PERSON_TOPIC,
         )
 
-        oppfolgingstilfelleConsumer.pollAndProcessRecords(kafkaConsumer)
+        runBlocking {
+            oppfolgingstilfelleConsumer.pollAndProcessRecords(kafkaConsumer)
+        }
 
         verify(exactly = 0) {
             kafkaConsumer.commitSync()
