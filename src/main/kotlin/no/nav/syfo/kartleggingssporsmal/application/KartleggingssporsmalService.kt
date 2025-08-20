@@ -1,26 +1,35 @@
 package no.nav.syfo.kartleggingssporsmal.application
 
-import kotlinx.coroutines.runBlocking
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
-import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_END_DAYS
-import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
 import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
+import no.nav.syfo.shared.util.toLocalDateOslo
 import org.slf4j.LoggerFactory
 import java.util.*
 
 class KartleggingssporsmalService(
     private val behandlendeEnhetClient: IBehandlendeEnhetClient,
+    private val kartleggingssporsmalRepository: IKartleggingssporsmalRepository,
 ) {
 
-    // TODO: Change return type after testing is done and we start persisting data
-    fun processOppfolgingstilfelle(oppfolgingstilfelle: Oppfolgingstilfelle): Boolean {
-        return if (isRelevantForPlanlagtKandidat(oppfolgingstilfelle)) {
-            val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt(
-                personident = oppfolgingstilfelle.personident,
-                tilfelleBitReferanseUuid = oppfolgingstilfelle.tilfelleBitReferanseUuid,
-                tilfelleStart = oppfolgingstilfelle.tilfelleStart,
-                tilfelleEnd = oppfolgingstilfelle.tilfelleEnd,
-            )
+    suspend fun processOppfolgingstilfelle(oppfolgingstilfelle: Oppfolgingstilfelle) {
+        val behandlendeEnhet = behandlendeEnhetClient.getEnhet(
+            callId = UUID.randomUUID().toString(),
+            personident = oppfolgingstilfelle.personident,
+        ).let { response ->
+            if (response == null) {
+                log.error("Mangler enhet for person med oppfolgingstilfelle-uuid: ${oppfolgingstilfelle.uuid}")
+                null
+            } else {
+                response.oppfolgingsenhetDTO?.enhet
+                    ?: response.geografiskEnhet
+            }
+        }
+
+        val kartleggingssporsmalStoppunkt: KartleggingssporsmalStoppunkt? = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+
+        if (kartleggingssporsmalStoppunkt != null && isInPilot(behandlendeEnhet?.enhetId)) {
+            kartleggingssporsmalRepository.createStoppunkt(stoppunkt = kartleggingssporsmalStoppunkt)
+
             log.info(
                 """
                 Oppfolgingstilfelle with uuid: ${oppfolgingstilfelle.uuid} has generated a stoppunkt.
@@ -30,40 +39,17 @@ class KartleggingssporsmalService(
                 Antall sykedager: ${oppfolgingstilfelle.antallSykedager}
                 """.trimIndent()
             )
-            true
         } else {
-            log.info("Oppfolgingstilfelle with uuid: ${oppfolgingstilfelle.uuid} is not relevant for planlagt kandidat")
-            false
+            log.info("Oppfolgingstilfelle with uuid: ${oppfolgingstilfelle.uuid} is not relevant for kartleggingssporsmal")
         }
     }
 
-    private fun isRelevantForPlanlagtKandidat(
-        oppfolgingstilfelle: Oppfolgingstilfelle,
-    ): Boolean {
-        val enhet = runBlocking {
-            val behandlendeEnhetDTO = behandlendeEnhetClient.getEnhet(
-                callId = UUID.randomUUID().toString(),
-                personident = oppfolgingstilfelle.personident,
+    private suspend fun isAlreadyKandidatInTilfelle(oppfolgingstilfelle: Oppfolgingstilfelle): Boolean {
+        val existingKandidat = kartleggingssporsmalRepository.getKandidat(oppfolgingstilfelle.personident)
+        return existingKandidat != null &&
+            oppfolgingstilfelle.datoInsideCurrentTilfelle(
+                dato = existingKandidat.createdAt.toLocalDateOslo()
             )
-
-            if (behandlendeEnhetDTO == null) {
-                log.error("Mangler enhet for person med oppfolgingstilfelle-uuid: ${oppfolgingstilfelle.uuid}")
-                null
-            } else {
-                behandlendeEnhetDTO.oppfolgingsenhetDTO?.enhet
-                    ?: behandlendeEnhetDTO.geografiskEnhet
-            }
-        }
-        return oppfolgingstilfelleInsideStoppunktInterval(oppfolgingstilfelle) &&
-            !oppfolgingstilfelle.isDod() &&
-            !oppfolgingstilfelle.hasTilfelleWithEndMoreThanThirtyDaysAgo() &&
-            isInPilot(enhet?.enhetId)
-    }
-
-    private fun oppfolgingstilfelleInsideStoppunktInterval(oppfolgingstilfelle: Oppfolgingstilfelle): Boolean {
-        // TODO: Hva med de som er før start-tidspunkt på intervallet, og så får en veldig lang sykmelding som strekker seg over intervallet?
-        return oppfolgingstilfelle.durationInDays() >= KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS &&
-            oppfolgingstilfelle.durationInDays() <= KARTLEGGINGSSPORSMAL_STOPPUNKT_END_DAYS
     }
 
     private fun isInPilot(enhetId: String?) = enhetId in pilotkontorer
