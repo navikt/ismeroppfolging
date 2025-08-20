@@ -2,6 +2,7 @@ package no.nav.syfo.kartleggingssporsmal.application
 
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_INACTIVE
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelle
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -114,6 +115,18 @@ class KartleggingssporsmalServiceTest {
     fun `processOppfolgingstilfelle should return false when not in pilot office`() {
         val oppfolgingstilfelleNotPilot = createOppfolgingstilfelle(
             personident = ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET,
+            antallSykedager = stoppunktStartIntervalDays.toInt(),
+        )
+
+        val result = kartleggingssporsmalService.processOppfolgingstilfelle(oppfolgingstilfelleNotPilot)
+
+        assertFalse(result)
+    }
+
+    @Test
+    fun `processOppfolgingstilfelle should return false when cannot find behandlende enhet`() {
+        val oppfolgingstilfelleNotPilot = createOppfolgingstilfelle(
+            personident = ARBEIDSTAKER_PERSONIDENT_INACTIVE,
             antallSykedager = stoppunktStartIntervalDays.toInt(),
         )
 
