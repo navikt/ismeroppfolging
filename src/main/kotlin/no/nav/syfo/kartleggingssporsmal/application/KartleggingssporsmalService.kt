@@ -44,15 +44,20 @@ class KartleggingssporsmalService(
             val behandlendeEnhetDTO = behandlendeEnhetClient.getEnhet(
                 callId = UUID.randomUUID().toString(),
                 personident = oppfolgingstilfelle.personident,
-            ) ?: throw IllegalStateException("Mangler enhet for person med oppfolgingstilfelle-uuid: ${oppfolgingstilfelle.uuid}")
+            )
 
-            behandlendeEnhetDTO.oppfolgingsenhetDTO?.enhet
-                ?: behandlendeEnhetDTO.geografiskEnhet
+            if (behandlendeEnhetDTO == null) {
+                log.error("Mangler enhet for person med oppfolgingstilfelle-uuid: ${oppfolgingstilfelle.uuid}")
+                null
+            } else {
+                behandlendeEnhetDTO.oppfolgingsenhetDTO?.enhet
+                    ?: behandlendeEnhetDTO.geografiskEnhet
+            }
         }
         return oppfolgingstilfelleInsideStoppunktInterval(oppfolgingstilfelle) &&
             !oppfolgingstilfelle.isDod() &&
             !oppfolgingstilfelle.hasTilfelleWithEndMoreThanThirtyDaysAgo() &&
-            isInPilot(enhet.enhetId)
+            isInPilot(enhet?.enhetId)
     }
 
     private fun oppfolgingstilfelleInsideStoppunktInterval(oppfolgingstilfelle: Oppfolgingstilfelle): Boolean {
@@ -61,7 +66,7 @@ class KartleggingssporsmalService(
             oppfolgingstilfelle.durationInDays() <= KARTLEGGINGSSPORSMAL_STOPPUNKT_END_DAYS
     }
 
-    private fun isInPilot(enhetId: String) = enhetId in pilotkontorer
+    private fun isInPilot(enhetId: String?) = enhetId in pilotkontorer
 
     companion object {
         private val log = LoggerFactory.getLogger(KartleggingssporsmalService::class.java)
