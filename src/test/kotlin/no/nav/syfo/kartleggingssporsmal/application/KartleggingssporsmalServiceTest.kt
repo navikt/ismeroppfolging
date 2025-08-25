@@ -12,6 +12,7 @@ import no.nav.syfo.shared.infrastructure.database.getKartleggingssporsmalStoppun
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 class KartleggingssporsmalServiceTest {
     private val behandlendeEnhetClient = ExternalMockEnvironment.instance.behandlendeEnhetClient
@@ -92,9 +93,12 @@ class KartleggingssporsmalServiceTest {
 
     @Test
     fun `processOppfolgingstilfelle should generate stoppunkt when tilfelle ending exactly 30 days ago`() {
+        val start = LocalDate.now().minusDays(stoppunktStartIntervalDays + 30)
+        val end = LocalDate.now().minusDays(30)
         val oppfolgingstilfelleExactly30DaysAgo = createOppfolgingstilfelle(
-            tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays + 30),
-            tilfelleEnd = LocalDate.now().minusDays(30),
+            tilfelleStart = start,
+            tilfelleEnd = end,
+            antallSykedager = ChronoUnit.DAYS.between(start, end).toInt() + 1,
         )
 
         runBlocking {
@@ -134,6 +138,60 @@ class KartleggingssporsmalServiceTest {
     }
 
     @Test
+    fun `processOppfolgingstilfelle should generate stoppunkt when duration until today is before stoppunkt but new periode sends duration outside interval-end`() {
+        val oppfolgingstilfelleWithFutureSykedagerInsideInterval = createOppfolgingstilfelle(
+            antallSykedager = (stoppunktEndIntervalDays + 1).toInt(),
+            tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays - 2),
+        )
+
+        runBlocking {
+            kartleggingssporsmalService.processOppfolgingstilfelle(oppfolgingstilfelleWithFutureSykedagerInsideInterval)
+        }
+
+        val stoppunkter = database.getKartleggingssporsmalStoppunkt()
+        assertEquals(1, stoppunkter.size)
+        assertEquals(oppfolgingstilfelleWithFutureSykedagerInsideInterval.personident, stoppunkter.first().personident)
+        assertEquals(oppfolgingstilfelleWithFutureSykedagerInsideInterval.tilfelleBitReferanseUuid, stoppunkter.first().tilfelleBitReferanseUuid)
+        assertEquals(
+            oppfolgingstilfelleWithFutureSykedagerInsideInterval.tilfelleStart.plusDays(stoppunktStartIntervalDays),
+            stoppunkter.first().stoppunktAt,
+        )
+    }
+
+    @Test
+    fun `processOppfolgingstilfelle should generate stoppunkt today when duration until today is inside interval but new periode sends duration outside interval-end`() {
+        val oppfolgingstilfelleWithDurationUntilNowInsideInterval = createOppfolgingstilfelle(
+            antallSykedager = (stoppunktEndIntervalDays + 10).toInt(),
+            tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays + 10),
+        )
+
+        runBlocking {
+            kartleggingssporsmalService.processOppfolgingstilfelle(oppfolgingstilfelleWithDurationUntilNowInsideInterval)
+        }
+
+        val stoppunkter = database.getKartleggingssporsmalStoppunkt()
+        assertEquals(1, stoppunkter.size)
+        assertEquals(oppfolgingstilfelleWithDurationUntilNowInsideInterval.personident, stoppunkter.first().personident)
+        assertEquals(oppfolgingstilfelleWithDurationUntilNowInsideInterval.tilfelleBitReferanseUuid, stoppunkter.first().tilfelleBitReferanseUuid)
+        assertEquals(LocalDate.now(), stoppunkter.first().stoppunktAt)
+    }
+
+    @Test
+    fun `processOppfolgingstilfelle should ignore when too short tilfelle is consumed when 'today' is inside interval`() {
+        val oppfolgingstilfelleWithDurationUntilNowInsideInterval = createOppfolgingstilfelle(
+            antallSykedager = (stoppunktStartIntervalDays - 10).toInt(),
+            tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays + 10),
+        )
+
+        runBlocking {
+            kartleggingssporsmalService.processOppfolgingstilfelle(oppfolgingstilfelleWithDurationUntilNowInsideInterval)
+        }
+
+        val stoppunkter = database.getKartleggingssporsmalStoppunkt()
+        assertEquals(0, stoppunkter.size)
+    }
+
+    @Test
     fun `processOppfolgingstilfelle should ignore when oppfolgingstilfelle is before stoppunkt interval`() {
         val oppfolgingstilfelleBeforeStoppunktInterval = createOppfolgingstilfelle(
             antallSykedager = stoppunktStartIntervalDays.toInt() - 1,
@@ -150,6 +208,7 @@ class KartleggingssporsmalServiceTest {
     @Test
     fun `processOppfolgingstilfelle should ignore when oppfolgingstilfelle is after stoppunkt interval`() {
         val oppfolgingstilfelleOutsideStoppunktInterval = createOppfolgingstilfelle(
+            tilfelleStart = LocalDate.now().minusDays(stoppunktEndIntervalDays + 1),
             antallSykedager = stoppunktEndIntervalDays.toInt() + 1,
         )
 
