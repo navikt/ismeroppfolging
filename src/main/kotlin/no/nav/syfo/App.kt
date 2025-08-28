@@ -130,13 +130,11 @@ fun main() {
                     kafkaEnvironment = environment.kafka,
                     senOppfolgingRepository = senOppfolgingRepository,
                 )
-                if (environment.isOppfolgingstilfelleConsumerEnabled) {
-                    launchOppfolgingstilfelleConsumer(
-                        applicationState = applicationState,
-                        kafkaEnvironment = environment.kafka,
-                        kartleggingssporsmalService = kartleggingssporsmalService,
-                    )
-                }
+                launchOppfolgingstilfelleConsumer(
+                    applicationState = applicationState,
+                    kafkaEnvironment = environment.kafka,
+                    kartleggingssporsmalService = kartleggingssporsmalService,
+                )
             }
         }
     )
