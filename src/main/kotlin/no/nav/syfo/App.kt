@@ -7,6 +7,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
+import no.nav.syfo.kartleggingssporsmal.infrastructure.cronjob.KandidatStoppunktCronjob
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
 import no.nav.syfo.shared.api.apiModule
 import no.nav.syfo.senoppfolging.application.SenOppfolgingService
@@ -25,7 +26,6 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.launchOppfolgingsti
 import no.nav.syfo.shared.infrastructure.kafka.kafkaAivenProducerConfig
 import no.nav.syfo.senoppfolging.infrastructure.kafka.consumer.launchSenOppfolgingSvarConsumer
 import no.nav.syfo.senoppfolging.infrastructure.kafka.consumer.launchSenOppfolgingVarselConsumer
-import no.nav.syfo.shared.infrastructure.cronjob.Cronjob
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
@@ -105,8 +105,9 @@ fun main() {
                 applicationState.ready = true
                 logger.info("Application is ready, running Java VM ${Runtime.version()}")
 
-                val cronjobs = listOf<Cronjob>(
+                val cronjobs = listOf(
                     PublishKandidatStatusCronjob(senOppfolgingService),
+                    KandidatStoppunktCronjob(kartleggingssporsmalService)
                 )
 
                 launchCronjobs(

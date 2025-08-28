@@ -40,6 +40,16 @@ class KartleggingssporsmalService(
         }
     }
 
+    suspend fun processKandidater(): List<Result<KartleggingssporsmalStoppunkt>> {
+        val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkt()
+        val processed = mutableListOf<Result<KartleggingssporsmalStoppunkt>>()
+        unprocessed.forEach {
+            log.info("Found stoppunkt to process: ${it.uuid}")
+            // TODO: Process stoppunkt and set as processed
+        }
+        return processed
+    }
+
     private suspend fun isAlreadyKandidatInTilfelle(oppfolgingstilfelle: Oppfolgingstilfelle): Boolean {
         val existingKandidat = kartleggingssporsmalRepository.getKandidat(oppfolgingstilfelle.personident)
         return existingKandidat != null &&

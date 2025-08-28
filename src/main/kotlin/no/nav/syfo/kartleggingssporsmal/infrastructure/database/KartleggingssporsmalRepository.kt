@@ -6,7 +6,9 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.infrastructure.database.DatabaseInterface
 import no.nav.syfo.shared.infrastructure.database.toList
+import java.sql.Date
 import java.sql.ResultSet
+import java.sql.SQLException
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -52,6 +54,29 @@ class KartleggingssporsmalRepository(
         }
     }
 
+    override suspend fun getUnprocessedStoppunkt(): List<KartleggingssporsmalStoppunkt> {
+        return database.connection.use { connection ->
+            connection.prepareStatement(GET_UNPROCESSED_STOPPUNKT).use {
+                it.setDate(1, Date.valueOf(LocalDate.now()))
+                it.setDate(2, Date.valueOf(LocalDate.now().minusDays(1)))
+                it.executeQuery().toList { toPKartleggingssporsmalStoppunkt().toKartleggingssporsmalStoppunkt() }
+            }
+        }
+    }
+
+    override suspend fun markStoppunktAsProcessed(stoppunkt: KartleggingssporsmalStoppunkt) {
+        database.connection.use { connection ->
+            connection.prepareStatement(SET_STOPPUNKT_PROCESSED).use {
+                it.setString(1, stoppunkt.uuid.toString())
+                val updated = it.executeUpdate()
+                if (updated != 1) {
+                    throw SQLException("Expected a single row to be updated, got update count $updated")
+                }
+            }
+            connection.commit()
+        }
+    }
+
     companion object {
         private const val CREATE_STOPPUNKT = """
             INSERT INTO KARTLEGGINGSSPORSMAL_STOPPUNKT (
@@ -70,6 +95,17 @@ class KartleggingssporsmalRepository(
             SELECT * FROM KARTLEGGINGSSPORSMAL_KANDIDAT
             WHERE personident = ? AND status = 'KANDIDAT'
             ORDER BY created_at DESC
+        """
+
+        private const val GET_UNPROCESSED_STOPPUNKT = """
+            SELECT * FROM KARTLEGGINGSSPORSMAL_STOPPUNKT
+            WHERE processed_at IS NULL AND (stoppunktAt = ? OR stoppunktAt = ?)
+        """
+
+        private const val SET_STOPPUNKT_PROCESSED = """
+            UPDATE KARTLEGGINGSSPORSMAL_STOPPUNKT
+            SET processed_at = now()
+            WHERE uuid = ?
         """
     }
 }
