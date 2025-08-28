@@ -1,5 +1,6 @@
 package no.nav.syfo.kartleggingssporsmal.generators
 
+import no.nav.syfo.UserConstants.VALID_PILOTKONTOR
 import no.nav.syfo.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet.BehandlendeEnhetResponseDTO
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet.Enhet
@@ -7,7 +8,7 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet.
 import java.time.LocalDateTime
 
 fun getBehandlendeEnhetDTO(
-    geografiskEnhetId: String = "0314",
+    geografiskEnhetId: String = VALID_PILOTKONTOR,
     oppfolgingsenhetId: String? = null,
 ) = BehandlendeEnhetResponseDTO(
     geografiskEnhet = Enhet(

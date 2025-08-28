@@ -25,22 +25,18 @@ class KartleggingssporsmalService(
             }
         }
 
-        val kartleggingssporsmalStoppunkt: KartleggingssporsmalStoppunkt? = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+        if (isInPilot(behandlendeEnhet?.enhetId)) {
+            val kartleggingssporsmalStoppunkt: KartleggingssporsmalStoppunkt? = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
 
-        if (kartleggingssporsmalStoppunkt != null && isInPilot(behandlendeEnhet?.enhetId)) {
-            kartleggingssporsmalRepository.createStoppunkt(stoppunkt = kartleggingssporsmalStoppunkt)
+            if (kartleggingssporsmalStoppunkt != null) {
+                kartleggingssporsmalRepository.createStoppunkt(stoppunkt = kartleggingssporsmalStoppunkt)
 
-            log.info(
-                """
-                Oppfolgingstilfelle with uuid: ${oppfolgingstilfelle.uuid} has generated a stoppunkt.
-                Stoppunkt dato: ${kartleggingssporsmalStoppunkt.stoppunktAt}
-                Tilfelle start: ${oppfolgingstilfelle.tilfelleStart}
-                Tilfelle end: ${oppfolgingstilfelle.tilfelleEnd}
-                Antall sykedager: ${oppfolgingstilfelle.antallSykedager}
-                """.trimIndent()
-            )
+                log.info("Oppfolgingstilfelle with uuid: ${oppfolgingstilfelle.uuid} has generated a stoppunkt.")
+            } else {
+                log.info("Oppfolgingstilfelle with uuid: ${oppfolgingstilfelle.uuid} is not relevant for kartleggingssporsmal")
+            }
         } else {
-            log.info("Oppfolgingstilfelle with uuid: ${oppfolgingstilfelle.uuid} is not relevant for kartleggingssporsmal")
+            log.info("Oppfolgingstilfelle with uuid: ${oppfolgingstilfelle.uuid} is not in pilot")
         }
     }
 
@@ -56,7 +52,8 @@ class KartleggingssporsmalService(
 
     companion object {
         private val log = LoggerFactory.getLogger(KartleggingssporsmalService::class.java)
-        private const val PILOTKONTOR_TEST = "0314"
-        private val pilotkontorer = listOf(PILOTKONTOR_TEST)
+        private const val KONTOR_NAV_LIER = "0626"
+        private const val KONTOR_NAV_ASKER = "0220"
+        private val pilotkontorer = listOf(KONTOR_NAV_LIER, KONTOR_NAV_ASKER)
     }
 }
