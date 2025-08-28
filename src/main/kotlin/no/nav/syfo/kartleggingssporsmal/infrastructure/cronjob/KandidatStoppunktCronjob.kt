@@ -10,5 +10,5 @@ class KandidatStoppunktCronjob(
     override val intervalDelayMinutes: Long = 5
     override val initialDelayMinutes: Long = 2
 
-    override suspend fun run() = kartleggingssporsmalService.processKandidater()
+    override suspend fun run() = kartleggingssporsmalService.processStoppunkt()
 }

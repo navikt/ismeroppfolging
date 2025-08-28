@@ -40,7 +40,7 @@ class KartleggingssporsmalService(
         }
     }
 
-    suspend fun processKandidater(): List<Result<KartleggingssporsmalStoppunkt>> {
+    suspend fun processStoppunkt(): List<Result<KartleggingssporsmalStoppunkt>> {
         val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkt()
         val processed = mutableListOf<Result<KartleggingssporsmalStoppunkt>>()
         unprocessed.forEach {
