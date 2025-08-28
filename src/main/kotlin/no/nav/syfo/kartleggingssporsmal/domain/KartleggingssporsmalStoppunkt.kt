@@ -4,7 +4,9 @@ import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.math.min
 
 data class KartleggingssporsmalStoppunkt private constructor(
     val uuid: UUID,
@@ -65,10 +67,25 @@ data class KartleggingssporsmalStoppunkt private constructor(
                 !oppfolgingstilfelle.hasTilfelleWithEndMoreThanThirtyDaysAgo()
         }
 
+        /**
+         * Funksjonen skal oppdage om et oppfolgingstilfelle er innenfor et gitt intervall.
+         * På grunn av oppfølgingstilfellers natur der det kan komme inn informasjon på ulike tidspunkt både frem og tilbake i tid, må vi håndtere flere edge-caser.
+         * Dekker tre caser:
+         * - Det kommer inn informasjon som dytter duration inn i intervallet ila perioden: hasDurationInsideInterval
+         * - Det kommer inn informasjon som dytter duration forbi intervall-slutt, men vi er fortsatt ikke forbi stoppunkttidspunktet i dag (typisk lang sykmelding): willHaveSykedagInIntervalDuringThisPeriod
+         * - Det kommer inn informasjon som sier at duration frem til idag er innenfor intervallet: isInsideIntervalNow
+         */
         private fun oppfolgingstilfelleInsideStoppunktInterval(oppfolgingstilfelle: Oppfolgingstilfelle): Boolean {
-            // TODO: Hva med de som er før start-tidspunkt på intervallet, og så får en veldig lang sykmelding som strekker seg over intervallet?
-            return oppfolgingstilfelle.durationInDays() >= KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS &&
-                oppfolgingstilfelle.durationInDays() <= KARTLEGGINGSSPORSMAL_STOPPUNKT_END_DAYS
+            val durationDays = oppfolgingstilfelle.durationInDays()
+            val durationInDaysUntilNow = min(
+                durationDays,
+                ChronoUnit.DAYS.between(oppfolgingstilfelle.tilfelleStart, LocalDate.now()) + 1
+            )
+            val hasDurationInsideInterval = durationDays in KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS..KARTLEGGINGSSPORSMAL_STOPPUNKT_END_DAYS
+            val willHaveSykedagInIntervalDuringThisPeriod = durationInDaysUntilNow <= KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS && durationDays >= KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
+            val isInsideIntervalNow = durationInDaysUntilNow in KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS..KARTLEGGINGSSPORSMAL_STOPPUNKT_END_DAYS
+
+            return hasDurationInsideInterval || willHaveSykedagInIntervalDuringThisPeriod || isInsideIntervalNow
         }
 
         private fun calculateStoppunktDato(
