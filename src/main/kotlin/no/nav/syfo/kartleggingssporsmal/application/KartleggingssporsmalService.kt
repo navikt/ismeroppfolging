@@ -42,12 +42,13 @@ class KartleggingssporsmalService(
 
     suspend fun processStoppunkt(): List<Result<KartleggingssporsmalStoppunkt>> {
         val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkt()
-        val processed = mutableListOf<Result<KartleggingssporsmalStoppunkt>>()
-        unprocessed.forEach {
-            log.info("Found stoppunkt to process: ${it.uuid}")
-            // TODO: Process stoppunkt and set as processed
+        return unprocessed.map {
+            runCatching {
+                log.info("Found stoppunkt to process: ${it.uuid}")
+                // TODO: Process stoppunkt and set as processed
+                it
+            }
         }
-        return processed
     }
 
     private suspend fun isAlreadyKandidatInTilfelle(oppfolgingstilfelle: Oppfolgingstilfelle): Boolean {
