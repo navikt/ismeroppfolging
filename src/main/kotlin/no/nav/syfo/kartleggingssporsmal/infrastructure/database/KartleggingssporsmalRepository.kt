@@ -99,7 +99,7 @@ class KartleggingssporsmalRepository(
 
         private const val GET_UNPROCESSED_STOPPUNKT = """
             SELECT * FROM KARTLEGGINGSSPORSMAL_STOPPUNKT
-            WHERE processed_at IS NULL AND (stoppunktAt = ? OR stoppunktAt = ?)
+            WHERE processed_at IS NULL AND (stoppunkt_at = ? OR stoppunkt_at = ?)
         """
 
         private const val SET_STOPPUNKT_PROCESSED = """
