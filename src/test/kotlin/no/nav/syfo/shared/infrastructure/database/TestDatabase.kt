@@ -9,6 +9,9 @@ import no.nav.syfo.senoppfolging.infrastructure.database.repository.toPSenOppfol
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.toPSenOppfolgingVurdering
 import org.flywaydb.core.Flyway
 import java.sql.Connection
+import java.sql.Date
+import java.time.LocalDate
+import java.util.UUID
 
 class TestDatabase : DatabaseInterface {
     private val pg: EmbeddedPostgres = try {
@@ -96,3 +99,14 @@ fun TestDatabase.getKartleggingssporsmalStoppunkt(): List<PKartleggingssporsmalS
             it.executeQuery().toList { toPKartleggingssporsmalStoppunkt() }
         }
     }
+
+fun TestDatabase.setStoppunktDate(uuid: UUID, stoppunkt: LocalDate) {
+    this.connection.use { connection ->
+        connection.prepareStatement("UPDATE KARTLEGGINGSSPORSMAL_STOPPUNKT SET stoppunkt_at=? WHERE uuid=?").use {
+            it.setDate(1, Date.valueOf(stoppunkt))
+            it.setString(2, uuid.toString())
+            it.executeUpdate()
+        }
+        connection.commit()
+    }
+}
