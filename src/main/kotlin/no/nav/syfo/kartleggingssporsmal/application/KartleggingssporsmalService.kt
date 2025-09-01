@@ -40,8 +40,8 @@ class KartleggingssporsmalService(
         }
     }
 
-    suspend fun processStoppunkt(): List<Result<KartleggingssporsmalStoppunkt>> {
-        val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkt()
+    suspend fun processStoppunkter(): List<Result<KartleggingssporsmalStoppunkt>> {
+        val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
         return unprocessed.map {
             runCatching {
                 log.info("Found stoppunkt to process: ${it.uuid}")

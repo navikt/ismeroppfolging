@@ -52,7 +52,7 @@ class KartleggingssporsmalRepositoryTest {
 
         runBlocking {
             kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
-            val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkt()
+            val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
             assertEquals(unprocessed.size, 1)
             assertEquals(unprocessed[0].personident, kartleggingssporsmalStoppunkt.personident)
         }
@@ -71,7 +71,7 @@ class KartleggingssporsmalRepositoryTest {
             kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
             database.setStoppunktDate(kartleggingssporsmalStoppunkt.uuid, LocalDate.now().minusDays(1))
 
-            val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkt()
+            val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
             assertEquals(unprocessed.size, 1)
             assertEquals(unprocessed[0].personident, kartleggingssporsmalStoppunkt.personident)
         }
@@ -90,7 +90,7 @@ class KartleggingssporsmalRepositoryTest {
             kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
             database.setStoppunktDate(kartleggingssporsmalStoppunkt.uuid, LocalDate.now().minusDays(2))
 
-            val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkt()
+            val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
             assertEquals(unprocessed.size, 0)
         }
     }
@@ -106,7 +106,7 @@ class KartleggingssporsmalRepositoryTest {
 
         runBlocking {
             kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
-            val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkt()
+            val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
             assertEquals(unprocessed.size, 0)
         }
     }
@@ -123,7 +123,7 @@ class KartleggingssporsmalRepositoryTest {
         runBlocking {
             val created = kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
             kartleggingssporsmalRepository.markStoppunktAsProcessed(created)
-            val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkt()
+            val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
             assertEquals(unprocessed.size, 0)
         }
     }

@@ -54,7 +54,7 @@ class KartleggingssporsmalRepository(
         }
     }
 
-    override suspend fun getUnprocessedStoppunkt(): List<KartleggingssporsmalStoppunkt> {
+    override suspend fun getUnprocessedStoppunkter(): List<KartleggingssporsmalStoppunkt> {
         return database.connection.use { connection ->
             connection.prepareStatement(GET_UNPROCESSED_STOPPUNKT).use {
                 it.setDate(1, Date.valueOf(LocalDate.now()))
