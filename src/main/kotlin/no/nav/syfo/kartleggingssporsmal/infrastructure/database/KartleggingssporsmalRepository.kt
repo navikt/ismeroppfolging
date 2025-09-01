@@ -56,7 +56,7 @@ class KartleggingssporsmalRepository(
 
     override suspend fun getUnprocessedStoppunkter(): List<KartleggingssporsmalStoppunkt> {
         return database.connection.use { connection ->
-            connection.prepareStatement(GET_UNPROCESSED_STOPPUNKT).use {
+            connection.prepareStatement(GET_UNPROCESSED_STOPPUNKTER).use {
                 it.setDate(1, Date.valueOf(LocalDate.now()))
                 it.setDate(2, Date.valueOf(LocalDate.now().minusDays(1)))
                 it.executeQuery().toList { toPKartleggingssporsmalStoppunkt().toKartleggingssporsmalStoppunkt() }
@@ -97,7 +97,7 @@ class KartleggingssporsmalRepository(
             ORDER BY created_at DESC
         """
 
-        private const val GET_UNPROCESSED_STOPPUNKT = """
+        private const val GET_UNPROCESSED_STOPPUNKTER = """
             SELECT * FROM KARTLEGGINGSSPORSMAL_STOPPUNKT
             WHERE processed_at IS NULL AND (stoppunkt_at = ? OR stoppunkt_at = ?)
         """
