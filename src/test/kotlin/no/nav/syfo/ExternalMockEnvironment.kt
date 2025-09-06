@@ -1,6 +1,7 @@
 package no.nav.syfo
 
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
+import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.shared.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aClient
@@ -41,6 +42,12 @@ class ExternalMockEnvironment private constructor() {
     val behandlendeEnhetClient = BehandlendeEnhetClient(
         azureAdClient = azureAdClient,
         clientEnvironment = environment.clients.syfobehandlendeenhet,
+        httpClient = mockHttpClient,
+    )
+
+    val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
+        azureAdClient = azureAdClient,
+        clientEnvironment = environment.clients.isoppfolgingstilfelle,
         httpClient = mockHttpClient,
     )
 

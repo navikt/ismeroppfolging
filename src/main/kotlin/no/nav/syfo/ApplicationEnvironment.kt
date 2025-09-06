@@ -53,6 +53,10 @@ data class Environment(
                 baseUrl = getEnvVar("VEILARBVEDTAKSSTOTTE_URL"),
                 clientId = getEnvVar("VEILARBVEDTAKSSTOTTE_CLIENT_ID"),
             ),
+            isoppfolgingstilfelle = ClientEnvironment(
+                baseUrl = getEnvVar("ISOPPFOLGINGSTILFELLE_URL"),
+                clientId = getEnvVar("ISOPPFOLGINGSTILFELLE_CLIENT_ID"),
+            ),
         ),
 )
 

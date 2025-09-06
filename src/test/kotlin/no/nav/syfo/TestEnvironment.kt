@@ -48,6 +48,10 @@ fun testEnvironment() = Environment(
             baseUrl = "veilarbvedtaksstotteUrl",
             clientId = "dev-gcp.obo.veilarbvedtaksstotte",
         ),
+        isoppfolgingstilfelle = ClientEnvironment(
+            baseUrl = "isoppfolgingstilfelleUrl",
+            clientId = "dev-gcp.teamsykefravr.isoppfolgingstilfelle",
+        ),
     ),
     electorPath = "electorPath",
 )
