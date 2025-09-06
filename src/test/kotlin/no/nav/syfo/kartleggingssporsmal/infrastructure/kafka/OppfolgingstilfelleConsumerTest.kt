@@ -7,7 +7,7 @@ import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
-import no.nav.syfo.kartleggingssporsmal.generators.createKafkaOppfolgingstilfellePerson
+import no.nav.syfo.kartleggingssporsmal.generators.createKafkaOppfolgingstilfellePersonDTO
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
 import no.nav.syfo.shared.infrastructure.kafka.mockPollConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -43,7 +43,7 @@ class OppfolgingstilfelleConsumerTest {
     @Test
     fun `pollAndProcessRecords should process records and commit offsets`() {
         val recordKey = UUID.randomUUID().toString()
-        val oppfolgingstilfelleRecord = createKafkaOppfolgingstilfellePerson()
+        val oppfolgingstilfelleRecord = createKafkaOppfolgingstilfellePersonDTO()
         kafkaConsumer.mockPollConsumerRecords(
             records = listOf(recordKey to oppfolgingstilfelleRecord),
             topic = OPPFOLGINGSTILFELLE_PERSON_TOPIC,

@@ -4,7 +4,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_INACTIVE
-import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelle
+import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFromKafka
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import org.junit.jupiter.api.Test
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
@@ -33,7 +33,7 @@ class KartleggingssporsmalServiceTest {
 
     @Test
     fun `processOppfolgingstilfelle should generate stoppunkt when oppfolgingstilfelle is relevant for stoppunkt`() {
-        val oppfolgingstilfelleInsideStoppunktInterval = createOppfolgingstilfelle(
+        val oppfolgingstilfelleInsideStoppunktInterval = createOppfolgingstilfelleFromKafka(
             antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
         )
 
@@ -53,7 +53,7 @@ class KartleggingssporsmalServiceTest {
 
     @Test
     fun `processOppfolgingstilfelle should generate stoppunkt when oppfolgingstilfelle is exactly at stoppunkt start`() {
-        val oppfolgingstilfelleAtStoppunktStart = createOppfolgingstilfelle(
+        val oppfolgingstilfelleAtStoppunktStart = createOppfolgingstilfelleFromKafka(
             antallSykedager = stoppunktStartIntervalDays.toInt(),
         )
 
@@ -73,7 +73,7 @@ class KartleggingssporsmalServiceTest {
 
     @Test
     fun `processOppfolgingstilfelle should generate stoppunkt when oppfolgingstilfelle is exactly at stoppunkt end`() {
-        val oppfolgingstilfelleAtStoppunktEnd = createOppfolgingstilfelle(
+        val oppfolgingstilfelleAtStoppunktEnd = createOppfolgingstilfelleFromKafka(
             antallSykedager = stoppunktEndIntervalDays.toInt(),
         )
 
@@ -95,7 +95,7 @@ class KartleggingssporsmalServiceTest {
     fun `processOppfolgingstilfelle should generate stoppunkt when tilfelle ending exactly 30 days ago`() {
         val start = LocalDate.now().minusDays(stoppunktStartIntervalDays + 30)
         val end = LocalDate.now().minusDays(30)
-        val oppfolgingstilfelleExactly30DaysAgo = createOppfolgingstilfelle(
+        val oppfolgingstilfelleExactly30DaysAgo = createOppfolgingstilfelleFromKafka(
             tilfelleStart = start,
             tilfelleEnd = end,
             antallSykedager = ChronoUnit.DAYS.between(start, end).toInt() + 1,
@@ -117,7 +117,7 @@ class KartleggingssporsmalServiceTest {
 
     @Test
     fun `processOppfolgingstilfelle should generate stoppunkt when antallSykedager is null but tilfelle interval within stoppunkt interval`() {
-        val oppfolgingstilfelleWithNullSykedager = createOppfolgingstilfelle(
+        val oppfolgingstilfelleWithNullSykedager = createOppfolgingstilfelleFromKafka(
             antallSykedager = null,
             tilfelleStart = LocalDate.now(),
             tilfelleEnd = LocalDate.now().plusDays(stoppunktStartIntervalDays),
@@ -139,7 +139,7 @@ class KartleggingssporsmalServiceTest {
 
     @Test
     fun `processOppfolgingstilfelle should generate stoppunkt when duration until today is before stoppunkt but new periode sends duration outside interval-end`() {
-        val oppfolgingstilfelleWithFutureSykedagerInsideInterval = createOppfolgingstilfelle(
+        val oppfolgingstilfelleWithFutureSykedagerInsideInterval = createOppfolgingstilfelleFromKafka(
             antallSykedager = (stoppunktEndIntervalDays + 1).toInt(),
             tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays - 2),
         )
@@ -160,7 +160,7 @@ class KartleggingssporsmalServiceTest {
 
     @Test
     fun `processOppfolgingstilfelle should generate stoppunkt today when duration until today is inside interval but new periode sends duration outside interval-end`() {
-        val oppfolgingstilfelleWithDurationUntilNowInsideInterval = createOppfolgingstilfelle(
+        val oppfolgingstilfelleWithDurationUntilNowInsideInterval = createOppfolgingstilfelleFromKafka(
             antallSykedager = (stoppunktEndIntervalDays + 10).toInt(),
             tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays + 10),
         )
@@ -178,7 +178,7 @@ class KartleggingssporsmalServiceTest {
 
     @Test
     fun `processOppfolgingstilfelle should ignore when too short tilfelle is consumed when 'today' is inside interval`() {
-        val oppfolgingstilfelleWithDurationUntilNowInsideInterval = createOppfolgingstilfelle(
+        val oppfolgingstilfelleWithDurationUntilNowInsideInterval = createOppfolgingstilfelleFromKafka(
             antallSykedager = (stoppunktStartIntervalDays - 10).toInt(),
             tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays + 10),
         )
@@ -193,7 +193,7 @@ class KartleggingssporsmalServiceTest {
 
     @Test
     fun `processOppfolgingstilfelle should ignore when oppfolgingstilfelle is before stoppunkt interval`() {
-        val oppfolgingstilfelleBeforeStoppunktInterval = createOppfolgingstilfelle(
+        val oppfolgingstilfelleBeforeStoppunktInterval = createOppfolgingstilfelleFromKafka(
             antallSykedager = stoppunktStartIntervalDays.toInt() - 1,
         )
 
@@ -207,7 +207,7 @@ class KartleggingssporsmalServiceTest {
 
     @Test
     fun `processOppfolgingstilfelle should ignore when oppfolgingstilfelle is after stoppunkt interval`() {
-        val oppfolgingstilfelleOutsideStoppunktInterval = createOppfolgingstilfelle(
+        val oppfolgingstilfelleOutsideStoppunktInterval = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now().minusDays(stoppunktEndIntervalDays + 1),
             antallSykedager = stoppunktEndIntervalDays.toInt() + 1,
         )
@@ -222,7 +222,7 @@ class KartleggingssporsmalServiceTest {
 
     @Test
     fun `processOppfolgingstilfelle should ignore when person is dead`() {
-        val oppfolgingstilfelleDod = createOppfolgingstilfelle(
+        val oppfolgingstilfelleDod = createOppfolgingstilfelleFromKafka(
             antallSykedager = stoppunktStartIntervalDays.toInt(),
             dodsdato = LocalDate.now().minusDays(1),
         )
@@ -237,7 +237,7 @@ class KartleggingssporsmalServiceTest {
 
     @Test
     fun `processOppfolgingstilfelle should ignore when not in pilot enhet`() {
-        val oppfolgingstilfelleNotPilot = createOppfolgingstilfelle(
+        val oppfolgingstilfelleNotPilot = createOppfolgingstilfelleFromKafka(
             personident = ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET,
             antallSykedager = stoppunktStartIntervalDays.toInt(),
         )
@@ -252,7 +252,7 @@ class KartleggingssporsmalServiceTest {
 
     @Test
     fun `processOppfolgingstilfelle should return false when cannot find behandlende enhet`() {
-        val oppfolgingstilfelleNotPilot = createOppfolgingstilfelle(
+        val oppfolgingstilfelleNotPilot = createOppfolgingstilfelleFromKafka(
             personident = ARBEIDSTAKER_PERSONIDENT_INACTIVE,
             antallSykedager = stoppunktStartIntervalDays.toInt(),
         )
@@ -267,7 +267,7 @@ class KartleggingssporsmalServiceTest {
 
     @Test
     fun `processOppfolgingstilfelle should ignore when multiple negative conditions - dead and not in pilot`() {
-        val oppfolgingstilfelleDodNotPilot = createOppfolgingstilfelle(
+        val oppfolgingstilfelleDodNotPilot = createOppfolgingstilfelleFromKafka(
             personident = ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET,
             antallSykedager = stoppunktStartIntervalDays.toInt(),
             dodsdato = LocalDate.now().minusDays(1),

@@ -11,7 +11,7 @@ class KartleggingssporsmalService(
     private val kartleggingssporsmalRepository: IKartleggingssporsmalRepository,
 ) {
 
-    suspend fun processOppfolgingstilfelle(oppfolgingstilfelle: Oppfolgingstilfelle) {
+    suspend fun processOppfolgingstilfelle(oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromKafka) {
         val behandlendeEnhet = behandlendeEnhetClient.getEnhet(
             callId = UUID.randomUUID().toString(),
             personident = oppfolgingstilfelle.personident,
@@ -51,7 +51,7 @@ class KartleggingssporsmalService(
         }
     }
 
-    private suspend fun isAlreadyKandidatInTilfelle(oppfolgingstilfelle: Oppfolgingstilfelle): Boolean {
+    private suspend fun isAlreadyKandidatInTilfelle(oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromKafka): Boolean {
         val existingKandidat = kartleggingssporsmalRepository.getKandidat(oppfolgingstilfelle.personident)
         return existingKandidat != null &&
             oppfolgingstilfelle.datoInsideCurrentTilfelle(

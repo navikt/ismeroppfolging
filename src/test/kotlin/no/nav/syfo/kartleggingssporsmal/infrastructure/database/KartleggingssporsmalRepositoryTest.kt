@@ -3,7 +3,7 @@ package no.nav.syfo.kartleggingssporsmal.infrastructure.database
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
-import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelle
+import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFromKafka
 import no.nav.syfo.shared.infrastructure.database.setStoppunktDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -24,7 +24,7 @@ class KartleggingssporsmalRepositoryTest {
 
     @Test
     fun `createStoppunkt should create a stoppunkt in the database`() {
-        val oppfolgingstilfelle = createOppfolgingstilfelle(
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now(),
             antallSykedager = 6 * 7,
         )
@@ -43,7 +43,7 @@ class KartleggingssporsmalRepositoryTest {
 
     @Test
     fun `finds existing unprocessed stoppunkt from today`() {
-        val oppfolgingstilfelle = createOppfolgingstilfelle(
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now().minusDays(6 * 7),
             antallSykedager = 6 * 7 + 1,
         )
@@ -60,7 +60,7 @@ class KartleggingssporsmalRepositoryTest {
 
     @Test
     fun `finds existing unprocessed stoppunkt from yesterday`() {
-        val oppfolgingstilfelle = createOppfolgingstilfelle(
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now().minusDays(6 * 7 + 1),
             antallSykedager = 6 * 7 + 2,
         )
@@ -79,7 +79,7 @@ class KartleggingssporsmalRepositoryTest {
 
     @Test
     fun `does not find existing unprocessed stoppunkt from two days ago`() {
-        val oppfolgingstilfelle = createOppfolgingstilfelle(
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now().minusDays(6 * 7 + 2),
             antallSykedager = 6 * 7 + 3,
         )
@@ -97,7 +97,7 @@ class KartleggingssporsmalRepositoryTest {
 
     @Test
     fun `does not find existing unprocessed stoppunkt for tomorrow`() {
-        val oppfolgingstilfelle = createOppfolgingstilfelle(
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now().minusDays(6 * 7 - 1),
             antallSykedager = 6 * 7,
         )
@@ -113,7 +113,7 @@ class KartleggingssporsmalRepositoryTest {
 
     @Test
     fun `does not find existing processed stoppunkt from today`() {
-        val oppfolgingstilfelle = createOppfolgingstilfelle(
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now().minusDays(6 * 7),
             antallSykedager = 6 * 7 + 1,
         )

@@ -1,6 +1,6 @@
 package no.nav.syfo.kartleggingssporsmal.domain
 
-import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelle
+import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFromKafka
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
@@ -15,7 +15,7 @@ class KartleggingssporsmalStoppunktTest {
     @Test
     fun `calculateStoppunktStartDays should return stoppunkt in future upon initialization`() {
         val tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays - 21)
-        val oppfolgingstilfelle = createOppfolgingstilfelle(
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = tilfelleStart,
             tilfelleEnd = LocalDate.now().plusDays(25),
         )
@@ -28,7 +28,7 @@ class KartleggingssporsmalStoppunktTest {
     @Test
     fun `calculateStoppunktStartDays should return stoppunkt today when real stoppunkt in the past upon initialization`() {
         val tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays)
-        val oppfolgingstilfelle = createOppfolgingstilfelle(
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = tilfelleStart,
             tilfelleEnd = LocalDate.now().plusDays(3),
         )
@@ -40,7 +40,7 @@ class KartleggingssporsmalStoppunktTest {
 
     @Test
     fun `initialization should return null when oppfolgingstilfelle does not generate a stoppunkt`() {
-        val oppfolgingstilfelle = createOppfolgingstilfelle(
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now(),
             antallSykedager = 10,
         )
