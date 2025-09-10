@@ -4,6 +4,8 @@ import no.nav.syfo.shared.domain.Personident
 
 object UserConstants {
     val ARBEIDSTAKER_PERSONIDENT = Personident("12345678910")
+    val ARBEIDSTAKER_PERSONIDENT_2 = Personident("12340078910")
+    val ARBEIDSTAKER_PERSONIDENT_3: Personident = Personident("12340078988")
     val ARBEIDSTAKER_PERSONIDENT_INACTIVE = Personident("12345678911")
     val ARBEIDSTAKER_PERSONIDENT_ERROR = Personident("12312312300")
     val ARBEIDSTAKER_PERSONIDENT_VEILEDER_NO_ACCESS = Personident("11111111111")

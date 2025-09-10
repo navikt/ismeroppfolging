@@ -2,6 +2,7 @@ package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka
 
 import io.micrometer.core.instrument.Counter
 import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
+import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
 import no.nav.syfo.shared.infrastructure.kafka.KafkaConsumerService
 import no.nav.syfo.shared.infrastructure.metric.METRICS_NS
 import no.nav.syfo.shared.infrastructure.metric.METRICS_REGISTRY
@@ -35,7 +36,14 @@ class OppfolgingstilfelleConsumer(
     }
 
     private suspend fun processRecord(oppfolgingstilfellePersonDTO: KafkaOppfolgingstilfellePersonDTO) {
-        val oppfolgingstilfelle = oppfolgingstilfellePersonDTO.toLatestOppfolgingstilfelle()
+        val oppfolgingstilfelle = Oppfolgingstilfelle.createFromKafka(
+            uuid = oppfolgingstilfellePersonDTO.uuid,
+            tilfelleGenerert = oppfolgingstilfellePersonDTO.createdAt,
+            personident = oppfolgingstilfellePersonDTO.personIdentNumber,
+            oppfolgingstilfelleList = oppfolgingstilfellePersonDTO.oppfolgingstilfelleList,
+            referanseTilfelleBitUuid = oppfolgingstilfellePersonDTO.referanseTilfelleBitUuid,
+            dodsdato = oppfolgingstilfellePersonDTO.dodsdato,
+        )
 
         if (oppfolgingstilfelle != null) {
             kartleggingssporsmalService.processOppfolgingstilfelle(

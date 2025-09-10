@@ -24,7 +24,7 @@ data class KartleggingssporsmalStoppunkt private constructor(
             KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS + KARTLEGGINGSSPORSMAL_STOPPUNKT_INTERVAL_DAYS
 
         fun create(
-            oppfolgingstilfelle: Oppfolgingstilfelle,
+            oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromKafka,
         ): KartleggingssporsmalStoppunkt? {
             return if (oppfolgingstilfelleWillGenerateStoppunkt(oppfolgingstilfelle)) {
                 KartleggingssporsmalStoppunkt(
@@ -61,7 +61,7 @@ data class KartleggingssporsmalStoppunkt private constructor(
             )
         }
 
-        private fun oppfolgingstilfelleWillGenerateStoppunkt(oppfolgingstilfelle: Oppfolgingstilfelle): Boolean {
+        private fun oppfolgingstilfelleWillGenerateStoppunkt(oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromKafka): Boolean {
             return oppfolgingstilfelleInsideStoppunktInterval(oppfolgingstilfelle) &&
                 !oppfolgingstilfelle.isDod() &&
                 !oppfolgingstilfelle.hasTilfelleWithEndMoreThanThirtyDaysAgo()
@@ -75,7 +75,7 @@ data class KartleggingssporsmalStoppunkt private constructor(
          * - Det kommer inn informasjon som dytter duration forbi intervall-slutt, men vi er fortsatt ikke forbi stoppunkttidspunktet i dag (typisk lang sykmelding): willHaveSykedagInIntervalDuringThisPeriod
          * - Det kommer inn informasjon som sier at duration frem til idag er innenfor intervallet: isInsideIntervalNow
          */
-        private fun oppfolgingstilfelleInsideStoppunktInterval(oppfolgingstilfelle: Oppfolgingstilfelle): Boolean {
+        private fun oppfolgingstilfelleInsideStoppunktInterval(oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromKafka): Boolean {
             val durationDays = oppfolgingstilfelle.durationInDays()
             val durationInDaysUntilNow = min(
                 durationDays,
