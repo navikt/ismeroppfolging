@@ -21,7 +21,7 @@ class OppfolgingstilfelleClientTest {
     @Test
     fun `should return oppfolgingstilfelle for person`() {
         runBlocking {
-            val tilfelle = oppfolgingstilfelleClient.getOppfolgingstilfelle(ARBEIDSTAKER_PERSONIDENT)
+            val tilfelle = oppfolgingstilfelleClient.getOppfolgingstilfelle(ARBEIDSTAKER_PERSONIDENT).getOrThrow()
 
             assertNotNull(tilfelle)
             assertEquals(tilfelle.personident.value, ARBEIDSTAKER_PERSONIDENT.value)
@@ -32,7 +32,7 @@ class OppfolgingstilfelleClientTest {
     @Test
     fun `should return oppfolgingstilfelle for dead person`() {
         runBlocking {
-            val tilfelle = oppfolgingstilfelleClient.getOppfolgingstilfelle(ARBEIDSTAKER_PERSONIDENT_INACTIVE)
+            val tilfelle = oppfolgingstilfelleClient.getOppfolgingstilfelle(ARBEIDSTAKER_PERSONIDENT_INACTIVE).getOrThrow()
 
             assertNotNull(tilfelle)
             assertEquals(tilfelle.personident.value, ARBEIDSTAKER_PERSONIDENT_INACTIVE.value)
@@ -43,7 +43,7 @@ class OppfolgingstilfelleClientTest {
     @Test
     fun `should return oppfolgingstilfelle not active anymore`() {
         runBlocking {
-            val tilfelle = oppfolgingstilfelleClient.getOppfolgingstilfelle(ARBEIDSTAKER_PERSONIDENT_2)
+            val tilfelle = oppfolgingstilfelleClient.getOppfolgingstilfelle(ARBEIDSTAKER_PERSONIDENT_2).getOrThrow()
 
             assertNotNull(tilfelle)
             assertEquals(tilfelle.personident.value, ARBEIDSTAKER_PERSONIDENT_2.value)
@@ -54,7 +54,7 @@ class OppfolgingstilfelleClientTest {
     @Test
     fun `should return null when person without oppfolgingstilfelle`() {
         runBlocking {
-            val tilfelle = oppfolgingstilfelleClient.getOppfolgingstilfelle(ARBEIDSTAKER_PERSONIDENT_3)
+            val tilfelle = oppfolgingstilfelleClient.getOppfolgingstilfelle(ARBEIDSTAKER_PERSONIDENT_3).getOrThrow()
 
             assertNull(tilfelle)
         }
@@ -64,8 +64,7 @@ class OppfolgingstilfelleClientTest {
     fun `should throw error when call fails`() {
         runBlocking {
             assertThrows<ResponseException> {
-                val tilfelle = oppfolgingstilfelleClient.getOppfolgingstilfelle(ARBEIDSTAKER_PERSONIDENT_ERROR)
-                assertNull(tilfelle)
+                oppfolgingstilfelleClient.getOppfolgingstilfelle(ARBEIDSTAKER_PERSONIDENT_ERROR).getOrThrow()
             }
         }
     }
