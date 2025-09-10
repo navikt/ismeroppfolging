@@ -50,6 +50,7 @@ spec:
       rules:
         - application: istilgangskontroll
         - application: syfobehandlendeenhet
+        - application: isoppfolgingstilfelle
         - application: veilarbvedtaksstotte
           namespace: obo
   gcp:
@@ -95,3 +96,7 @@ spec:
       value: "prod-gcp.obo.veilarbvedtaksstotte"
     - name: VEILARBVEDTAKSSTOTTE_URL
       value: "http://veilarbvedtaksstotte.obo"
+    - name: ISOPPFOLGINGSTILFELLE_CLIENT_ID
+      value: "prod-gcp.teamsykefravr.isoppfolgingstilfelle"
+    - name: ISOPPFOLGINGSTILFELLE_URL
+      value: "http://isoppfolgingstilfelle"
