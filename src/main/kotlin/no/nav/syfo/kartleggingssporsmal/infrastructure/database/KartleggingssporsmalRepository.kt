@@ -54,12 +54,38 @@ class KartleggingssporsmalRepository(
         }
     }
 
-    override suspend fun getUnprocessedStoppunkter(): List<KartleggingssporsmalStoppunkt> {
+    override suspend fun createKandidat(
+        kandidat: KartleggingssporsmalKandidat,
+        stoppunktId: Int,
+    ): KartleggingssporsmalKandidat {
+        return database.connection.use { connection ->
+            val pKartleggingssporsmalKandidat = connection.prepareStatement(CREATE_KANDIDAT).use {
+                it.setString(1, kandidat.uuid.toString())
+                it.setObject(2, kandidat.createdAt)
+                it.setString(3, kandidat.personident.value)
+                it.setInt(4, stoppunktId)
+                it.setString(5, kandidat.status.name)
+                it.setObject(6, kandidat.varsletAt)
+                it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
+            }
+            connection.commit()
+            pKartleggingssporsmalKandidat.toKartleggingssporsmalKandidat()
+        }
+    }
+
+    override suspend fun getUnprocessedStoppunkter(): List<Pair<Int, KartleggingssporsmalStoppunkt>> {
         return database.connection.use { connection ->
             connection.prepareStatement(GET_UNPROCESSED_STOPPUNKTER).use {
                 it.setDate(1, Date.valueOf(LocalDate.now()))
                 it.setDate(2, Date.valueOf(LocalDate.now().minusDays(1)))
-                it.executeQuery().toList { toPKartleggingssporsmalStoppunkt().toKartleggingssporsmalStoppunkt() }
+                it.executeQuery()
+                    .toList { toPKartleggingssporsmalStoppunkt() }
+                    .map { stoppunkt ->
+                        Pair(
+                            stoppunkt.id,
+                            stoppunkt.toKartleggingssporsmalStoppunkt()
+                        )
+                    }
             }
         }
     }
@@ -95,6 +121,19 @@ class KartleggingssporsmalRepository(
             SELECT * FROM KARTLEGGINGSSPORSMAL_KANDIDAT
             WHERE personident = ? AND status = 'KANDIDAT'
             ORDER BY created_at DESC
+        """
+
+        private const val CREATE_KANDIDAT = """
+            INSERT INTO KARTLEGGINGSSPORSMAL_KANDIDAT (
+                id,
+                uuid,
+                created_at,
+                personident,
+                generated_by_stoppunkt_id,
+                status,
+                varslet_at
+            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?)
+            RETURNING *
         """
 
         private const val GET_UNPROCESSED_STOPPUNKTER = """
