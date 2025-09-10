@@ -40,20 +40,7 @@ sealed class Oppfolgingstilfelle(
         dodsdato,
         virksomhetsnummerList,
     ) {
-        fun hasTilfelleWithEndMoreThanThirtyDaysAgo(): Boolean = this.tilfelleEnd isMoreThanDaysAgo 30
-
-        fun isDod() = dodsdato != null
-
-        fun durationInDays(): Long {
-            return if (this.antallSykedager != null) {
-                antallSykedager.toLong()
-            } else {
-                ChronoUnit.DAYS.between(this.tilfelleStart, this.tilfelleEnd) + 1
-            }
-        }
-
-        fun datoInsideCurrentTilfelle(dato: LocalDate): Boolean =
-            dato isAfterOrEqual this.tilfelleStart && dato isBeforeOrEqual this.tilfelleEnd
+        fun hasTilfelleWithEndMoreThanThirtyDaysAgo(): Boolean = tilfelleEnd isMoreThanDaysAgo 30
     }
 
     data class OppfolgingstilfelleFromApi internal constructor(
@@ -73,7 +60,22 @@ sealed class Oppfolgingstilfelle(
         dodsdato,
         virksomhetsnummerList,
     ) {
-        fun isActive(): Boolean = LocalDate.now().isBeforeOrEqual(this.tilfelleEnd)
+        fun isActive(): Boolean = LocalDate.now().isBeforeOrEqual(tilfelleEnd)
+
+        fun datoInsideCurrentTilfelle(dato: LocalDate): Boolean =
+            dato isAfterOrEqual tilfelleStart && dato isBeforeOrEqual tilfelleEnd
+    }
+
+    fun isDod() = dodsdato != null
+
+    fun durationInDays(): Long {
+        return antallSykedager?.toLong()
+            ?: (
+                ChronoUnit.DAYS.between(
+                    tilfelleStart,
+                    tilfelleEnd
+                ) + 1
+                )
     }
 
     companion object {
