@@ -7,6 +7,7 @@ import no.nav.syfo.shared.domain.Personident
 interface IKartleggingssporsmalRepository {
     suspend fun createStoppunkt(stoppunkt: KartleggingssporsmalStoppunkt): KartleggingssporsmalStoppunkt
     suspend fun getKandidat(personident: Personident): KartleggingssporsmalKandidat?
-    suspend fun getUnprocessedStoppunkter(): List<KartleggingssporsmalStoppunkt>
+    suspend fun createKandidat(kandidat: KartleggingssporsmalKandidat, stoppunktId: Int): KartleggingssporsmalKandidat
+    suspend fun getUnprocessedStoppunkter(): List<Pair<Int, KartleggingssporsmalStoppunkt>>
     suspend fun markStoppunktAsProcessed(stoppunkt: KartleggingssporsmalStoppunkt)
 }

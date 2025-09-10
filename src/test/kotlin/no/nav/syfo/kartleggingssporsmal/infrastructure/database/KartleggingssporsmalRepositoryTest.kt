@@ -54,7 +54,7 @@ class KartleggingssporsmalRepositoryTest {
             kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
             val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
             assertEquals(unprocessed.size, 1)
-            assertEquals(unprocessed[0].personident, kartleggingssporsmalStoppunkt.personident)
+            assertEquals(unprocessed[0].second.personident, kartleggingssporsmalStoppunkt.personident)
         }
     }
 
@@ -73,7 +73,7 @@ class KartleggingssporsmalRepositoryTest {
 
             val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
             assertEquals(unprocessed.size, 1)
-            assertEquals(unprocessed[0].personident, kartleggingssporsmalStoppunkt.personident)
+            assertEquals(unprocessed[0].second.personident, kartleggingssporsmalStoppunkt.personident)
         }
     }
 
