@@ -5,6 +5,7 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_NO_FODSELSDATO
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_INACTIVE
+import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.model.getAlder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -42,6 +43,17 @@ class PdlClientTest {
 
             assertTrue(result.isFailure)
             assertTrue(result.exceptionOrNull() is RuntimeException)
+        }
+    }
+    
+    @Test
+    fun `should return correct alder for person`(){
+        runBlocking {
+            val result = pdlClient.getPerson(ARBEIDSTAKER_PERSONIDENT)
+            val alder = result.getOrNull()?.getAlder()
+
+            assertTrue(result.isSuccess)
+            assertEquals(30, alder)
         }
     }
 }
