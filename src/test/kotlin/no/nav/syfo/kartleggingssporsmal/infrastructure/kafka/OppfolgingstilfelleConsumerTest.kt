@@ -26,6 +26,9 @@ class OppfolgingstilfelleConsumerTest {
     private val kartleggingssporsmalService = KartleggingssporsmalService(
         behandlendeEnhetClient = externalMockEnvironment.behandlendeEnhetClient,
         kartleggingssporsmalRepository = kartleggingssporsmalRepository,
+        oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
+        pdlClient = externalMockEnvironment.pdlClient,
+        vedtak14aClient = externalMockEnvironment.vedtak14aClient,
     )
     private val oppfolgingstilfelleConsumer = OppfolgingstilfelleConsumer(kartleggingssporsmalService)
 

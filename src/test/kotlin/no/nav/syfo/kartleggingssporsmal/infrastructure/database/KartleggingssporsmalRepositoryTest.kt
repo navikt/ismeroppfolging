@@ -167,7 +167,7 @@ class KartleggingssporsmalRepositoryTest {
             assertEquals(fetchedKandidat.personident, oppfolgingstilfelle.personident)
             assertEquals(fetchedKandidat.status, KandidatStatus.KANDIDAT)
             assertNull(fetchedKandidat.varsletAt)
-            
+
             val processedStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
             assertNotNull(processedStoppunkt.processedAt)
         }
