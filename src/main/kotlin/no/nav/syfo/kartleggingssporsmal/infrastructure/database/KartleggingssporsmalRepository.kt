@@ -6,6 +6,7 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.infrastructure.database.DatabaseInterface
 import no.nav.syfo.shared.infrastructure.database.toList
+import java.sql.Connection
 import java.sql.Date
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -54,7 +55,7 @@ class KartleggingssporsmalRepository(
         }
     }
 
-    override suspend fun createKandidat(
+    override suspend fun createKandidatAndMarkStoppunktAsProcessed(
         kandidat: KartleggingssporsmalKandidat,
         stoppunktId: Int,
     ): KartleggingssporsmalKandidat {
@@ -68,6 +69,7 @@ class KartleggingssporsmalRepository(
                 it.setObject(6, kandidat.varsletAt)
                 it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
             }
+            connection.markStoppunktAsProcessed(stoppunktId)
             connection.commit()
             pKartleggingssporsmalKandidat.toKartleggingssporsmalKandidat()
         }
@@ -90,16 +92,13 @@ class KartleggingssporsmalRepository(
         }
     }
 
-    override suspend fun markStoppunktAsProcessed(stoppunkt: KartleggingssporsmalStoppunkt) {
-        database.connection.use { connection ->
-            connection.prepareStatement(SET_STOPPUNKT_PROCESSED).use {
-                it.setString(1, stoppunkt.uuid.toString())
-                val updated = it.executeUpdate()
-                if (updated != 1) {
-                    throw SQLException("Expected a single row to be updated, got update count $updated")
-                }
+    private fun Connection.markStoppunktAsProcessed(stoppunktId: Int) {
+        this.prepareStatement(SET_STOPPUNKT_PROCESSED).use {
+            it.setInt(1, stoppunktId)
+            val updated = it.executeUpdate()
+            if (updated != 1) {
+                throw SQLException("Expected a single row to be updated, got update count $updated")
             }
-            connection.commit()
         }
     }
 
@@ -144,7 +143,7 @@ class KartleggingssporsmalRepository(
         private const val SET_STOPPUNKT_PROCESSED = """
             UPDATE KARTLEGGINGSSPORSMAL_STOPPUNKT
             SET processed_at = now()
-            WHERE uuid = ?
+            WHERE id = ?
         """
     }
 }
