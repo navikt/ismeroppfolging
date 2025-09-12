@@ -1,6 +1,6 @@
 package no.nav.syfo.kartleggingssporsmal.generators
 
-import no.nav.syfo.UserConstants.ARBEIDSTAKER_NO_FODSELSDATO
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_NO_FODSELSDATO
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_INACTIVE
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.model.*
@@ -31,7 +31,7 @@ fun generatePdlHentPersonResponse(
 ) = PdlHentPersonResponse(
     errors = null,
     data = if (ident == ARBEIDSTAKER_PERSONIDENT_INACTIVE.value) null else generatePdlHentPerson(
-        fodseldato = if (ident == ARBEIDSTAKER_NO_FODSELSDATO.value) null else fodseldato,
+        fodseldato = if (ident == ARBEIDSTAKER_PERSONIDENT_NO_FODSELSDATO.value) null else fodseldato,
     ),
 )
 

@@ -31,7 +31,14 @@ data class Foedselsdato(
 )
 
 fun PdlPerson.getAlder(): Int? {
-    val fodselsdato = this.foedselsdato.firstOrNull()?.foedselsdato ?: return null
+    val fodselsdato = this.foedselsdato.firstOrNull()?.foedselsdato
+    val fodselsaar = this.foedselsdato.firstOrNull()?.foedselsaar
     val today = LocalDate.now()
-    return Period.between(fodselsdato, today).years
+    return if (fodselsdato != null) {
+        Period.between(fodselsdato, today).years
+    } else if (fodselsaar != null) {
+        today.year - fodselsaar
+    } else {
+        null
+    }
 }
