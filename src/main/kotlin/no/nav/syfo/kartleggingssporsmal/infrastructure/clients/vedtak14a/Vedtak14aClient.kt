@@ -73,7 +73,7 @@ class Vedtak14aClient(
 
     companion object {
         private val log = LoggerFactory.getLogger(Vedtak14aClient::class.java)
-        const val GJELDENDE_14A_VEDTAK_API_PATH = "/api/ekstern/hent-gjeldende-14a-vedtak"
+        const val GJELDENDE_14A_VEDTAK_API_PATH = "/veilarbvedtaksstotte/api/ekstern/hent-gjeldende-14a-vedtak"
     }
 }
 
