@@ -1,8 +1,9 @@
 package no.nav.syfo.kartleggingssporsmal.infrastructure.database
 
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.shared.domain.Personident
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 
 data class PKartleggingssporsmalKandidat(
     val id: Int,
@@ -12,4 +13,12 @@ data class PKartleggingssporsmalKandidat(
     val generatedByStoppunktId: Int,
     val status: String,
     val varsletAt: OffsetDateTime?,
-)
+) {
+    fun toKartleggingssporsmalKandidat() = KartleggingssporsmalKandidat.createFromDatabase(
+        uuid = uuid,
+        createdAt = createdAt,
+        personident = personident,
+        status = status,
+        varsletAt = varsletAt,
+    )
+}

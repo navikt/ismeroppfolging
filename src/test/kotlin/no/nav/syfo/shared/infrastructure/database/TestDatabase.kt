@@ -1,6 +1,7 @@
 package no.nav.syfo.shared.infrastructure.database
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.PKartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.toPKartleggingssporsmalStoppunkt
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.PSenOppfolgingKandidat
@@ -10,8 +11,10 @@ import no.nav.syfo.senoppfolging.infrastructure.database.repository.toPSenOppfol
 import org.flywaydb.core.Flyway
 import java.sql.Connection
 import java.sql.Date
+import java.sql.SQLException
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.use
 
 class TestDatabase : DatabaseInterface {
     private val pg: EmbeddedPostgres = try {
@@ -65,10 +68,10 @@ fun TestDatabase.dropData() {
         DELETE FROM SEN_OPPFOLGING_VURDERING
         """.trimIndent(),
         """
-        DELETE FROM KARTLEGGINGSSPORSMAL_STOPPUNKT
+        DELETE FROM KARTLEGGINGSSPORSMAL_KANDIDAT
         """.trimIndent(),
         """
-        DELETE FROM KARTLEGGINGSSPORSMAL_KANDIDAT
+        DELETE FROM KARTLEGGINGSSPORSMAL_STOPPUNKT
         """.trimIndent(),
     )
     this.connection.use { connection ->
@@ -107,6 +110,20 @@ fun TestDatabase.setStoppunktDate(uuid: UUID, stoppunkt: LocalDate) {
             it.setString(2, uuid.toString())
             it.executeUpdate()
         }
+        connection.commit()
+    }
+}
+
+fun TestDatabase.markStoppunktAsProcessed(stoppunkt: KartleggingssporsmalStoppunkt) {
+    this.connection.use { connection ->
+        connection.prepareStatement("UPDATE KARTLEGGINGSSPORSMAL_STOPPUNKT SET processed_at = now() WHERE uuid = ?")
+            .use {
+                it.setString(1, stoppunkt.uuid.toString())
+                val updated = it.executeUpdate()
+                if (updated != 1) {
+                    throw SQLException("Expected a single row to be updated, got update count $updated")
+                }
+            }
         connection.commit()
     }
 }

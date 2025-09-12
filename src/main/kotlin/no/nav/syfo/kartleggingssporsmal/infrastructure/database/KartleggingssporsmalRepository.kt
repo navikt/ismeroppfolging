@@ -6,6 +6,7 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.infrastructure.database.DatabaseInterface
 import no.nav.syfo.shared.infrastructure.database.toList
+import java.sql.Connection
 import java.sql.Date
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -54,26 +55,50 @@ class KartleggingssporsmalRepository(
         }
     }
 
-    override suspend fun getUnprocessedStoppunkter(): List<KartleggingssporsmalStoppunkt> {
+    override suspend fun createKandidatAndMarkStoppunktAsProcessed(
+        kandidat: KartleggingssporsmalKandidat,
+        stoppunktId: Int,
+    ): KartleggingssporsmalKandidat {
+        return database.connection.use { connection ->
+            val pKartleggingssporsmalKandidat = connection.prepareStatement(CREATE_KANDIDAT).use {
+                it.setString(1, kandidat.uuid.toString())
+                it.setObject(2, kandidat.createdAt)
+                it.setString(3, kandidat.personident.value)
+                it.setInt(4, stoppunktId)
+                it.setString(5, kandidat.status.name)
+                it.setObject(6, kandidat.varsletAt)
+                it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
+            }
+            connection.markStoppunktAsProcessed(stoppunktId)
+            connection.commit()
+            pKartleggingssporsmalKandidat.toKartleggingssporsmalKandidat()
+        }
+    }
+
+    override suspend fun getUnprocessedStoppunkter(): List<Pair<Int, KartleggingssporsmalStoppunkt>> {
         return database.connection.use { connection ->
             connection.prepareStatement(GET_UNPROCESSED_STOPPUNKTER).use {
                 it.setDate(1, Date.valueOf(LocalDate.now()))
                 it.setDate(2, Date.valueOf(LocalDate.now().minusDays(1)))
-                it.executeQuery().toList { toPKartleggingssporsmalStoppunkt().toKartleggingssporsmalStoppunkt() }
+                it.executeQuery()
+                    .toList { toPKartleggingssporsmalStoppunkt() }
+                    .map { stoppunkt ->
+                        Pair(
+                            stoppunkt.id,
+                            stoppunkt.toKartleggingssporsmalStoppunkt()
+                        )
+                    }
             }
         }
     }
 
-    override suspend fun markStoppunktAsProcessed(stoppunkt: KartleggingssporsmalStoppunkt) {
-        database.connection.use { connection ->
-            connection.prepareStatement(SET_STOPPUNKT_PROCESSED).use {
-                it.setString(1, stoppunkt.uuid.toString())
-                val updated = it.executeUpdate()
-                if (updated != 1) {
-                    throw SQLException("Expected a single row to be updated, got update count $updated")
-                }
+    private fun Connection.markStoppunktAsProcessed(stoppunktId: Int) {
+        this.prepareStatement(SET_STOPPUNKT_PROCESSED).use {
+            it.setInt(1, stoppunktId)
+            val updated = it.executeUpdate()
+            if (updated != 1) {
+                throw SQLException("Expected a single row to be updated, got update count $updated")
             }
-            connection.commit()
         }
     }
 
@@ -97,6 +122,19 @@ class KartleggingssporsmalRepository(
             ORDER BY created_at DESC
         """
 
+        private const val CREATE_KANDIDAT = """
+            INSERT INTO KARTLEGGINGSSPORSMAL_KANDIDAT (
+                id,
+                uuid,
+                created_at,
+                personident,
+                generated_by_stoppunkt_id,
+                status,
+                varslet_at
+            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?)
+            RETURNING *
+        """
+
         private const val GET_UNPROCESSED_STOPPUNKTER = """
             SELECT * FROM KARTLEGGINGSSPORSMAL_STOPPUNKT
             WHERE processed_at IS NULL AND (stoppunkt_at = ? OR stoppunkt_at = ?)
@@ -105,7 +143,7 @@ class KartleggingssporsmalRepository(
         private const val SET_STOPPUNKT_PROCESSED = """
             UPDATE KARTLEGGINGSSPORSMAL_STOPPUNKT
             SET processed_at = now()
-            WHERE uuid = ?
+            WHERE id = ?
         """
     }
 }
