@@ -2,11 +2,12 @@ package no.nav.syfo.kartleggingssporsmal.infrastructure.mock
 
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
-import io.ktor.http.HttpStatusCode
-import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_2
-import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_3
+import io.ktor.http.*
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_NO_TILFELLE
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_ERROR
-import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_INACTIVE
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_NO_ARBEIDSGIVER
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfellePersonDTO
 import no.nav.syfo.shared.infrastructure.mock.respond
 import no.nav.syfo.shared.util.NAV_PERSONIDENT_HEADER
@@ -15,22 +16,31 @@ import java.time.LocalDate
 fun MockRequestHandleScope.oppfolgingstilfelleResponse(request: HttpRequestData): HttpResponseData {
     val personident = request.headers[NAV_PERSONIDENT_HEADER]
     return when (personident) {
-        ARBEIDSTAKER_PERSONIDENT_2.value -> respond(
+        ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT.value -> respond(
             createOppfolgingstilfellePersonDTO(
-                personident = ARBEIDSTAKER_PERSONIDENT_2.value,
+                personident = ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT.value,
                 tilfelleStart = LocalDate.now().minusWeeks(3),
                 antallSykedager = 10,
             )
         )
-        ARBEIDSTAKER_PERSONIDENT_3.value -> respond(
+        ARBEIDSTAKER_PERSONIDENT_NO_TILFELLE.value -> respond(
             createOppfolgingstilfellePersonDTO(
-                personident = ARBEIDSTAKER_PERSONIDENT_ERROR.value,
+                personident = ARBEIDSTAKER_PERSONIDENT_NO_TILFELLE.value,
                 hasTilfelle = false,
             )
         )
-        ARBEIDSTAKER_PERSONIDENT_INACTIVE.value -> respond(
+        ARBEIDSTAKER_PERSONIDENT_NO_ARBEIDSGIVER.value -> respond(
             createOppfolgingstilfellePersonDTO(
-                personident = ARBEIDSTAKER_PERSONIDENT_INACTIVE.value,
+                personident = ARBEIDSTAKER_PERSONIDENT_NO_ARBEIDSGIVER.value,
+                tilfelleStart = LocalDate.now().minusWeeks(3),
+                antallSykedager = 42,
+                isArbeidstakerAtTilfelleEnd = false,
+                virksomhetsnummerList = emptyList(),
+            )
+        )
+        ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD.value -> respond(
+            createOppfolgingstilfellePersonDTO(
+                personident = ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD.value,
                 dodsdato = LocalDate.now().minusWeeks(1),
                 tilfelleStart = LocalDate.now().minusWeeks(3),
                 antallSykedager = 43,

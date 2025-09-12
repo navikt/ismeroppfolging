@@ -46,9 +46,9 @@ class PdlClientTest {
             assertTrue(result.exceptionOrNull() is RuntimeException)
         }
     }
-    
+
     @Test
-    fun `should return correct alder for person with foedseldato`(){
+    fun `should return correct alder for person with foedseldato`() {
         runBlocking {
             val result = pdlClient.getPerson(ARBEIDSTAKER_PERSONIDENT)
             val alder = result.getOrNull()?.getAlder()
@@ -57,9 +57,9 @@ class PdlClientTest {
             assertEquals(30, alder)
         }
     }
-    
+
     @Test
-    fun `should return correct alder for person with foedselsaar only`(){
+    fun `should return correct alder for person with foedselsaar only`() {
         runBlocking {
             val result = pdlClient.getPerson(ARBEIDSTAKER_PERSONIDENT_ONLY_FODSELSAAR)
             val alder = result.getOrNull()?.getAlder()

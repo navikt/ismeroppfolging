@@ -7,6 +7,9 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
+import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.PdlClient
+import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.cronjob.KandidatStoppunktCronjob
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
 import no.nav.syfo.shared.api.apiModule
@@ -51,6 +54,19 @@ fun main() {
         azureAdClient = azureAdClient,
         clientEnvironment = environment.clients.syfobehandlendeenhet,
     )
+    val vedtak14aClient = Vedtak14aClient(
+        azureAdClient = azureAdClient,
+        clientEnvironment = environment.clients.veilarbvedtaksstotte,
+    )
+    val pdlClient = PdlClient(
+        azureAdClient = azureAdClient,
+        clientEnvironment = environment.clients.pdl,
+    )
+    val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
+        azureAdClient = azureAdClient,
+        clientEnvironment = environment.clients.isoppfolgingstilfelle,
+    )
+
     val kandidatStatusProducer = KandidatStatusProducer(
         producer = KafkaProducer(
             kafkaAivenProducerConfig<KandidatStatusRecordSerializer>(kafkaEnvironment = environment.kafka)
@@ -91,6 +107,9 @@ fun main() {
             kartleggingssporsmalService = KartleggingssporsmalService(
                 behandlendeEnhetClient = behandlendeEnhetClient,
                 kartleggingssporsmalRepository = kartleggingssporsmalRepository,
+                oppfolgingstilfelleClient = oppfolgingstilfelleClient,
+                pdlClient = pdlClient,
+                vedtak14aClient = vedtak14aClient,
             )
 
             apiModule(

@@ -3,8 +3,8 @@ package no.nav.syfo.kartleggingssporsmal.infrastructure.clients
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_HAS_14A
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_ERROR
-import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_INACTIVE
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Innsatsgruppe
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -17,7 +17,7 @@ class Vedtak14aClientTest {
     @Test
     fun `should get gjeldende vedtak 14a for person`() {
         runBlocking {
-            val response = vedtak14aClient.hentGjeldende14aVedtak(ARBEIDSTAKER_PERSONIDENT)
+            val response = vedtak14aClient.hentGjeldende14aVedtak(ARBEIDSTAKER_PERSONIDENT_HAS_14A)
 
             assertTrue(response.isSuccess)
             assertEquals(response.getOrNull()?.innsatsgruppe, Innsatsgruppe.GODE_MULIGHETER)
@@ -27,7 +27,7 @@ class Vedtak14aClientTest {
     @Test
     fun `should return null for user without 14a-vedtak`() {
         runBlocking {
-            val response = vedtak14aClient.hentGjeldende14aVedtak(ARBEIDSTAKER_PERSONIDENT_INACTIVE)
+            val response = vedtak14aClient.hentGjeldende14aVedtak(ARBEIDSTAKER_PERSONIDENT)
 
             assertTrue(response.isSuccess)
             assertNull(response.getOrNull())
