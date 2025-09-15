@@ -51,29 +51,32 @@ class Vedtak14aClient(
 
             when (response.status) {
                 HttpStatusCode.OK -> {
-                    val vedtak14aResponse = response.body<Vedtak14aResponseDTO?>()
-
-                    if (vedtak14aResponse == null) Metrics.COUNT_HAS_NOT_VEDTAK_14A_API.increment()
-                    else Metrics.COUNT_HAS_VEDTAK_14A_API.increment()
-
-                    Result.success(vedtak14aResponse)
+                    val responseText = response.bodyAsText()
+                    if (responseText.isBlank() || responseText == "null") {
+                        Metrics.COUNT_HAS_NOT_VEDTAK_14A_API.increment()
+                        Result.success(null)
+                    } else {
+                        val vedtak14aResponse = response.body<Vedtak14aResponseDTO>()
+                        Metrics.COUNT_HAS_VEDTAK_14A_API.increment()
+                        Result.success(vedtak14aResponse)
+                    }
                 }
                 else -> {
                     log.error("Failed to get gjeldende 14a vedtak: statuscode ${response.status.value}")
-                    Metrics.COUNT_VEDTAK_14A_API_EROOR.increment()
+                    Metrics.COUNT_VEDTAK_14A_API_ERROR.increment()
                     Result.failure(RuntimeException("Failed to get gjeldende 14a vedtak: ${response.status.value}"))
                 }
             }
         } catch (e: Exception) {
             log.error("Failed to get gjeldende 14a vedtak", e)
-            Metrics.COUNT_VEDTAK_14A_API_EROOR.increment()
+            Metrics.COUNT_VEDTAK_14A_API_ERROR.increment()
             Result.failure(e)
         }
     }
 
     companion object {
         private val log = LoggerFactory.getLogger(Vedtak14aClient::class.java)
-        const val GJELDENDE_14A_VEDTAK_API_PATH = "/api/ekstern/hent-gjeldende-14a-vedtak"
+        const val GJELDENDE_14A_VEDTAK_API_PATH = "/veilarbvedtaksstotte/api/ekstern/hent-gjeldende-14a-vedtak"
     }
 }
 
@@ -88,7 +91,7 @@ private object Metrics {
         .builder("${VEDTAK_14A_API_BASE}_has_not_vedtak_count")
         .description("Counts the number of persons without 14a-vedtak from API $GJELDENDE_14A_VEDTAK_API_PATH")
         .register(METRICS_REGISTRY)
-    val COUNT_VEDTAK_14A_API_EROOR: Counter = Counter
+    val COUNT_VEDTAK_14A_API_ERROR: Counter = Counter
         .builder("${VEDTAK_14A_API_BASE}_error_count")
         .description("Counts the number of erroneous call to API $GJELDENDE_14A_VEDTAK_API_PATH")
         .register(METRICS_REGISTRY)
