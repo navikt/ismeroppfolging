@@ -1,13 +1,13 @@
 package no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a
 
-import java.time.LocalDate
+import java.time.ZonedDateTime
 
 data class Vedtak14aRequestDTO(
     val fnr: String,
 )
 
 data class Vedtak14aResponseDTO(
-    val fattetDato: LocalDate,
+    val fattetDato: ZonedDateTime,
     val innsatsgruppe: Innsatsgruppe,
     val hovedmal: Hovedmal?,
 )

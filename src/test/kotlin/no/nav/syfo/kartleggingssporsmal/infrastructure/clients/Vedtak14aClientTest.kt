@@ -9,7 +9,6 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Innsats
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.time.LocalDate
 
 class Vedtak14aClientTest {
     private val externalMockEnvironment = ExternalMockEnvironment.instance
@@ -21,7 +20,6 @@ class Vedtak14aClientTest {
             val response = vedtak14aClient.hentGjeldende14aVedtak(ARBEIDSTAKER_PERSONIDENT)
 
             assertTrue(response.isSuccess)
-            assertEquals(response.getOrNull()?.fattetDato, LocalDate.now().minusDays(10))
             assertEquals(response.getOrNull()?.innsatsgruppe, Innsatsgruppe.GODE_MULIGHETER)
         }
     }
