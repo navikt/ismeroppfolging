@@ -62,7 +62,7 @@ sealed class Oppfolgingstilfelle(
     ) {
         fun isActive(): Boolean = LocalDate.now().isBeforeOrEqual(tilfelleEnd)
 
-        fun datoInsideCurrentTilfelle(dato: LocalDate): Boolean =
+        fun datoInsideTilfelle(dato: LocalDate): Boolean =
             dato isAfterOrEqual tilfelleStart && dato isBeforeOrEqual tilfelleEnd
     }
 

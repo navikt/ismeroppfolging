@@ -55,27 +55,7 @@ class KartleggingssporsmalService(
         val callId = UUID.randomUUID().toString()
 
         // De kan ha flyttet i tiden mellom stoppunktet ble laget og nå, og da skal de ikke bli kandidat
-        val pilotStoppunkter = unprocessedStoppunkter.map { (stoppunktId, stoppunkt) ->
-            val behandlendeEnhet = behandlendeEnhetClient.getEnhet(
-                callId = callId,
-                personident = stoppunkt.personident,
-            ).let { response ->
-                if (response == null) {
-                    log.error("Mangler enhet for person med stoppunkt-uuid: ${stoppunkt.uuid}")
-                    null
-                } else {
-                    response.oppfolgingsenhetDTO?.enhet
-                        ?: response.geografiskEnhet
-                }
-            }
-
-            val inPilot = isInPilot(behandlendeEnhet?.enhetId)
-            if (!inPilot) {
-                log.warn("Stoppunkt with uuid ${stoppunkt.uuid} is not longer valid for pilot")
-            }
-
-            Triple(stoppunktId, stoppunkt, inPilot)
-        }
+        val pilotStoppunkter = findPilotStoppunkter(unprocessedStoppunkter, callId)
 
         return pilotStoppunkter.map { (stoppunktId, stoppunkt, isInPilot) ->
             runCatching {
@@ -123,6 +103,33 @@ class KartleggingssporsmalService(
         }
     }
 
+    private suspend fun findPilotStoppunkter(
+        unprocessedStoppunkter: List<Pair<Int, KartleggingssporsmalStoppunkt>>,
+        callId: String,
+    ): List<Triple<Int, KartleggingssporsmalStoppunkt, Boolean>> {
+        return unprocessedStoppunkter.map { (stoppunktId, stoppunkt) ->
+            val behandlendeEnhet = behandlendeEnhetClient.getEnhet(
+                callId = callId,
+                personident = stoppunkt.personident,
+            ).let { response ->
+                if (response == null) {
+                    log.error("Mangler enhet for person med stoppunkt-uuid: ${stoppunkt.uuid}")
+                    null
+                } else {
+                    response.oppfolgingsenhetDTO?.enhet
+                        ?: response.geografiskEnhet
+                }
+            }
+
+            val isInPilot = isInPilot(behandlendeEnhet?.enhetId)
+            if (!isInPilot) {
+                log.warn("Stoppunkt with uuid ${stoppunkt.uuid} is not longer valid for pilot")
+            }
+
+            Triple(stoppunktId, stoppunkt, isInPilot)
+        }
+    }
+
     private suspend fun isKandidat(
         oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromApi?,
         alder: Int?,
@@ -141,7 +148,7 @@ class KartleggingssporsmalService(
     private suspend fun isAlreadyKandidatInTilfelle(oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromApi): Boolean {
         val existingKandidat = kartleggingssporsmalRepository.getKandidat(oppfolgingstilfelle.personident)
         return existingKandidat != null &&
-            oppfolgingstilfelle.datoInsideCurrentTilfelle(
+            oppfolgingstilfelle.datoInsideTilfelle(
                 dato = existingKandidat.createdAt.toLocalDateOslo()
             )
     }
