@@ -1,6 +1,7 @@
 package no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.model
 
 import java.time.LocalDate
+import java.time.Period
 
 data class PdlHentPersonRequest(
     val query: String,
@@ -28,3 +29,16 @@ data class Foedselsdato(
     val foedselsdato: LocalDate?,
     val foedselsaar: Int?,
 )
+
+fun PdlPerson.getAlder(): Int? {
+    val fodselsdato = this.foedselsdato.firstOrNull()?.foedselsdato
+    val fodselsaar = this.foedselsdato.firstOrNull()?.foedselsaar
+    val today = LocalDate.now()
+    return if (fodselsdato != null) {
+        Period.between(fodselsdato, today).years
+    } else if (fodselsaar != null) {
+        today.year - fodselsaar
+    } else {
+        null
+    }
+}

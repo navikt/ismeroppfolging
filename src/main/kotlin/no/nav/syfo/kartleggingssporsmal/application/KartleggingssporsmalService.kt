@@ -3,12 +3,22 @@ package no.nav.syfo.kartleggingssporsmal.application
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
 import no.nav.syfo.shared.util.toLocalDateOslo
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
+import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.model.getAlder
+import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aResponseDTO
 import org.slf4j.LoggerFactory
 import java.util.*
 
 class KartleggingssporsmalService(
     private val behandlendeEnhetClient: IBehandlendeEnhetClient,
     private val kartleggingssporsmalRepository: IKartleggingssporsmalRepository,
+    private val oppfolgingstilfelleClient: IOppfolgingstilfelleClient,
+    private val pdlClient: IPdlClient,
+    private val vedtak14aClient: IVedtak14aClient,
 ) {
 
     suspend fun processOppfolgingstilfelle(oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromKafka) {
@@ -40,24 +50,112 @@ class KartleggingssporsmalService(
         }
     }
 
-    suspend fun processStoppunkter(): List<Result<KartleggingssporsmalStoppunkt>> {
-        val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
-        return unprocessed.map {
+    suspend fun processStoppunkter(): List<Result<KartleggingssporsmalKandidat>> {
+        val unprocessedStoppunkter = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
+        val callId = UUID.randomUUID().toString()
+
+        // De kan ha flyttet i tiden mellom stoppunktet ble laget og nå, og da skal de ikke bli kandidat
+        val pilotStoppunkter = findPilotStoppunkter(unprocessedStoppunkter, callId)
+
+        return pilotStoppunkter.map { (stoppunktId, stoppunkt, isInPilot) ->
             runCatching {
-                log.info("Found stoppunkt to process: ${it.uuid}")
-                // TODO: Process stoppunkt and set as processed
-                it
+                val isKandidat = if (isInPilot) {
+                    coroutineScope {
+                        val oppfolgingstilfelleRequest = async {
+                            oppfolgingstilfelleClient.getOppfolgingstilfelle(
+                                personident = stoppunkt.personident,
+                                callId = callId,
+                            )
+                        }
+
+                        val pdlRequest = async {
+                            pdlClient.getPerson(stoppunkt.personident)
+                        }
+
+                        val vedtak14aRequest = async {
+                            vedtak14aClient.hentGjeldende14aVedtak(stoppunkt.personident)
+                        }
+
+                        val oppfolgingstilfelle = oppfolgingstilfelleRequest.await().getOrThrow()
+                        val pdlPerson = pdlRequest.await().getOrThrow()
+                        val vedtak14a = vedtak14aRequest.await().getOrThrow()
+
+                        isKandidat(
+                            oppfolgingstilfelle = oppfolgingstilfelle,
+                            alder = pdlPerson.getAlder(),
+                            vedtak14a = vedtak14a,
+                        )
+                    }
+                } else {
+                    false
+                }
+
+                val kandidat = KartleggingssporsmalKandidat(
+                    personident = stoppunkt.personident,
+                    status = if (isKandidat) KandidatStatus.KANDIDAT else KandidatStatus.IKKE_KANDIDAT,
+                )
+
+                kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                    kandidat = kandidat,
+                    stoppunktId = stoppunktId,
+                )
             }
         }
     }
 
-    private suspend fun isAlreadyKandidatInTilfelle(oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromKafka): Boolean {
+    private suspend fun findPilotStoppunkter(
+        unprocessedStoppunkter: List<Pair<Int, KartleggingssporsmalStoppunkt>>,
+        callId: String,
+    ): List<Triple<Int, KartleggingssporsmalStoppunkt, Boolean>> {
+        return unprocessedStoppunkter.map { (stoppunktId, stoppunkt) ->
+            val behandlendeEnhet = behandlendeEnhetClient.getEnhet(
+                callId = callId,
+                personident = stoppunkt.personident,
+            ).let { response ->
+                if (response == null) {
+                    log.error("Mangler enhet for person med stoppunkt-uuid: ${stoppunkt.uuid}")
+                    null
+                } else {
+                    response.oppfolgingsenhetDTO?.enhet
+                        ?: response.geografiskEnhet
+                }
+            }
+
+            val isInPilot = isInPilot(behandlendeEnhet?.enhetId)
+            if (!isInPilot) {
+                log.warn("Stoppunkt with uuid ${stoppunkt.uuid} is not longer valid for pilot")
+            }
+
+            Triple(stoppunktId, stoppunkt, isInPilot)
+        }
+    }
+
+    private suspend fun isKandidat(
+        oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromApi?,
+        alder: Int?,
+        vedtak14a: Vedtak14aResponseDTO?,
+    ): Boolean {
+        return oppfolgingstilfelle != null &&
+            oppfolgingstilfelle.isActive() &&
+            !oppfolgingstilfelle.isDod() &&
+            oppfolgingstilfelle.isArbeidstakerAtTilfelleEnd &&
+            oppfolgingstilfelle.durationInDays() >= KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS &&
+            isYoungerThan67(alder) &&
+            !hasGjeldende14aVedtak(vedtak14a) &&
+            !isAlreadyKandidatInTilfelle(oppfolgingstilfelle)
+    }
+
+    private suspend fun isAlreadyKandidatInTilfelle(oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromApi): Boolean {
         val existingKandidat = kartleggingssporsmalRepository.getKandidat(oppfolgingstilfelle.personident)
         return existingKandidat != null &&
-            oppfolgingstilfelle.datoInsideCurrentTilfelle(
+            oppfolgingstilfelle.datoInsideTilfelle(
                 dato = existingKandidat.createdAt.toLocalDateOslo()
             )
     }
+
+    private fun isYoungerThan67(alder: Int?): Boolean = alder != null && alder < 67
+
+    private fun hasGjeldende14aVedtak(vedtak14a: Vedtak14aResponseDTO?): Boolean = vedtak14a != null
 
     private fun isInPilot(enhetId: String?) = enhetId in pilotkontorer
 

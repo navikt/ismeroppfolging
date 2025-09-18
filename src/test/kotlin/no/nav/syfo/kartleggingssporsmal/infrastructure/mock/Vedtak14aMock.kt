@@ -12,10 +12,10 @@ import no.nav.syfo.shared.infrastructure.mock.respond
 suspend fun MockRequestHandleScope.vedtak14aMockResponse(request: HttpRequestData): HttpResponseData {
     val request = request.receiveBody<Vedtak14aRequestDTO>()
     return when (request.fnr) {
-        UserConstants.ARBEIDSTAKER_PERSONIDENT_INACTIVE.value ->
-            respond(null)
+        UserConstants.ARBEIDSTAKER_PERSONIDENT_HAS_14A.value ->
+            respond(generateVedtak14aResponse())
         UserConstants.ARBEIDSTAKER_PERSONIDENT_ERROR.value ->
             respondError(status = HttpStatusCode.InternalServerError)
-        else -> respond(generateVedtak14aResponse())
+        else -> respond(null)
     }
 }

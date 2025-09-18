@@ -6,6 +6,7 @@ import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import no.nav.syfo.kartleggingssporsmal.application.IOppfolgingstilfelleClient
 import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.infrastructure.clients.ClientEnvironment
@@ -15,20 +16,19 @@ import no.nav.syfo.shared.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.shared.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.shared.util.bearerHeader
 import org.slf4j.LoggerFactory
-import java.util.*
 
 class OppfolgingstilfelleClient(
     private val azureAdClient: AzureAdClient,
     private val clientEnvironment: ClientEnvironment,
     private val httpClient: HttpClient = httpClientDefault(),
-) {
+) : IOppfolgingstilfelleClient {
     private val personOppfolgingstilfelleSystemUrl: String =
         "${clientEnvironment.baseUrl}$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_SYSTEM_PERSON_PATH"
 
-    suspend fun getOppfolgingstilfelle(
+    override suspend fun getOppfolgingstilfelle(
         personident: Personident,
-        callId: String = UUID.randomUUID().toString(),
-    ): Oppfolgingstilfelle.OppfolgingstilfelleFromApi? {
+        callId: String,
+    ): Result<Oppfolgingstilfelle.OppfolgingstilfelleFromApi?> {
         val azureToken = azureAdClient.getSystemToken(clientEnvironment.clientId)
             ?.accessToken
             ?: throw RuntimeException("Failed to get azure system token")
@@ -41,17 +41,19 @@ class OppfolgingstilfelleClient(
                 accept(ContentType.Application.Json)
             }
             val body = response.body<OppfolgingstilfellePersonDTO>()
-            Oppfolgingstilfelle.createFromApi(
-                personident = body.personIdent,
-                dodsdato = body.dodsdato,
-                oppfolgingstilfelleList = body.oppfolgingstilfelleList,
+            Result.success(
+                Oppfolgingstilfelle.createFromApi(
+                    personident = body.personIdent,
+                    dodsdato = body.dodsdato,
+                    oppfolgingstilfelleList = body.oppfolgingstilfelleList,
+                )
             ).also {
                 COUNT_CALL_OPPFOLGINGSTILFELLE_PERSON_SUCCESS.increment()
             }
         } catch (responseException: ResponseException) {
             log.error("Error while requesting OppfolgingstilfellePerson from isoppfolgingstilfelle with status: ${responseException.response.status.value}, callId $callId")
             COUNT_CALL_OPPFOLGINGSTILFELLE_PERSON_FAIL.increment()
-            throw responseException
+            Result.failure(responseException)
         }
     }
 
