@@ -5,7 +5,7 @@ version = "0.0.1"
 
 val confluent = "7.9.0"
 val flywayVersion = "11.12.0"
-val hikariVersion = "6.3.0"
+val hikariVersion = "7.0.2"
 val postgresVersion = "42.7.7"
 val postgresEmbeddedVersion = "2.1.1"
 val postgresRuntimeVersion = "17.6.0"
