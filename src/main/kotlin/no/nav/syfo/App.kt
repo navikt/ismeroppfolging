@@ -12,6 +12,7 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.cronjob.KandidatStoppunktCronjob
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.consumer.kartleggingssporsmalsvar.launchKartleggingssporsmalSvarConsumer
 import no.nav.syfo.shared.api.apiModule
 import no.nav.syfo.senoppfolging.application.SenOppfolgingService
 import no.nav.syfo.shared.infrastructure.kafka.identhendelse.kafka.launchKafkaTaskIdenthendelse
@@ -25,7 +26,7 @@ import no.nav.syfo.shared.infrastructure.database.databaseModule
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.SenOppfolgingRepository
 import no.nav.syfo.senoppfolging.infrastructure.kafka.producer.KandidatStatusProducer
 import no.nav.syfo.senoppfolging.infrastructure.kafka.producer.KandidatStatusRecordSerializer
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.launchOppfolgingstilfelleConsumer
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.consumer.oppfolgingstilfelle.launchOppfolgingstilfelleConsumer
 import no.nav.syfo.shared.infrastructure.kafka.kafkaAivenProducerConfig
 import no.nav.syfo.senoppfolging.infrastructure.kafka.consumer.launchSenOppfolgingSvarConsumer
 import no.nav.syfo.senoppfolging.infrastructure.kafka.consumer.launchSenOppfolgingVarselConsumer
@@ -155,6 +156,12 @@ fun main() {
                     kafkaEnvironment = environment.kafka,
                     kartleggingssporsmalService = kartleggingssporsmalService,
                 )
+                if (environment.isSvarTopicEnabled) {
+                    launchKartleggingssporsmalSvarConsumer(
+                        applicationState = applicationState,
+                        kafkaEnvironment = environment.kafka,
+                    )
+                }
             }
         }
     )

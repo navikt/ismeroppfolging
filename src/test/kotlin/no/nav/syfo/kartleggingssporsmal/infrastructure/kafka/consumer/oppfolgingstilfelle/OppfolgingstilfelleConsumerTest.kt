@@ -1,4 +1,4 @@
-package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka
+package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.consumer.oppfolgingstilfelle
 
 import io.mockk.clearAllMocks
 import io.mockk.every
