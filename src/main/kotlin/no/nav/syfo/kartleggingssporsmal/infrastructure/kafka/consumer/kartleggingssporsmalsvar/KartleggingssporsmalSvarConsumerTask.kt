@@ -1,7 +1,6 @@
-package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka
+package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.consumer.kartleggingssporsmalsvar
 
 import no.nav.syfo.ApplicationState
-import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.shared.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.shared.infrastructure.kafka.kafkaAivenConsumerConfig
 import no.nav.syfo.shared.infrastructure.kafka.launchKafkaConsumer
@@ -10,15 +9,14 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.OffsetResetStrategy
 import org.apache.kafka.common.serialization.Deserializer
 
-const val OPPFOLGINGSTILFELLE_PERSON_TOPIC =
-    "teamsykefravr.isoppfolgingstilfelle-oppfolgingstilfelle-person"
+const val KARTLEGGINGSSPORSMAL_SVAR_TOPIC =
+    "team-esyfo.kartleggingssporsmal-svar"
 
-fun launchOppfolgingstilfelleConsumer(
+fun launchKartleggingssporsmalSvarConsumer(
     applicationState: ApplicationState,
     kafkaEnvironment: KafkaEnvironment,
-    kartleggingssporsmalService: KartleggingssporsmalService,
 ) {
-    val consumerProperties = kafkaAivenConsumerConfig<KafkaOppfolgingstilfellePersonDeserializer>(
+    val consumerProperties = kafkaAivenConsumerConfig<KafkaKartleggingssporsmalSvarDTODeserializer>(
         kafkaEnvironment = kafkaEnvironment,
         offsetResetStrategy = OffsetResetStrategy.LATEST,
     )
@@ -26,18 +24,18 @@ fun launchOppfolgingstilfelleConsumer(
         this[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
     }
 
-    val oppfolgingstilfelleConsumer = OppfolgingstilfelleConsumer(kartleggingssporsmalService)
+    val kartleggingssporsmalSvarConsumer = KartleggingssporsmalSvarConsumer()
 
     launchKafkaConsumer(
         applicationState = applicationState,
-        topic = OPPFOLGINGSTILFELLE_PERSON_TOPIC,
+        topic = KARTLEGGINGSSPORSMAL_SVAR_TOPIC,
         consumerProperties = consumerProperties,
-        kafkaConsumerService = oppfolgingstilfelleConsumer,
+        kafkaConsumerService = kartleggingssporsmalSvarConsumer,
     )
 }
 
-class KafkaOppfolgingstilfellePersonDeserializer : Deserializer<KafkaOppfolgingstilfellePersonDTO> {
+class KafkaKartleggingssporsmalSvarDTODeserializer : Deserializer<KafkaKartleggingssporsmalSvarDTO> {
     private val mapper = configuredJacksonMapper()
-    override fun deserialize(topic: String, data: ByteArray): KafkaOppfolgingstilfellePersonDTO =
-        mapper.readValue(data, KafkaOppfolgingstilfellePersonDTO::class.java)
+    override fun deserialize(topic: String, data: ByteArray): KafkaKartleggingssporsmalSvarDTO =
+        mapper.readValue(data, KafkaKartleggingssporsmalSvarDTO::class.java)
 }
