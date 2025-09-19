@@ -179,12 +179,15 @@ class KartleggingssporsmalRepositoryTest {
             tilfelleStart = LocalDate.now().minusDays(6 * 7),
             antallSykedager = 6 * 7 + 1,
         )
-        val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
-        assertNotNull(kartleggingssporsmalStoppunkt)
+        val kartleggingssporsmalStoppunkt1 = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+        val kartleggingssporsmalStoppunkt2 = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+        assertNotNull(kartleggingssporsmalStoppunkt1)
+        assertNotNull(kartleggingssporsmalStoppunkt2)
 
         runBlocking {
-            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
-            val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt1)
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt2)
+            val createdStoppunkter = database.getKartleggingssporsmalStoppunkt()
 
             val kandidat = KartleggingssporsmalKandidat(
                 personident = ARBEIDSTAKER_PERSONIDENT,
@@ -196,11 +199,11 @@ class KartleggingssporsmalRepositoryTest {
             )
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
-                stoppunktId = createdStoppunkt.id,
+                stoppunktId = createdStoppunkter[0].id,
             )
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = otherKandidat,
-                stoppunktId = createdStoppunkt.id,
+                stoppunktId = createdStoppunkter[1].id,
             )
 
             val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(ARBEIDSTAKER_PERSONIDENT)
