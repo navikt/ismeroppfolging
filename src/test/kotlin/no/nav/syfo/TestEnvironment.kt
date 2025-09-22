@@ -54,6 +54,7 @@ fun testEnvironment() = Environment(
         ),
     ),
     electorPath = "electorPath",
+    isSvarTopicEnabled = true,
 )
 
 fun testAppState() = ApplicationState(

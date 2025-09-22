@@ -58,6 +58,7 @@ data class Environment(
                 clientId = getEnvVar("ISOPPFOLGINGSTILFELLE_CLIENT_ID"),
             ),
         ),
+    val isSvarTopicEnabled: Boolean = getEnvVar("IS_SVAR_TOPIC_ENABLED").toBoolean(),
 )
 
 fun getEnvVar(
