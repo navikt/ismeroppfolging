@@ -14,6 +14,8 @@ import io.ktor.server.routing.*
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.Environment
+import no.nav.syfo.kartleggingssporsmal.api.endpoints.registerKartleggingssporsmalEndpoints
+import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.shared.api.auth.JwtIssuer
 import no.nav.syfo.shared.api.auth.JwtIssuerType
 import no.nav.syfo.shared.api.auth.installJwtAuthentication
@@ -41,6 +43,7 @@ fun Application.apiModule(
     database: DatabaseInterface,
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
     senOppfolgingService: SenOppfolgingService,
+    kartleggingssporsmalService: KartleggingssporsmalService,
 ) {
     installMetrics()
     installCallId()
@@ -64,6 +67,10 @@ fun Application.apiModule(
             registerSenOppfolgingEndpoints(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
                 senOppfolgingService = senOppfolgingService,
+            )
+            registerKartleggingssporsmalEndpoints(
+                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                kartleggingssporsmalService = kartleggingssporsmalService,
             )
         }
     }

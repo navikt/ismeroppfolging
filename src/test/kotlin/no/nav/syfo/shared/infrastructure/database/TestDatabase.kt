@@ -8,6 +8,7 @@ import no.nav.syfo.senoppfolging.infrastructure.database.repository.PSenOppfolgi
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.PSenOppfolgingVurdering
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.toPSenOppfolgingKandidat
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.toPSenOppfolgingVurdering
+import no.nav.syfo.shared.domain.Personident
 import org.flywaydb.core.Flyway
 import java.sql.Connection
 import java.sql.Date
@@ -124,6 +125,43 @@ fun TestDatabase.markStoppunktAsProcessed(stoppunkt: KartleggingssporsmalStoppun
                     throw SQLException("Expected a single row to be updated, got update count $updated")
                 }
             }
+        connection.commit()
+    }
+}
+
+fun TestDatabase.createKartleggingssporsmalMottattTable() {
+    this.connection.use { connection ->
+        val query = """
+            CREATE TABLE IF NOT EXISTS KARTLEGGINGSSPORSMAL_MOTTATT (
+                personident                 CHAR(11)    NOT NULL UNIQUE,
+                mottatt_at                  timestamptz NOT NULL
+            );
+        """.trimIndent()
+        connection.prepareStatement(query).execute()
+        connection.commit()
+    }
+}
+
+fun TestDatabase.insertKartleggingssporsmalMottatt(personIdent: Personident) {
+    this.connection.use { connection ->
+        val query = """
+            INSERT INTO KARTLEGGINGSSPORSMAL_MOTTATT (personident, mottatt_at)
+            VALUES (?, now())
+            RETURNING *
+        """.trimMargin()
+        connection.prepareStatement(query)
+            .use {
+                it.setString(1, personIdent.value)
+                it.executeQuery()
+            }
+        connection.commit()
+    }
+}
+
+fun TestDatabase.deleteKartleggingssporsmalMottattRows() {
+    val query = """DELETE FROM KARTLEGGINGSSPORSMAL_MOTTATT"""
+    this.connection.use { connection ->
+        connection.prepareStatement(query).execute()
         connection.commit()
     }
 }
