@@ -52,58 +52,55 @@ class KartleggingssporsmalEndpointsTest {
         private val receivedQuestionsUrl = "/api/internad/v1/kartleggingssporsmal/person"
 
         @Test
-        fun `Returns status OK if valid token is supplied`() {
-            testApplication {
-                val client = setupApiAndClient()
-                database.createKartleggingssporsmalMottattTable()
-                val response = client.get(receivedQuestionsUrl) {
-                    bearerAuth(validToken)
-                    header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
-                }
+        fun `Returns status OK if valid token is supplied`() = testApplication {
+            val client = setupApiAndClient()
+            database.createKartleggingssporsmalMottattTable()
 
-                assertEquals(HttpStatusCode.OK, response.status)
+            val response = client.get(receivedQuestionsUrl) {
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
             }
+
+            assertEquals(HttpStatusCode.OK, response.status)
         }
 
         @Test
-        fun `Returns status Unauthorized if no token is supplied`() {
-            testApplication {
-                val client = setupApiAndClient()
+        fun `Returns status Unauthorized if no token is supplied`() = testApplication {
+            val client = setupApiAndClient()
 
-                val response = client.get(receivedQuestionsUrl)
-                assertEquals(HttpStatusCode.Unauthorized, response.status)
-            }
+            val response = client.get(receivedQuestionsUrl)
+
+            assertEquals(HttpStatusCode.Unauthorized, response.status)
         }
 
         @Test
-        fun `Returns status Forbidden if denied access to person`() {
-            testApplication {
-                val client = setupApiAndClient()
-                val response = client.get(receivedQuestionsUrl) {
-                    bearerAuth(validToken)
-                    header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT_VEILEDER_NO_ACCESS.value)
-                }
+        fun `Returns status Forbidden if denied access to person`() = testApplication {
+            val client = setupApiAndClient()
 
-                assertEquals(HttpStatusCode.Forbidden, response.status)
+            val response = client.get(receivedQuestionsUrl) {
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT_VEILEDER_NO_ACCESS.value)
             }
+
+            assertEquals(HttpStatusCode.Forbidden, response.status)
         }
 
         @Test
-        fun `Returns status BadRequest if no $NAV_PERSONIDENT_HEADER is supplied`() {
-            testApplication {
-                val client = setupApiAndClient()
-                val response = client.get(receivedQuestionsUrl) {
-                    bearerAuth(validToken)
-                }
+        fun `Returns status BadRequest if no $NAV_PERSONIDENT_HEADER is supplied`() = testApplication {
+            val client = setupApiAndClient()
 
-                assertEquals(HttpStatusCode.BadRequest, response.status)
+            val response = client.get(receivedQuestionsUrl) {
+                bearerAuth(validToken)
             }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
         }
 
         @Test
-        fun `Returns status BadRequest if $NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied`() {
+        fun `Returns status BadRequest if $NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied`() =
             testApplication {
                 val client = setupApiAndClient()
+
                 val response = client.get(receivedQuestionsUrl) {
                     bearerAuth(validToken)
                     header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT.value.drop(1))
@@ -111,6 +108,5 @@ class KartleggingssporsmalEndpointsTest {
 
                 assertEquals(HttpStatusCode.BadRequest, response.status)
             }
-        }
     }
 }
