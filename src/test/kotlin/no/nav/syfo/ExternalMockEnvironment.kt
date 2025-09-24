@@ -5,6 +5,7 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.oppfolgingstilfel
 import no.nav.syfo.shared.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aClient
+import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
 import no.nav.syfo.shared.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.shared.infrastructure.database.TestDatabase
 import no.nav.syfo.shared.infrastructure.mock.mockHttpClient
@@ -49,6 +50,10 @@ class ExternalMockEnvironment private constructor() {
         azureAdClient = azureAdClient,
         clientEnvironment = environment.clients.isoppfolgingstilfelle,
         httpClient = mockHttpClient,
+    )
+
+    val kartleggingssporsmalRepository = KartleggingssporsmalRepository(
+        database = database
     )
 
     companion object {

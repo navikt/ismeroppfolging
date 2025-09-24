@@ -3,6 +3,7 @@ package no.nav.syfo.shared.api
 import io.ktor.server.application.*
 import io.mockk.mockk
 import no.nav.syfo.ExternalMockEnvironment
+import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.senoppfolging.application.SenOppfolgingService
 import no.nav.syfo.shared.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.SenOppfolgingRepository
@@ -21,12 +22,21 @@ fun Application.testApiModule(
         kandidatStatusProducer = mockk(relaxed = true),
     )
 
+    val kartleggingssporsmalService = KartleggingssporsmalService(
+        behandlendeEnhetClient = externalMockEnvironment.behandlendeEnhetClient,
+        kartleggingssporsmalRepository = externalMockEnvironment.kartleggingssporsmalRepository,
+        oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
+        pdlClient = externalMockEnvironment.pdlClient,
+        vedtak14aClient = externalMockEnvironment.vedtak14aClient,
+    )
+
     this.apiModule(
         applicationState = externalMockEnvironment.applicationState,
         environment = externalMockEnvironment.environment,
         wellKnownInternalAzureAD = externalMockEnvironment.wellKnownInternalAzureAD,
         database = database,
         veilederTilgangskontrollClient = veilederTilgangskontrollClient,
-        senOppfolgingService = senOppfolgingService
+        senOppfolgingService = senOppfolgingService,
+        kartleggingssporsmalService = kartleggingssporsmalService,
     )
 }
