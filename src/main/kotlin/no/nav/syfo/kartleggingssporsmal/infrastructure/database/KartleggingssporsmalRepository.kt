@@ -102,6 +102,18 @@ class KartleggingssporsmalRepository(
         }
     }
 
+    override suspend fun hasReceivedQuestions(personident: Personident): Boolean {
+        return database.connection.use { connection ->
+            connection.prepareStatement(RECEIVED_QUESTIONS_COUNT).use {
+                it.setString(1, personident.value)
+                it.executeQuery().use {
+                    it.next()
+                    it.getInt(1) > 0
+                }
+            }
+        }
+    }
+
     companion object {
         private const val CREATE_STOPPUNKT = """
             INSERT INTO KARTLEGGINGSSPORSMAL_STOPPUNKT (
@@ -144,6 +156,12 @@ class KartleggingssporsmalRepository(
             UPDATE KARTLEGGINGSSPORSMAL_STOPPUNKT
             SET processed_at = now()
             WHERE id = ?
+        """
+
+        private const val RECEIVED_QUESTIONS_COUNT = """
+            SELECT COUNT(*)
+              FROM KARTLEGGINGSSPORSMAL_MOTTATT
+             WHERE personident = ?
         """
     }
 }

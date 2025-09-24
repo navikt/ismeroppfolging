@@ -18,7 +18,10 @@ import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import org.junit.jupiter.api.Test
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
 import no.nav.syfo.shared.domain.Personident
+import no.nav.syfo.shared.infrastructure.database.createKartleggingssporsmalMottattTable
+import no.nav.syfo.shared.infrastructure.database.deleteKartleggingssporsmalMottattRows
 import no.nav.syfo.shared.infrastructure.database.getKartleggingssporsmalStoppunkt
+import no.nav.syfo.shared.infrastructure.database.insertKartleggingssporsmalMottatt
 import no.nav.syfo.shared.infrastructure.database.markStoppunktAsProcessed
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -459,6 +462,37 @@ class KartleggingssporsmalServiceTest {
                 val results = kartleggingssporsmalService.processStoppunkter()
 
                 assertEquals(0, results.size)
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Has received questions")
+    inner class HasReceivedQuestions {
+
+        @BeforeEach
+        fun setUp() {
+            database.createKartleggingssporsmalMottattTable()
+            database.deleteKartleggingssporsmalMottattRows()
+        }
+
+        @Test
+        fun `User has received questions`() {
+            runBlocking {
+                database.insertKartleggingssporsmalMottatt(ARBEIDSTAKER_PERSONIDENT)
+
+                val hasReceivedQuestions = kartleggingssporsmalService.hasReceivedQuestions(ARBEIDSTAKER_PERSONIDENT)
+
+                assertTrue(hasReceivedQuestions)
+            }
+        }
+
+        @Test
+        fun `User has not received questions`() {
+            runBlocking {
+                val hasReceivedQuestions = kartleggingssporsmalService.hasReceivedQuestions(ARBEIDSTAKER_PERSONIDENT_HAS_14A)
+
+                assertFalse(hasReceivedQuestions)
             }
         }
     }
