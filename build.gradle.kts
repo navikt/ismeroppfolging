@@ -12,7 +12,7 @@ val postgresRuntimeVersion = "17.6.0"
 val kafkaVersion = "3.9.0"
 val logbackVersion = "1.5.18"
 val logstashEncoderVersion = "8.1"
-val micrometerRegistryVersion = "1.15.4"
+val micrometerRegistryVersion = "1.12.13"
 val jacksonDatatypeVersion = "2.20.0"
 val ktorVersion = "3.3.0"
 val mockkVersion = "1.14.5"
@@ -60,6 +60,20 @@ dependencies {
 
     // Kafka
     implementation("org.apache.kafka:kafka_2.13:$kafkaVersion")
+    constraints {
+        implementation("org.bitbucket.b_c:jose4j") {
+            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://github.com/advisories/GHSA-6qvw-249j-h44c")
+            version {
+                require("0.9.6")
+            }
+        }
+        implementation("commons-beanutils:commons-beanutils") {
+            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
+            version {
+                require("1.11.0")
+            }
+        }
+    }
     implementation("io.confluent:kafka-avro-serializer:$confluent")
     constraints {
         implementation("org.apache.avro:avro") {
