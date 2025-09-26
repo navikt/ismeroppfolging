@@ -4,9 +4,9 @@ group = "no.nav.syfo"
 version = "0.0.1"
 
 val confluent = "7.9.0"
-val flywayVersion = "11.12.0"
+val flywayVersion = "11.13.1"
 val hikariVersion = "6.3.0"
-val postgresVersion = "42.7.7"
+val postgresVersion = "42.7.8"
 val postgresEmbeddedVersion = "2.1.1"
 val postgresRuntimeVersion = "17.6.0"
 val kafkaVersion = "3.9.0"
@@ -60,6 +60,20 @@ dependencies {
 
     // Kafka
     implementation("org.apache.kafka:kafka_2.13:$kafkaVersion")
+    constraints {
+        implementation("org.bitbucket.b_c:jose4j") {
+            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://github.com/advisories/GHSA-6qvw-249j-h44c")
+            version {
+                require("0.9.6")
+            }
+        }
+        implementation("commons-beanutils:commons-beanutils") {
+            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
+            version {
+                require("1.11.0")
+            }
+        }
+    }
     implementation("io.confluent:kafka-avro-serializer:$confluent")
     constraints {
         implementation("org.apache.avro:avro") {
