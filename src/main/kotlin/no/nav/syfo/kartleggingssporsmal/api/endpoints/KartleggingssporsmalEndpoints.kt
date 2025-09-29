@@ -16,8 +16,8 @@ fun Route.registerKartleggingssporsmalEndpoints(
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
     kartleggingssporsmalService: KartleggingssporsmalService,
 ) {
-    route("/api/internad/v1/kartleggingssporsmal") {
-        get("/person") {
+    route("/api/internad/v1/personer") {
+        get("/kartleggingssporsmal") {
             val personident = call.getPersonident()
                 ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
             validateVeilederAccess(

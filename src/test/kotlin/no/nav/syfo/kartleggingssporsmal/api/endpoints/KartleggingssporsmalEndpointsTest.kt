@@ -49,7 +49,7 @@ class KartleggingssporsmalEndpointsTest {
     @DisplayName("Get kartleggingssporsmal")
     inner class GetKartleggingssporsmal {
 
-        private val receivedQuestionsUrl = "/api/internad/v1/kartleggingssporsmal/person"
+        private val receivedQuestionsUrl = "/api/internad/v1/personer/kartleggingssporsmal"
 
         @Test
         fun `Returns status OK if valid token is supplied`() = testApplication {
