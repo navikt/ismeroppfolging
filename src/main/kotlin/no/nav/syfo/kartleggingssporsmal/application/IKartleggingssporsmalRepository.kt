@@ -9,5 +9,4 @@ interface IKartleggingssporsmalRepository {
     suspend fun getKandidat(personident: Personident): KartleggingssporsmalKandidat?
     suspend fun createKandidatAndMarkStoppunktAsProcessed(kandidat: KartleggingssporsmalKandidat, stoppunktId: Int): KartleggingssporsmalKandidat
     suspend fun getUnprocessedStoppunkter(): List<Pair<Int, KartleggingssporsmalStoppunkt>>
-    suspend fun hasReceivedQuestions(personident: Personident): Boolean
 }

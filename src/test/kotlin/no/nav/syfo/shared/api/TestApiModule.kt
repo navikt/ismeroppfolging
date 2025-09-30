@@ -10,6 +10,7 @@ import no.nav.syfo.senoppfolging.infrastructure.database.repository.SenOppfolgin
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
+    kartleggingssporsmalServiceMock: KartleggingssporsmalService? = null,
 ) {
     val database = externalMockEnvironment.database
     val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
@@ -22,7 +23,7 @@ fun Application.testApiModule(
         kandidatStatusProducer = mockk(relaxed = true),
     )
 
-    val kartleggingssporsmalService = KartleggingssporsmalService(
+    val kartleggingssporsmalService = kartleggingssporsmalServiceMock ?: KartleggingssporsmalService(
         behandlendeEnhetClient = externalMockEnvironment.behandlendeEnhetClient,
         kartleggingssporsmalRepository = externalMockEnvironment.kartleggingssporsmalRepository,
         oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,

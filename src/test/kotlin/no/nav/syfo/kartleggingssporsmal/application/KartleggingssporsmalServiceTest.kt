@@ -1,10 +1,6 @@
 package no.nav.syfo.kartleggingssporsmal.application
 
-import io.mockk.clearMocks
-import io.mockk.coEvery
-import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runTest
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET
@@ -16,17 +12,13 @@ import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TOO_OLD
 import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
-import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFromKafka
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import org.junit.jupiter.api.Test
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
 import no.nav.syfo.shared.domain.Personident
-import no.nav.syfo.shared.infrastructure.database.createKartleggingssporsmalMottattTable
-import no.nav.syfo.shared.infrastructure.database.deleteKartleggingssporsmalMottattRows
 import no.nav.syfo.shared.infrastructure.database.getKartleggingssporsmalStoppunkt
-import no.nav.syfo.shared.infrastructure.database.insertKartleggingssporsmalMottatt
 import no.nav.syfo.shared.infrastructure.database.markStoppunktAsProcessed
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -468,95 +460,6 @@ class KartleggingssporsmalServiceTest {
 
                 assertEquals(0, results.size)
             }
-        }
-    }
-
-    @Nested
-    @DisplayName("Has received questions")
-    inner class HasReceivedQuestions {
-
-        @BeforeEach
-        fun setUp() {
-            database.createKartleggingssporsmalMottattTable()
-            database.deleteKartleggingssporsmalMottattRows()
-        }
-
-        @Test
-        fun `Person has received questions`() = runTest {
-            database.insertKartleggingssporsmalMottatt(ARBEIDSTAKER_PERSONIDENT)
-
-            val hasReceivedQuestions = kartleggingssporsmalService.hasReceivedQuestions(ARBEIDSTAKER_PERSONIDENT)
-
-            assertTrue(hasReceivedQuestions)
-        }
-
-        @Test
-        fun `Person has not received questions`() = runTest {
-            val hasReceivedQuestions = kartleggingssporsmalService.hasReceivedQuestions(ARBEIDSTAKER_PERSONIDENT_HAS_14A)
-
-            assertFalse(hasReceivedQuestions)
-        }
-    }
-
-    @Nested
-    @DisplayName("Test getPerson")
-    inner class GetPerson {
-
-        val kartleggingssporsmalRepositoryMock = mockk<KartleggingssporsmalRepository>(relaxed = true)
-        val kartleggingssporsmalServiceMock = KartleggingssporsmalService(
-            behandlendeEnhetClient = ExternalMockEnvironment.instance.behandlendeEnhetClient,
-            kartleggingssporsmalRepository = kartleggingssporsmalRepositoryMock,
-            oppfolgingstilfelleClient = ExternalMockEnvironment.instance.oppfolgingstilfelleClient,
-            pdlClient = ExternalMockEnvironment.instance.pdlClient,
-            vedtak14aClient = ExternalMockEnvironment.instance.vedtak14aClient,
-        )
-
-        @BeforeEach
-        fun setUp() {
-            clearMocks(kartleggingssporsmalRepositoryMock)
-        }
-
-        @Test
-        fun `Person is not kandidat`() = runTest {
-            val ikkeKandidat = null
-            coEvery { kartleggingssporsmalRepositoryMock.getKandidat(ARBEIDSTAKER_PERSONIDENT) } returns ikkeKandidat
-
-            val personDTO = kartleggingssporsmalServiceMock.getPerson(ARBEIDSTAKER_PERSONIDENT)
-
-            assertNull(personDTO.kandidat)
-            assertEquals(KandidatStatus.IKKE_KANDIDAT, personDTO.kandidatStatus)
-        }
-
-        @Test
-        fun `Person is kandidat and questions have not been received`() = runTest {
-            coEvery { kartleggingssporsmalRepositoryMock.hasReceivedQuestions(ARBEIDSTAKER_PERSONIDENT) } returns false
-            val kandidat = KartleggingssporsmalKandidat(
-                personident = ARBEIDSTAKER_PERSONIDENT,
-                status = KandidatStatus.KANDIDAT,
-            )
-            coEvery { kartleggingssporsmalRepositoryMock.getKandidat(ARBEIDSTAKER_PERSONIDENT) } returns kandidat
-
-            val personDTO = kartleggingssporsmalServiceMock.getPerson(ARBEIDSTAKER_PERSONIDENT)
-
-            assertNotNull(personDTO.kandidat)
-            assertFalse(personDTO.kandidat.hasReceivedQuestions)
-            assertEquals(KandidatStatus.KANDIDAT, personDTO.kandidatStatus)
-        }
-
-        @Test
-        fun `Person is kandidat and questions have been received`() = runTest {
-            coEvery { kartleggingssporsmalRepositoryMock.hasReceivedQuestions(ARBEIDSTAKER_PERSONIDENT) } returns true
-            val kandidat = KartleggingssporsmalKandidat(
-                personident = ARBEIDSTAKER_PERSONIDENT,
-                status = KandidatStatus.KANDIDAT,
-            )
-            coEvery { kartleggingssporsmalRepositoryMock.getKandidat(ARBEIDSTAKER_PERSONIDENT) } returns kandidat
-
-            val personDTO = kartleggingssporsmalServiceMock.getPerson(ARBEIDSTAKER_PERSONIDENT)
-
-            assertNotNull(personDTO.kandidat)
-            assertTrue(personDTO.kandidat.hasReceivedQuestions)
-            assertEquals(KandidatStatus.KANDIDAT, personDTO.kandidatStatus)
         }
     }
 

@@ -5,7 +5,6 @@ import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
 import no.nav.syfo.shared.util.toLocalDateOslo
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import no.nav.syfo.kartleggingssporsmal.api.model.PersonDTO
 import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
@@ -161,15 +160,8 @@ class KartleggingssporsmalService(
 
     private fun isInPilot(enhetId: String?) = enhetId in pilotkontorer
 
-    suspend fun hasReceivedQuestions(personident: Personident): Boolean {
-        return kartleggingssporsmalRepository.hasReceivedQuestions(personident)
-    }
-
-    suspend fun getPerson(personident: Personident): PersonDTO {
-        return kartleggingssporsmalRepository.getKandidat(personident)?.let {
-            val hasReceivedQuestions = kartleggingssporsmalRepository.hasReceivedQuestions(personident)
-            PersonDTO(it, hasReceivedQuestions)
-        } ?: PersonDTO.IKKE_KANDIDAT
+    suspend fun getKandidat(personident: Personident): KartleggingssporsmalKandidat? {
+        return kartleggingssporsmalRepository.getKandidat(personident)
     }
 
     companion object {
