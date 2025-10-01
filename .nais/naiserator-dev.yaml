@@ -100,3 +100,5 @@ spec:
       value: "dev-gcp.teamsykefravr.isoppfolgingstilfelle"
     - name: ISOPPFOLGINGSTILFELLE_URL
       value: "http://isoppfolgingstilfelle"
+    - name: IS_SVAR_TOPIC_ENABLED
+      value: "false"
