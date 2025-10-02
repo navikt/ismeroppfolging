@@ -10,6 +10,7 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.model.getAlder
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aResponseDTO
+import no.nav.syfo.shared.domain.Personident
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -158,6 +159,10 @@ class KartleggingssporsmalService(
     private fun hasGjeldende14aVedtak(vedtak14a: Vedtak14aResponseDTO?): Boolean = vedtak14a != null
 
     private fun isInPilot(enhetId: String?) = enhetId in pilotkontorer
+
+    suspend fun getKandidat(personident: Personident): KartleggingssporsmalKandidat? {
+        return kartleggingssporsmalRepository.getKandidat(personident)
+    }
 
     companion object {
         private val log = LoggerFactory.getLogger(KartleggingssporsmalService::class.java)

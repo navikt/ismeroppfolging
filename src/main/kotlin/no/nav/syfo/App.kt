@@ -120,6 +120,7 @@ fun main() {
                 database = applicationDatabase,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
                 senOppfolgingService = senOppfolgingService,
+                kartleggingssporsmalService = kartleggingssporsmalService,
             )
             monitor.subscribe(ApplicationStarted) {
                 applicationState.ready = true
