@@ -1,4 +1,4 @@
-package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.consumer.kartleggingssporsmalsvar
+package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.kartleggingssporsmalsvar
 
 import io.micrometer.core.instrument.Counter
 import no.nav.syfo.shared.infrastructure.kafka.KafkaConsumerService

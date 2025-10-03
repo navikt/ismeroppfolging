@@ -1,4 +1,4 @@
-package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.consumer.kartleggingssporsmalsvar
+package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.kartleggingssporsmalsvar
 
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.shared.infrastructure.kafka.KafkaEnvironment

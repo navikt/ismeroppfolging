@@ -1,4 +1,4 @@
-package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.consumer.oppfolgingstilfelle
+package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.oppfolgingstilfelle
 
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
