@@ -6,7 +6,7 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Com
 import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
 import no.nav.syfo.kartleggingssporsmal.domain.OppfolgingstilfelleDTO
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfellePersonDTO
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.consumer.oppfolgingstilfelle.KafkaOppfolgingstilfellePersonDTO
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfellePersonDTO
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.util.nowUTC
 import java.time.LocalDate
