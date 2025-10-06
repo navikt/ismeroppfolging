@@ -96,6 +96,10 @@ spec:
       value: "prod-gcp.obo.veilarbvedtaksstotte"
     - name: VEILARBVEDTAKSSTOTTE_URL
       value: "http://veilarbvedtaksstotte.obo"
+    - name: DOKARKIV_CLIENT_ID
+      value: "prod-fss.teamdokumenthandtering.dokarkiv"
+    - name: DOKARKIV_URL
+      value: "https://dokarkiv.prod-fss-pub.nais.io"
     - name: ISOPPFOLGINGSTILFELLE_CLIENT_ID
       value: "prod-gcp.teamsykefravr.isoppfolgingstilfelle"
     - name: ISOPPFOLGINGSTILFELLE_URL

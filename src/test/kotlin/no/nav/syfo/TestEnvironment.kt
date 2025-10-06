@@ -44,6 +44,10 @@ fun testEnvironment() = Environment(
             baseUrl = "pdlUrl",
             clientId = "dev-fss.pdl.pdl-api",
         ),
+        dokarkiv = ClientEnvironment(
+            baseUrl = "dokarkivUrl",
+            clientId = "dev-fss.teamdokumenthandtering.dokarkiv",
+        ),
         veilarbvedtaksstotte = ClientEnvironment(
             baseUrl = "veilarbvedtaksstotteUrl",
             clientId = "dev-gcp.obo.veilarbvedtaksstotte",

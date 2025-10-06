@@ -92,6 +92,10 @@ spec:
       value: "dev-fss.pdl.pdl-api"
     - name: PDL_URL
       value: "https://pdl-api.dev-fss-pub.nais.io/graphql"
+    - name: DOKARKIV_CLIENT_ID
+      value: "dev-fss.teamdokumenthandtering.dokarkiv-q1"
+    - name: DOKARKIV_URL
+      value: "https://dokarkiv.dev-fss-pub.nais.io"
     - name: VEILARBVEDTAKSSTOTTE_CLIENT_ID
       value: "dev-gcp.obo.veilarbvedtaksstotte"
     - name: VEILARBVEDTAKSSTOTTE_URL

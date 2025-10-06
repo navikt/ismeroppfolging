@@ -49,6 +49,10 @@ data class Environment(
                 baseUrl = getEnvVar("PDL_URL"),
                 clientId = getEnvVar("PDL_CLIENT_ID"),
             ),
+            dokarkiv = ClientEnvironment(
+                baseUrl = getEnvVar("DOKARKIV_URL"),
+                clientId = getEnvVar("DOKARKIV_CLIENT_ID"),
+            ),
             veilarbvedtaksstotte = ClientEnvironment(
                 baseUrl = getEnvVar("VEILARBVEDTAKSSTOTTE_URL"),
                 clientId = getEnvVar("VEILARBVEDTAKSSTOTTE_CLIENT_ID"),
