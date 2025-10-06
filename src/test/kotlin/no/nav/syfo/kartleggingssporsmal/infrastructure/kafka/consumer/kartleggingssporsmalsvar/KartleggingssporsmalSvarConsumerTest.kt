@@ -1,11 +1,13 @@
 package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.consumer.kartleggingssporsmalsvar
 
 import io.mockk.clearAllMocks
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
+import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.kartleggingssporsmalsvar.KARTLEGGINGSSPORSMAL_SVAR_TOPIC
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.kartleggingssporsmalsvar.KafkaKartleggingssporsmalSvarDTO
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.kartleggingssporsmalsvar.KartleggingssporsmalSvarConsumer
@@ -18,13 +20,14 @@ import java.time.OffsetDateTime
 import java.util.*
 
 class KartleggingssporsmalSvarConsumerTest {
-
+    private val kartleggingssporsmalService = mockk<KartleggingssporsmalService>()
     private val kafkaConsumer = mockk<KafkaConsumer<String, KafkaKartleggingssporsmalSvarDTO>>()
-    val kartleggingssporsmalSvarConsumer = KartleggingssporsmalSvarConsumer()
+    private val kartleggingssporsmalSvarConsumer = KartleggingssporsmalSvarConsumer(kartleggingssporsmalService)
 
     @BeforeEach
     fun setUp() {
         every { kafkaConsumer.commitSync() } returns Unit
+        coEvery { kartleggingssporsmalService.registrerSvar(any(), any(), any()) } returns Unit
     }
 
     @AfterEach

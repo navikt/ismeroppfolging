@@ -1,6 +1,7 @@
 package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.kartleggingssporsmalsvar
 
 import no.nav.syfo.ApplicationState
+import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.shared.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.shared.infrastructure.kafka.kafkaAivenConsumerConfig
 import no.nav.syfo.shared.infrastructure.kafka.launchKafkaConsumer
@@ -15,6 +16,7 @@ const val KARTLEGGINGSSPORSMAL_SVAR_TOPIC =
 fun launchKartleggingssporsmalSvarConsumer(
     applicationState: ApplicationState,
     kafkaEnvironment: KafkaEnvironment,
+    kartleggingssporsmalService: KartleggingssporsmalService,
 ) {
     val consumerProperties = kafkaAivenConsumerConfig<KafkaKartleggingssporsmalSvarDTODeserializer>(
         kafkaEnvironment = kafkaEnvironment,
@@ -24,7 +26,7 @@ fun launchKartleggingssporsmalSvarConsumer(
         this[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
     }
 
-    val kartleggingssporsmalSvarConsumer = KartleggingssporsmalSvarConsumer()
+    val kartleggingssporsmalSvarConsumer = KartleggingssporsmalSvarConsumer(kartleggingssporsmalService)
 
     launchKafkaConsumer(
         applicationState = applicationState,

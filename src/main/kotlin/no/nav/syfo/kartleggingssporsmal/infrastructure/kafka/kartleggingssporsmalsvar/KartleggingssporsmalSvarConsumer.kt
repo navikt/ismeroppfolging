@@ -1,6 +1,7 @@
 package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.kartleggingssporsmalsvar
 
 import io.micrometer.core.instrument.Counter
+import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.shared.infrastructure.kafka.KafkaConsumerService
 import no.nav.syfo.shared.infrastructure.metric.METRICS_NS
 import no.nav.syfo.shared.infrastructure.metric.METRICS_REGISTRY
@@ -8,7 +9,9 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 import java.time.Duration
 
-class KartleggingssporsmalSvarConsumer() : KafkaConsumerService<KafkaKartleggingssporsmalSvarDTO> {
+class KartleggingssporsmalSvarConsumer(
+    private val kartleggingssporsmalService: KartleggingssporsmalService,
+) : KafkaConsumerService<KafkaKartleggingssporsmalSvarDTO> {
 
     override val pollDurationInMillis: Long = 1000
 
@@ -32,8 +35,11 @@ class KartleggingssporsmalSvarConsumer() : KafkaConsumerService<KafkaKartlegging
     }
 
     private suspend fun processRecord(svarRecordDTO: KafkaKartleggingssporsmalSvarDTO) {
-        // TODO
-        return
+        kartleggingssporsmalService.registrerSvar(
+            kandidatUuid = svarRecordDTO.kandidatId,
+            svarAt = svarRecordDTO.createdAt,
+            svarId = svarRecordDTO.svarId,
+        )
     }
 
     companion object {
