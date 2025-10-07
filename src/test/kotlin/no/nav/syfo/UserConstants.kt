@@ -1,6 +1,7 @@
 package no.nav.syfo
 
 import no.nav.syfo.shared.domain.Personident
+import java.util.UUID
 
 object UserConstants {
     val ARBEIDSTAKER_PERSONIDENT = Personident("12345678910")
@@ -16,7 +17,16 @@ object UserConstants {
     val ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET = Personident("11111111333")
     val ARBEIDSTAKER_PERSONIDENT_NO_FODSELSDATO = Personident("12311111111")
     val ARBEIDSTAKER_PERSONIDENT_ONLY_FODSELSAAR = Personident("12311111199")
+    val ARBEIDSTAKER_PERSONIDENT_PDL_FAILS = Personident("11111111666")
+    val EXISTING_EKSTERN_REFERANSE_UUID: UUID = UUID.fromString("e7e8e9e0-e1e2-e3e4-e5e6-e7e8e9e0e1e2")
+    val FAILING_EKSTERN_REFERANSE_UUID: UUID = UUID.randomUUID()
+    val PDF_VEDTAK = byteArrayOf(0x2E, 0x28)
+
     const val VEILEDER_IDENT = "Z999999"
     const val VIRKSOMHETSNUMMER = "123456789"
     const val VALID_PILOTKONTOR = "0220"
+    const val PERSON_FORNAVN = "Fornavn"
+    const val PERSON_MELLOMNAVN = "Mellomnavn"
+    const val PERSON_ETTERNAVN = "Etternavnesen"
+    const val PERSON_FULLNAME = "$PERSON_FORNAVN $PERSON_MELLOMNAVN $PERSON_ETTERNAVN"
 }

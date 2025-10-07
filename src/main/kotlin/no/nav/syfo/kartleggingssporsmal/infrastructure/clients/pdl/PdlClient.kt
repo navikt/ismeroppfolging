@@ -45,11 +45,13 @@ class PdlClient(
                         pdlPersonReponse.errors.forEach {
                             logger.error("Error while requesting person from PersonDataLosningen: ${it.errorMessage()}")
                         }
+                        Result.failure(RuntimeException("Error while requesting person from PersonDataLosningen"))
+                    } else {
+                        pdlPersonReponse.data
+                            ?.hentPerson
+                            ?.let { Result.success(it) }
+                            ?: Result.failure(RuntimeException("No person found in PDL response"))
                     }
-                    pdlPersonReponse.data
-                        ?.hentPerson
-                        ?.let { Result.success(it) }
-                        ?: Result.failure(RuntimeException("No person found in PDL response"))
                 }
                 else -> {
                     logger.error("Request with url: ${clientEnvironment.baseUrl} failed with reponse code ${response.status.value}")

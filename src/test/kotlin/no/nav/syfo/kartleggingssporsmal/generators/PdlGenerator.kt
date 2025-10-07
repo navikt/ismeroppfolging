@@ -1,5 +1,6 @@
 package no.nav.syfo.kartleggingssporsmal.generators
 
+import no.nav.syfo.UserConstants
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_NO_FODSELSDATO
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_INACTIVE
@@ -17,6 +18,13 @@ fun generatePdlPerson(
             )
         )
     } ?: emptyList(),
+    navn = listOf(
+        PdlPersonNavn(
+            fornavn = UserConstants.PERSON_FORNAVN,
+            mellomnavn = UserConstants.PERSON_MELLOMNAVN,
+            etternavn = UserConstants.PERSON_ETTERNAVN,
+        )
+    )
 )
 
 fun generatePdlHentPerson(
@@ -28,8 +36,9 @@ fun generatePdlHentPerson(
 fun generatePdlHentPersonResponse(
     ident: String = ARBEIDSTAKER_PERSONIDENT.value,
     fodseldato: LocalDate? = LocalDate.now().minusYears(30),
+    errors: List<PdlError> = emptyList()
 ) = PdlHentPersonResponse(
-    errors = null,
+    errors = errors,
     data = if (ident == ARBEIDSTAKER_PERSONIDENT_INACTIVE.value) null else generatePdlHentPerson(
         fodseldato = if (ident == ARBEIDSTAKER_PERSONIDENT_NO_FODSELSDATO.value) null else fodseldato,
     ),
