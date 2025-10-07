@@ -11,6 +11,7 @@ enum class JournalpostTema(val value: String) {
     OPPFOLGING("OPP"),
 }
 
+// https://confluence.adeo.no/spaces/BOA/pages/316407153/Utsendingskanal
 enum class JournalpostKanal(
     val value: String,
 ) {
@@ -21,6 +22,7 @@ enum class OverstyrInnsynsregler {
     VISES_MASKINELT_GODKJENT,
 }
 
+// https://confluence.adeo.no/spaces/BOA/pages/313346837/opprettJournalpost
 data class JournalpostRequest(
     val avsenderMottaker: AvsenderMottaker,
     val tittel: String,
