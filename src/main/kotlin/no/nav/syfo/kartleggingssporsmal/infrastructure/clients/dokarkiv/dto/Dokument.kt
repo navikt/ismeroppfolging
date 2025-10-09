@@ -3,7 +3,7 @@ package no.nav.syfo.kartleggingssporsmal.infrastructure.clients.dokarkiv.dto
 enum class BrevkodeType(
     val value: String,
 ) {
-    VEDTAK_FRISKMELDING_TIL_ARBEIDSFORMIDLING("OPPF_VEDTAK_FRISKMELDING_TIL_ARBEIDSFORMIDLING"),
+    VARSEL_KARTLEGGINGSSPORSMAL("OPPF_VARSEL_KARTLEGGINGSSPORSMAL"),
 }
 
 data class Dokument private constructor(

@@ -59,6 +59,7 @@ fun testEnvironment() = Environment(
     ),
     electorPath = "electorPath",
     isSvarTopicEnabled = true,
+    isJournalforingRetryEnabled = true,
 )
 
 fun testAppState() = ApplicationState(

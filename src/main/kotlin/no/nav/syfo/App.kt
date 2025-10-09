@@ -164,6 +164,10 @@ fun main() {
                     )
                 }
             }
+            monitor.subscribe(ApplicationStopping) {
+                applicationState.ready = false
+                logger.info("Application is stopping")
+            }
         }
     )
 

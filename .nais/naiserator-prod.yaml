@@ -106,3 +106,5 @@ spec:
       value: "http://isoppfolgingstilfelle"
     - name: IS_SVAR_TOPIC_ENABLED
       value: "false"
+    - name: IS_JOURNALFORING_RETRY_ENABLED
+      value: "true"

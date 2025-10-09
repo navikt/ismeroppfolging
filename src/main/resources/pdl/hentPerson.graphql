@@ -4,5 +4,16 @@ query($ident: ID!){
             foedselsdato
             foedselsaar
         }
+        navn(historikk: $navnHistorikk) {
+          fornavn
+          mellomnavn
+          etternavn
+          forkortetNavn
+          originaltNavn {
+            fornavn
+            mellomnavn
+            etternavn
+          }
+        }
     }
 }
