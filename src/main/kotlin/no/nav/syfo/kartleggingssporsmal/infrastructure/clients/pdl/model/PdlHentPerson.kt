@@ -11,6 +11,7 @@ data class PdlHentPersonRequest(
 
 data class PdlHentPersonRequestVariables(
     val ident: String,
+    val navnHistorikk: Boolean = false,
 )
 
 data class PdlHentPersonResponse(
