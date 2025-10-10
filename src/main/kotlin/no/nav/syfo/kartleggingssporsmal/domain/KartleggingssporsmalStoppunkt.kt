@@ -2,6 +2,7 @@ package no.nav.syfo.kartleggingssporsmal.domain
 
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
+import no.nav.syfo.shared.util.nowUTC
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -29,7 +30,7 @@ data class KartleggingssporsmalStoppunkt private constructor(
             return if (oppfolgingstilfelleWillGenerateStoppunkt(oppfolgingstilfelle)) {
                 KartleggingssporsmalStoppunkt(
                     uuid = UUID.randomUUID(),
-                    createdAt = OffsetDateTime.now(),
+                    createdAt = nowUTC(),
                     personident = oppfolgingstilfelle.personident,
                     tilfelleBitReferanseUuid = oppfolgingstilfelle.tilfelleBitReferanseUuid,
                     stoppunktAt = calculateStoppunktDato(
