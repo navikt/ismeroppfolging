@@ -12,25 +12,25 @@ import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TOO_OLD
 import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFromKafka
-import no.nav.syfo.shared.util.DAYS_IN_WEEK
-import org.junit.jupiter.api.Test
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.infrastructure.database.getKartleggingssporsmalStoppunkt
 import no.nav.syfo.shared.infrastructure.database.markStoppunktAsProcessed
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertNull
+import no.nav.syfo.shared.util.DAYS_IN_WEEK
+import no.nav.syfo.shared.util.toLocalDateOslo
+import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
+import java.util.UUID
 
 class KartleggingssporsmalServiceTest {
     private val database = ExternalMockEnvironment.instance.database
@@ -459,6 +459,133 @@ class KartleggingssporsmalServiceTest {
                 val results = kartleggingssporsmalService.processStoppunkter()
 
                 assertEquals(0, results.size)
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Test registrering of svar")
+    inner class RegistrerSvar {
+
+        @Test
+        fun `registrerSvar should store svar when svar on existing kandidat`() {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+            assertNotNull(stoppunkt)
+
+            runBlocking {
+                kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+                val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+                val kandidat = KartleggingssporsmalKandidat(
+                    personident = ARBEIDSTAKER_PERSONIDENT,
+                    status = KandidatStatus.KANDIDAT,
+                )
+                val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                    kandidat = kandidat,
+                    stoppunktId = createdStoppunkt.id,
+                )
+                assertNull(createdKandidat.svarAt)
+
+                kartleggingssporsmalService.registrerSvar(
+                    kandidatUuid = createdKandidat.uuid,
+                    svarAt = OffsetDateTime.now(),
+                    svarId = UUID.randomUUID(),
+                )
+
+                val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
+                assertNotNull(fetchedKandidat?.svarAt)
+            }
+        }
+
+        @Test
+        fun `registrerSvar should store svar again when two svar on existing kandidat`() {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+            assertNotNull(stoppunkt)
+
+            runBlocking {
+                kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+                val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+                val kandidat = KartleggingssporsmalKandidat(
+                    personident = ARBEIDSTAKER_PERSONIDENT,
+                    status = KandidatStatus.KANDIDAT,
+                )
+                val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                    kandidat = kandidat,
+                    stoppunktId = createdStoppunkt.id,
+                )
+                assertNull(createdKandidat.svarAt)
+
+                kartleggingssporsmalService.registrerSvar(
+                    kandidatUuid = createdKandidat.uuid,
+                    svarAt = OffsetDateTime.now().minusHours(1),
+                    svarId = UUID.randomUUID(),
+                )
+                val secondSvarAt = OffsetDateTime.now()
+                kartleggingssporsmalService.registrerSvar(
+                    kandidatUuid = createdKandidat.uuid,
+                    svarAt = secondSvarAt,
+                    svarId = UUID.randomUUID(),
+                )
+
+                val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
+                assertEquals(secondSvarAt.toLocalDateOslo(), fetchedKandidat?.svarAt?.toLocalDateOslo())
+            }
+        }
+
+        @Test
+        fun `registrerSvar should not store svar when IKKE_KANDIDAT`() {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+            assertNotNull(stoppunkt)
+
+            runBlocking {
+                kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+                val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+                val kandidat = KartleggingssporsmalKandidat(
+                    personident = ARBEIDSTAKER_PERSONIDENT,
+                    status = KandidatStatus.IKKE_KANDIDAT,
+                )
+                val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                    kandidat = kandidat,
+                    stoppunktId = createdStoppunkt.id,
+                )
+
+                kartleggingssporsmalService.registrerSvar(
+                    kandidatUuid = createdKandidat.uuid,
+                    svarAt = OffsetDateTime.now(),
+                    svarId = UUID.randomUUID(),
+                )
+
+                val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
+                assertNull(fetchedKandidat?.svarAt)
+            }
+        }
+
+        @Test
+        fun `registrerSvar should not store svar when no existing kandidat`() {
+            val kandidatUuid = UUID.randomUUID()
+            runBlocking {
+                kartleggingssporsmalService.registrerSvar(
+                    kandidatUuid = kandidatUuid,
+                    svarAt = OffsetDateTime.now(),
+                    svarId = UUID.randomUUID(),
+                )
+
+                val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(kandidatUuid)
+                assertNull(fetchedKandidat)
             }
         }
     }

@@ -161,6 +161,7 @@ fun main() {
                     launchKartleggingssporsmalSvarConsumer(
                         applicationState = applicationState,
                         kafkaEnvironment = environment.kafka,
+                        kartleggingssporsmalService = kartleggingssporsmalService,
                     )
                 }
             }

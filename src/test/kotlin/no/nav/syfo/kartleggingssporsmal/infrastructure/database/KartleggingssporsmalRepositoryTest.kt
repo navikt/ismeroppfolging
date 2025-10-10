@@ -10,14 +10,11 @@ import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFrom
 import no.nav.syfo.shared.infrastructure.database.getKartleggingssporsmalStoppunkt
 import no.nav.syfo.shared.infrastructure.database.markStoppunktAsProcessed
 import no.nav.syfo.shared.infrastructure.database.setStoppunktDate
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertNull
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
-import kotlin.test.Test
 
 class KartleggingssporsmalRepositoryTest {
 
@@ -209,6 +206,61 @@ class KartleggingssporsmalRepositoryTest {
             val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(ARBEIDSTAKER_PERSONIDENT)
             assertNotNull(fetchedKandidat)
             assertEquals(fetchedKandidat.uuid, kandidat.uuid)
+        }
+    }
+
+    @Test
+    fun `updateSvarForKandidat should update the svarAt field for the kandidat in the database`() {
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+            tilfelleStart = LocalDate.now().minusDays(6 * 7),
+            antallSykedager = 6 * 7 + 1,
+        )
+        val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+        assertNotNull(kartleggingssporsmalStoppunkt)
+
+        runBlocking {
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
+            val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+            val kandidat = KartleggingssporsmalKandidat(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                status = KandidatStatus.KANDIDAT,
+            )
+            val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkt.id,
+            )
+
+            val updatedKandidat = kartleggingssporsmalRepository.updateSvarForKandidat(
+                kandidat = createdKandidat.copy(
+                    svarAt = OffsetDateTime.now().minusHours(1),
+                )
+            )
+
+            val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
+            assertNotNull(updatedKandidat.svarAt)
+            assertNotNull(fetchedKandidat?.svarAt)
+        }
+    }
+
+    @Test
+    fun `updateSvarForKandidat should throw an exception when the kandidat does not exist`() {
+        val kandidat = KartleggingssporsmalKandidat(
+            personident = ARBEIDSTAKER_PERSONIDENT,
+            status = KandidatStatus.KANDIDAT,
+        )
+        runBlocking {
+            assertThrows<NoSuchElementException> {
+                kartleggingssporsmalRepository.updateSvarForKandidat(kandidat)
+            }
+        }
+    }
+
+    @Test
+    fun `getKandidat by uuid should return null when the kandidat does not exist`() {
+        runBlocking {
+            val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(UUID.randomUUID())
+            assertNull(fetchedKandidat)
         }
     }
 }

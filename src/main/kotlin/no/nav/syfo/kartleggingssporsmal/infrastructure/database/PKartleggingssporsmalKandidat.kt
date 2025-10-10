@@ -13,6 +13,7 @@ data class PKartleggingssporsmalKandidat(
     val generatedByStoppunktId: Int,
     val status: String,
     val varsletAt: OffsetDateTime?,
+    val svarAt: OffsetDateTime?,
 ) {
     fun toKartleggingssporsmalKandidat() = KartleggingssporsmalKandidat.createFromDatabase(
         uuid = uuid,
@@ -20,5 +21,6 @@ data class PKartleggingssporsmalKandidat(
         personident = personident,
         status = status,
         varsletAt = varsletAt,
+        svarAt = svarAt,
     )
 }

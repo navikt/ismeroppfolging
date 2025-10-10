@@ -50,6 +50,27 @@ class KartleggingssporsmalRepository(
                         personident = kandidat.personident,
                         status = kandidat.status,
                         varsletAt = kandidat.varsletAt,
+                        svarAt = kandidat.svarAt,
+                    )
+                }
+        }
+    }
+
+    override suspend fun getKandidat(uuid: UUID): KartleggingssporsmalKandidat? {
+        return database.connection.use { connection ->
+            connection.prepareStatement(GET_KANDIDAT_BY_UUID).use {
+                it.setString(1, uuid.toString())
+                it.executeQuery().toList { toPKartleggingssporsmalKandidat() }
+            }
+                .firstOrNull()
+                ?.let { kandidat ->
+                    KartleggingssporsmalKandidat.createFromDatabase(
+                        uuid = kandidat.uuid,
+                        createdAt = kandidat.createdAt,
+                        personident = kandidat.personident,
+                        status = kandidat.status,
+                        varsletAt = kandidat.varsletAt,
+                        svarAt = kandidat.svarAt,
                     )
                 }
         }
@@ -67,6 +88,7 @@ class KartleggingssporsmalRepository(
                 it.setInt(4, stoppunktId)
                 it.setString(5, kandidat.status.name)
                 it.setObject(6, kandidat.varsletAt)
+                it.setObject(7, kandidat.svarAt)
                 it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
             }
             connection.markStoppunktAsProcessed(stoppunktId)
@@ -89,6 +111,18 @@ class KartleggingssporsmalRepository(
                         )
                     }
             }
+        }
+    }
+
+    override suspend fun updateSvarForKandidat(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat {
+        return database.connection.use { connection ->
+            val updatedKandidat = connection.prepareStatement(UPDATE_KANDIDAT_SVAR_AT).use {
+                it.setObject(1, kandidat.svarAt)
+                it.setString(2, kandidat.uuid.toString())
+                it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
+            }
+            connection.commit()
+            updatedKandidat.toKartleggingssporsmalKandidat()
         }
     }
 
@@ -122,6 +156,11 @@ class KartleggingssporsmalRepository(
             ORDER BY created_at DESC
         """
 
+        private const val GET_KANDIDAT_BY_UUID = """
+            SELECT * FROM KARTLEGGINGSSPORSMAL_KANDIDAT
+            WHERE uuid = ?
+        """
+
         private const val CREATE_KANDIDAT = """
             INSERT INTO KARTLEGGINGSSPORSMAL_KANDIDAT (
                 id,
@@ -130,8 +169,9 @@ class KartleggingssporsmalRepository(
                 personident,
                 generated_by_stoppunkt_id,
                 status,
-                varslet_at
-            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?)
+                varslet_at,
+                svar_at
+            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?)
             RETURNING *
         """
 
@@ -144,6 +184,13 @@ class KartleggingssporsmalRepository(
             UPDATE KARTLEGGINGSSPORSMAL_STOPPUNKT
             SET processed_at = now()
             WHERE id = ?
+        """
+
+        private const val UPDATE_KANDIDAT_SVAR_AT = """
+            UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
+            SET svar_at = ?
+            WHERE uuid = ?
+            RETURNING *
         """
     }
 }
@@ -169,5 +216,6 @@ internal fun ResultSet.toPKartleggingssporsmalKandidat(): PKartleggingssporsmalK
         generatedByStoppunktId = getInt("generated_by_stoppunkt_id"),
         status = getString("status"),
         varsletAt = getObject("varslet_at", OffsetDateTime::class.java),
+        svarAt = getObject("svar_at", OffsetDateTime::class.java),
     )
 }

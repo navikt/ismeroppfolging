@@ -12,6 +12,7 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.model.getAlde
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aResponseDTO
 import no.nav.syfo.shared.domain.Personident
 import org.slf4j.LoggerFactory
+import java.time.OffsetDateTime
 import java.util.*
 
 class KartleggingssporsmalService(
@@ -101,6 +102,19 @@ class KartleggingssporsmalService(
                     stoppunktId = stoppunktId,
                 )
             }
+        }
+    }
+
+    suspend fun registrerSvar(kandidatUuid: UUID, svarAt: OffsetDateTime, svarId: UUID) {
+        val existingKandidat = kartleggingssporsmalRepository.getKandidat(kandidatUuid)
+
+        if (existingKandidat == null) {
+            log.error("Mottok svar på kandidat som ikke finnes, med uuid: $kandidatUuid og svarId: $svarId")
+        } else if (existingKandidat.status != KandidatStatus.KANDIDAT) {
+            log.error("Mottok svar på person som er IKKE_KANDIDAT, med uuid: $kandidatUuid og svarId: $svarId")
+        } else {
+            val kandidatWithSvar = existingKandidat.addSvarAt(svarAt)
+            kartleggingssporsmalRepository.updateSvarForKandidat(kandidatWithSvar)
         }
     }
 
