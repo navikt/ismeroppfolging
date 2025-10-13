@@ -1,6 +1,7 @@
 package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import no.nav.syfo.kartleggingssporsmal.application.IEsyfovarselProducer
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -9,15 +10,15 @@ import java.io.Serializable
 import java.util.*
 
 class EsyfovarselProducer(
-    private val kafkaProducer: KafkaProducer<String, EsyfovarselHendelse>,
-) {
+    private val producer: KafkaProducer<String, EsyfovarselHendelse>,
+) : IEsyfovarselProducer {
 
     /**
      * Sender kartleggingssporsmal varsel til esyfovarsel topic.
      *
      * NB: Sjekk at detaljer stemmer i `esyfovarsel` før producer taes i bruk.
      */
-    fun sendKartleggingssporsmal(kartleggingssporsmalKandidat: KartleggingssporsmalKandidat): Result<KartleggingssporsmalKandidat> {
+    override fun sendKartleggingssporsmal(kartleggingssporsmalKandidat: KartleggingssporsmalKandidat): Result<KartleggingssporsmalKandidat> {
         val varselHendelse = ArbeidstakerHendelse(
             type = EsyfovarselHendelse.HendelseType.SM_KARTLEGGINGSSPORSMAL,
             arbeidstakerFnr = kartleggingssporsmalKandidat.personident.value,
@@ -25,7 +26,7 @@ class EsyfovarselProducer(
         val personidentUuid = UUID.nameUUIDFromBytes(kartleggingssporsmalKandidat.personident.value.toByteArray())
 
         return try {
-            kafkaProducer.send(
+            producer.send(
                 ProducerRecord(
                     ESYFOVARSEL_TOPIC,
                     personidentUuid.toString(),

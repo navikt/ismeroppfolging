@@ -3,7 +3,7 @@ package no.nav.syfo.kartleggingssporsmal.domain
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.util.nowUTC
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 
 data class KartleggingssporsmalKandidat private constructor(
     val uuid: UUID,

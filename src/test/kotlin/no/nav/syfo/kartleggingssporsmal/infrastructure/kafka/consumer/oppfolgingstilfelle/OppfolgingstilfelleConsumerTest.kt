@@ -8,12 +8,16 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.kartleggingssporsmal.generators.createKafkaOppfolgingstilfellePersonDTO
-import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselProducer
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatProducer
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecord
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfellePersonDTO
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.oppfolgingstilfelle.OPPFOLGINGSTILFELLE_PERSON_TOPIC
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.oppfolgingstilfelle.OppfolgingstilfelleConsumer
 import no.nav.syfo.shared.infrastructure.kafka.mockPollConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -25,13 +29,21 @@ class OppfolgingstilfelleConsumerTest {
     private val database = externalMockEnvironment.database
     private val kafkaConsumer = mockk<KafkaConsumer<String, KafkaOppfolgingstilfellePersonDTO>>()
 
-    private val kartleggingssporsmalRepository = KartleggingssporsmalRepository(database)
+    private val mockEsyfoVarselProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
+    private val esyfovarselProducer = EsyfovarselProducer(mockEsyfoVarselProducer)
+
+    private val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatRecord>>()
+    private val kartleggingssporsmalKandidatProducer = KartleggingssporsmalKandidatProducer(mockKandidatProducer)
+
     private val kartleggingssporsmalService = KartleggingssporsmalService(
         behandlendeEnhetClient = externalMockEnvironment.behandlendeEnhetClient,
-        kartleggingssporsmalRepository = kartleggingssporsmalRepository,
+        kartleggingssporsmalRepository = externalMockEnvironment.kartleggingssporsmalRepository,
         oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
+        esyfoVarselProducer = esyfovarselProducer,
+        kartleggingssporsmalKandidatProducer = kartleggingssporsmalKandidatProducer,
         pdlClient = externalMockEnvironment.pdlClient,
         vedtak14aClient = externalMockEnvironment.vedtak14aClient,
+        isKandidatPublishingEnabled = true,
     )
     private val oppfolgingstilfelleConsumer = OppfolgingstilfelleConsumer(kartleggingssporsmalService)
 

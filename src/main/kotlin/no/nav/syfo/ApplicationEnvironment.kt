@@ -65,11 +65,10 @@ data class Environment(
     val isSvarTopicEnabled: Boolean = getEnvVar("IS_SVAR_TOPIC_ENABLED").toBoolean(),
     val isJournalforingRetryEnabled: Boolean =
         getEnvVar("IS_JOURNALFORING_RETRY_ENABLED", "true").toBoolean(),
+    val isKandidatPublishingEnabled: Boolean = getEnvVar("IS_KANDIDAT_PUBLISHING_ENABLED").toBoolean(),
 )
 
-fun getEnvVar(
-    varName: String,
-    defaultValue: String? = null
-) = System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
+fun getEnvVar(varName: String, defaultValue: String? = null) =
+    System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
 
 fun isLocal() = getEnvVar("KTOR_ENV", "local") == "local"
