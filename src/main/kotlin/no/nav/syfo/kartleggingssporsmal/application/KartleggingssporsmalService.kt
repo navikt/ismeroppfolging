@@ -1,16 +1,16 @@
 package no.nav.syfo.kartleggingssporsmal.application
 
-import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
-import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
-import no.nav.syfo.shared.util.toLocalDateOslo
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
+import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.model.getAlder
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aResponseDTO
 import no.nav.syfo.shared.domain.Personident
+import no.nav.syfo.shared.util.toLocalDateOslo
 import org.slf4j.LoggerFactory
 import java.time.OffsetDateTime
 import java.util.*
@@ -19,8 +19,11 @@ class KartleggingssporsmalService(
     private val behandlendeEnhetClient: IBehandlendeEnhetClient,
     private val kartleggingssporsmalRepository: IKartleggingssporsmalRepository,
     private val oppfolgingstilfelleClient: IOppfolgingstilfelleClient,
+    private val esyfoVarselProducer: IEsyfovarselProducer,
+    private val kartleggingssporsmalKandidatProducer: IKartleggingssporsmalKandidatProducer,
     private val pdlClient: IPdlClient,
     private val vedtak14aClient: IVedtak14aClient,
+    private val isKandidatPublishingEnabled: Boolean,
 ) {
 
     suspend fun processOppfolgingstilfelle(oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromKafka) {

@@ -12,6 +12,10 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.cronjob.KandidatStoppunktCronjob
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselProducer
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatProducer
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecord
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.kartleggingssporsmalsvar.launchKartleggingssporsmalSvarConsumer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.oppfolgingstilfelle.launchOppfolgingstilfelleConsumer
 import no.nav.syfo.senoppfolging.application.SenOppfolgingService
@@ -67,7 +71,16 @@ fun main() {
         azureAdClient = azureAdClient,
         clientEnvironment = environment.clients.isoppfolgingstilfelle,
     )
-
+    val esyfovarselProducer = EsyfovarselProducer(
+        producer = KafkaProducer(
+            kafkaAivenProducerConfig<EsyfovarselHendelse>(kafkaEnvironment = environment.kafka)
+        )
+    )
+    val kartleggingssporsmalKandidatProducer = KartleggingssporsmalKandidatProducer(
+        producer = KafkaProducer(
+            kafkaAivenProducerConfig<KartleggingssporsmalKandidatRecord>(kafkaEnvironment = environment.kafka)
+        )
+    )
     val kandidatStatusProducer = KandidatStatusProducer(
         producer = KafkaProducer(
             kafkaAivenProducerConfig<KandidatStatusRecordSerializer>(kafkaEnvironment = environment.kafka)
@@ -109,8 +122,11 @@ fun main() {
                 behandlendeEnhetClient = behandlendeEnhetClient,
                 kartleggingssporsmalRepository = kartleggingssporsmalRepository,
                 oppfolgingstilfelleClient = oppfolgingstilfelleClient,
+                esyfoVarselProducer = esyfovarselProducer,
+                kartleggingssporsmalKandidatProducer = kartleggingssporsmalKandidatProducer,
                 pdlClient = pdlClient,
                 vedtak14aClient = vedtak14aClient,
+                isKandidatPublishingEnabled = environment.isKandidatPublishingEnabled,
             )
 
             apiModule(

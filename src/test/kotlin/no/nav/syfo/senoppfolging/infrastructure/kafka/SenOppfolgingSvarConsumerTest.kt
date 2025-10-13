@@ -13,11 +13,12 @@ import no.nav.syfo.senoppfolging.domain.SenOppfolgingKandidat
 import no.nav.syfo.senoppfolging.domain.SenOppfolgingSvar
 import no.nav.syfo.senoppfolging.domain.VurderingType
 import no.nav.syfo.senoppfolging.generators.generateSenOppfolgingSvarRecord
-import no.nav.syfo.shared.infrastructure.database.getSenOppfolgingKandidater
-import no.nav.syfo.shared.infrastructure.database.getSenOppfolgingVurderinger
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.SenOppfolgingRepository
 import no.nav.syfo.senoppfolging.infrastructure.kafka.consumer.*
-import no.nav.syfo.senoppfolging.infrastructure.kafka.producer.*
+import no.nav.syfo.senoppfolging.infrastructure.kafka.producer.KandidatStatusProducer
+import no.nav.syfo.senoppfolging.infrastructure.kafka.producer.KandidatStatusRecord
+import no.nav.syfo.shared.infrastructure.database.getSenOppfolgingKandidater
+import no.nav.syfo.shared.infrastructure.database.getSenOppfolgingVurderinger
 import no.nav.syfo.shared.infrastructure.kafka.mockPollConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -32,19 +33,19 @@ class SenOppfolgingSvarConsumerTest {
 
     private val externalMockEnvironment = ExternalMockEnvironment.instance
     private val database = externalMockEnvironment.database
-    private val kafkaConsumer = mockk<KafkaConsumer<String, SenOppfolgingSvarRecord>>()
-    private val kafkaProducer = mockk<KafkaProducer<String, KandidatStatusRecord>>()
+    private val consumer = mockk<KafkaConsumer<String, SenOppfolgingSvarRecord>>()
+    private val producer = mockk<KafkaProducer<String, KandidatStatusRecord>>()
 
     private val senOppfolgingRepository = SenOppfolgingRepository(database = database)
     private val senOppfolgingService = SenOppfolgingService(
         senOppfolgingRepository = senOppfolgingRepository,
-        kandidatStatusProducer = KandidatStatusProducer(kafkaProducer),
+        kandidatStatusProducer = KandidatStatusProducer(producer),
     )
     private val senOppfolgingSvarConsumer = SenOppfolgingSvarConsumer(senOppfolgingService = senOppfolgingService)
 
     @BeforeEach
     fun setUp() {
-        every { kafkaConsumer.commitSync() } returns Unit
+        every { consumer.commitSync() } returns Unit
     }
 
     @AfterEach
@@ -65,17 +66,17 @@ class SenOppfolgingSvarConsumerTest {
             varselId = UUID.randomUUID(),
         )
 
-        kafkaConsumer.mockPollConsumerRecords(
+        consumer.mockPollConsumerRecords(
             records = listOf(recordKey to senOppfolgingSvarRecord),
             topic = SENOPPFOLGING_SVAR_TOPIC,
         )
 
         runBlocking {
-            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = consumer)
         }
 
         verify(exactly = 1) {
-            kafkaConsumer.commitSync()
+            consumer.commitSync()
         }
 
         val kandidater = database.getSenOppfolgingKandidater()
@@ -94,17 +95,17 @@ class SenOppfolgingSvarConsumerTest {
         )
         val senOppfolgingSvarRecord = generateSenOppfolgingSvarRecord(question = question, varselId = UUID.randomUUID())
 
-        kafkaConsumer.mockPollConsumerRecords(
+        consumer.mockPollConsumerRecords(
             records = listOf(recordKey to senOppfolgingSvarRecord),
             topic = SENOPPFOLGING_SVAR_TOPIC,
         )
 
         runBlocking {
-            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = consumer)
         }
 
         verify(exactly = 1) {
-            kafkaConsumer.commitSync()
+            consumer.commitSync()
         }
 
         val kandidater = database.getSenOppfolgingKandidater()
@@ -133,17 +134,17 @@ class SenOppfolgingSvarConsumerTest {
             varselId = UUID.randomUUID(),
         )
 
-        kafkaConsumer.mockPollConsumerRecords(
+        consumer.mockPollConsumerRecords(
             records = listOf(recordKey to senOppfolgingSvarRecord),
             topic = SENOPPFOLGING_SVAR_TOPIC,
         )
 
         runBlocking {
-            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = consumer)
         }
 
         verify(exactly = 1) {
-            kafkaConsumer.commitSync()
+            consumer.commitSync()
         }
 
         val kandidater = database.getSenOppfolgingKandidater()
@@ -179,17 +180,17 @@ class SenOppfolgingSvarConsumerTest {
             varselId = UUID.randomUUID(),
         )
 
-        kafkaConsumer.mockPollConsumerRecords(
+        consumer.mockPollConsumerRecords(
             records = listOf(recordKey to senOppfolgingSvarRecord),
             topic = SENOPPFOLGING_SVAR_TOPIC,
         )
 
         runBlocking {
-            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = consumer)
         }
 
         verify(exactly = 1) {
-            kafkaConsumer.commitSync()
+            consumer.commitSync()
         }
 
         val kandidater = database.getSenOppfolgingKandidater()
@@ -225,17 +226,17 @@ class SenOppfolgingSvarConsumerTest {
             varselId = varselId,
         )
 
-        kafkaConsumer.mockPollConsumerRecords(
+        consumer.mockPollConsumerRecords(
             records = listOf(recordKey to senOppfolgingSvarRecord),
             topic = SENOPPFOLGING_SVAR_TOPIC,
         )
 
         runBlocking {
-            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = consumer)
         }
 
         verify(exactly = 1) {
-            kafkaConsumer.commitSync()
+            consumer.commitSync()
         }
 
         val kandidater = database.getSenOppfolgingKandidater()
@@ -275,17 +276,17 @@ class SenOppfolgingSvarConsumerTest {
             varselId = varselId,
         )
 
-        kafkaConsumer.mockPollConsumerRecords(
+        consumer.mockPollConsumerRecords(
             records = listOf(recordKey to senOppfolgingSvarRecord),
             topic = SENOPPFOLGING_SVAR_TOPIC,
         )
 
         runBlocking {
-            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = consumer)
         }
 
         verify(exactly = 1) {
-            kafkaConsumer.commitSync()
+            consumer.commitSync()
         }
 
         val kandidater = database.getSenOppfolgingKandidater()
@@ -326,17 +327,17 @@ class SenOppfolgingSvarConsumerTest {
             varselId = varselId,
         )
 
-        kafkaConsumer.mockPollConsumerRecords(
+        consumer.mockPollConsumerRecords(
             records = listOf(recordKey to senOppfolgingSvarRecord),
             topic = SENOPPFOLGING_SVAR_TOPIC,
         )
 
         runBlocking {
-            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = kafkaConsumer)
+            senOppfolgingSvarConsumer.pollAndProcessRecords(kafkaConsumer = consumer)
         }
 
         verify(exactly = 1) {
-            kafkaConsumer.commitSync()
+            consumer.commitSync()
         }
 
         val kandidater = database.getSenOppfolgingKandidater()

@@ -1,5 +1,6 @@
 package no.nav.syfo.kartleggingssporsmal.application
 
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
@@ -16,11 +17,16 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFromKafka
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselProducer
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatProducer
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecord
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.infrastructure.database.getKartleggingssporsmalStoppunkt
 import no.nav.syfo.shared.infrastructure.database.markStoppunktAsProcessed
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import no.nav.syfo.shared.util.toLocalDateOslo
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -30,17 +36,27 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
-import java.util.UUID
+import java.util.*
 
 class KartleggingssporsmalServiceTest {
     private val database = ExternalMockEnvironment.instance.database
     private val kartleggingssporsmalRepository = KartleggingssporsmalRepository(database)
+
+    private val mockEsyfoVarselProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
+    private val esyfovarselProducer = EsyfovarselProducer(mockEsyfoVarselProducer)
+
+    private val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatRecord>>()
+    private val kartleggingssporsmalKandidatProducer = KartleggingssporsmalKandidatProducer(mockKandidatProducer)
+
     private val kartleggingssporsmalService = KartleggingssporsmalService(
         behandlendeEnhetClient = ExternalMockEnvironment.instance.behandlendeEnhetClient,
         kartleggingssporsmalRepository = kartleggingssporsmalRepository,
         oppfolgingstilfelleClient = ExternalMockEnvironment.instance.oppfolgingstilfelleClient,
+        esyfoVarselProducer = esyfovarselProducer,
+        kartleggingssporsmalKandidatProducer = kartleggingssporsmalKandidatProducer,
         pdlClient = ExternalMockEnvironment.instance.pdlClient,
         vedtak14aClient = ExternalMockEnvironment.instance.vedtak14aClient,
+        isKandidatPublishingEnabled = false,
     )
 
     @BeforeEach
@@ -175,7 +191,10 @@ class KartleggingssporsmalServiceTest {
             val stoppunkter = database.getKartleggingssporsmalStoppunkt()
             assertEquals(1, stoppunkter.size)
             assertEquals(oppfolgingstilfelleWithFutureSykedagerInsideInterval.personident, stoppunkter.first().personident)
-            assertEquals(oppfolgingstilfelleWithFutureSykedagerInsideInterval.tilfelleBitReferanseUuid, stoppunkter.first().tilfelleBitReferanseUuid)
+            assertEquals(
+                oppfolgingstilfelleWithFutureSykedagerInsideInterval.tilfelleBitReferanseUuid,
+                stoppunkter.first().tilfelleBitReferanseUuid
+            )
             assertEquals(
                 oppfolgingstilfelleWithFutureSykedagerInsideInterval.tilfelleStart.plusDays(stoppunktStartIntervalDays),
                 stoppunkter.first().stoppunktAt,
@@ -196,7 +215,10 @@ class KartleggingssporsmalServiceTest {
             val stoppunkter = database.getKartleggingssporsmalStoppunkt()
             assertEquals(1, stoppunkter.size)
             assertEquals(oppfolgingstilfelleWithDurationUntilNowInsideInterval.personident, stoppunkter.first().personident)
-            assertEquals(oppfolgingstilfelleWithDurationUntilNowInsideInterval.tilfelleBitReferanseUuid, stoppunkter.first().tilfelleBitReferanseUuid)
+            assertEquals(
+                oppfolgingstilfelleWithDurationUntilNowInsideInterval.tilfelleBitReferanseUuid,
+                stoppunkter.first().tilfelleBitReferanseUuid
+            )
             assertEquals(LocalDate.now(), stoppunkter.first().stoppunktAt)
         }
 
