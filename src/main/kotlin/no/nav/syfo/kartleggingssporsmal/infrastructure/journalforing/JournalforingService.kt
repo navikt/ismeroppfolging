@@ -1,5 +1,7 @@
 package no.nav.syfo.kartleggingssporsmal.infrastructure.journalforing
 
+import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
+import no.nav.syfo.infrastructure.clients.pdfgen.PdfModel
 import no.nav.syfo.kartleggingssporsmal.application.IJournalforingService
 import no.nav.syfo.kartleggingssporsmal.domain.JournalpostId
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
@@ -19,14 +21,20 @@ import org.slf4j.LoggerFactory
 class JournalforingService(
     private val dokarkivClient: DokarkivClient,
     private val pdlClient: PdlClient,
+    private val pdfClient: PdfGenClient,
     private val isJournalforingRetryEnabled: Boolean,
 ) : IJournalforingService {
 
-    override suspend fun journalfor(kandidat: KartleggingssporsmalKandidat, pdf: ByteArray): Result<JournalpostId> = runCatching {
+    override suspend fun journalfor(kandidat: KartleggingssporsmalKandidat): Result<JournalpostId> = runCatching {
         val navn = pdlClient.getPerson(kandidat.personident).getOrNull()?.fullName
             ?: throw IllegalStateException("Klarte ikke hente navn fra PDL for personident ${kandidat.personident}")
-        // TODO: hent pdf fra pdf-generator her
-        val pdf = byteArrayOf(0x2E, 0x28)
+        val pdf = pdfClient.createKartleggingPdf(
+            payload = PdfModel.KartleggingPdfModel(
+                mottakerFodselsnummer = kandidat.personident,
+                mottakerNavn = navn,
+            ),
+            callId = kandidat.uuid.toString(),
+        )
         val journalpostRequest = createJournalpostRequest(
             kandidat = kandidat,
             navn = navn,

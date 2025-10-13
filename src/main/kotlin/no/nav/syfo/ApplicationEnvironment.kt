@@ -61,6 +61,10 @@ data class Environment(
                 baseUrl = getEnvVar("ISOPPFOLGINGSTILFELLE_URL"),
                 clientId = getEnvVar("ISOPPFOLGINGSTILFELLE_CLIENT_ID"),
             ),
+            esyfopdfgen = ClientEnvironment(
+                baseUrl = getEnvVar("ESYFO_PDFGEN_URL"),
+                clientId = getEnvVar("ESYFO_PDFGEN_CLIENT_ID"),
+            ),
         ),
     val isSvarTopicEnabled: Boolean = getEnvVar("IS_SVAR_TOPIC_ENABLED").toBoolean(),
     val isJournalforingRetryEnabled: Boolean =
