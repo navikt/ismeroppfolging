@@ -4,6 +4,7 @@ import no.nav.syfo.shared.util.exception.ConflictException
 import no.nav.syfo.senoppfolging.infrastructure.kafka.producer.KandidatStatusProducer
 import no.nav.syfo.senoppfolging.domain.*
 import no.nav.syfo.shared.domain.Personident
+import no.nav.syfo.shared.util.nowUTC
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -35,7 +36,7 @@ class SenOppfolgingService(
 
     fun findRecentKandidatFromPersonIdent(personident: Personident): SenOppfolgingKandidat? {
         return getKandidater(personident).firstOrNull()?.takeIf { kandidat ->
-            kandidat.createdAt > OffsetDateTime.now().minusMonths(3)
+            kandidat.createdAt > nowUTC().minusMonths(3)
         }
     }
 
