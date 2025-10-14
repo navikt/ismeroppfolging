@@ -15,7 +15,6 @@ data class PKartleggingssporsmalKandidat(
     val status: String,
     val publishedAt: OffsetDateTime?,
     val varsletAt: OffsetDateTime?,
-    val svarAt: OffsetDateTime?,
     val journalpostId: JournalpostId?,
 ) {
     fun toKartleggingssporsmalKandidat() = KartleggingssporsmalKandidat.createFromDatabase(
@@ -25,7 +24,6 @@ data class PKartleggingssporsmalKandidat(
         status = status,
         publishedAt = publishedAt,
         varsletAt = varsletAt,
-        svarAt = svarAt,
         journalpostId = journalpostId
     )
 }

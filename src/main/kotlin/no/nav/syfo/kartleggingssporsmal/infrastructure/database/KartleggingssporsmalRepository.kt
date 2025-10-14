@@ -52,7 +52,6 @@ class KartleggingssporsmalRepository(
                         status = kandidat.status,
                         publishedAt = kandidat.publishedAt,
                         varsletAt = kandidat.varsletAt,
-                        svarAt = kandidat.svarAt,
                         journalpostId = kandidat.journalpostId,
                     )
                 }
@@ -74,7 +73,6 @@ class KartleggingssporsmalRepository(
                         status = kandidat.status,
                         publishedAt = kandidat.publishedAt,
                         varsletAt = kandidat.varsletAt,
-                        svarAt = kandidat.svarAt,
                         journalpostId = kandidat.journalpostId,
                     )
                 }
@@ -94,7 +92,6 @@ class KartleggingssporsmalRepository(
                 it.setString(5, kandidat.status.name)
                 it.setObject(6, kandidat.publishedAt)
                 it.setObject(7, kandidat.varsletAt)
-                it.setObject(8, kandidat.svarAt)
                 it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
             }
             connection.markStoppunktAsProcessed(stoppunktId)
@@ -229,8 +226,7 @@ class KartleggingssporsmalRepository(
                 status,
                 published_at,
                 varslet_at,
-                svar_at
-            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?)
             RETURNING *
         """
 
@@ -255,13 +251,6 @@ class KartleggingssporsmalRepository(
         private const val UPDATE_KANDIDAT_VARSLET_AT = """
             UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
             SET varslet_at = now()
-            WHERE uuid = ?
-            RETURNING *
-        """
-
-        private const val UPDATE_KANDIDAT_SVAR_AT = """
-            UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
-            SET svar_at = ?
             WHERE uuid = ?
             RETURNING *
         """
@@ -305,7 +294,6 @@ internal fun ResultSet.toPKartleggingssporsmalKandidat(): PKartleggingssporsmalK
         status = getString("status"),
         publishedAt = getObject("published_at", OffsetDateTime::class.java),
         varsletAt = getObject("varslet_at", OffsetDateTime::class.java),
-        svarAt = getObject("svar_at", OffsetDateTime::class.java),
         journalpostId = getString("journalpost_id")?.let { JournalpostId(it) },
     )
 }
