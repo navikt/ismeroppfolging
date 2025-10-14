@@ -12,10 +12,10 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.cronjob.KandidatStoppunktCronjob
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelseSerializer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselProducer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatProducer
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecord
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecordSerializer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.kartleggingssporsmalsvar.launchKartleggingssporsmalSvarConsumer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.oppfolgingstilfelle.launchOppfolgingstilfelleConsumer
 import no.nav.syfo.senoppfolging.application.SenOppfolgingService
@@ -73,12 +73,12 @@ fun main() {
     )
     val esyfovarselProducer = EsyfovarselProducer(
         producer = KafkaProducer(
-            kafkaAivenProducerConfig<EsyfovarselHendelse>(kafkaEnvironment = environment.kafka)
+            kafkaAivenProducerConfig<EsyfovarselHendelseSerializer>(kafkaEnvironment = environment.kafka)
         )
     )
     val kartleggingssporsmalKandidatProducer = KartleggingssporsmalKandidatProducer(
         producer = KafkaProducer(
-            kafkaAivenProducerConfig<KartleggingssporsmalKandidatRecord>(kafkaEnvironment = environment.kafka)
+            kafkaAivenProducerConfig<KartleggingssporsmalKandidatRecordSerializer>(kafkaEnvironment = environment.kafka)
         )
     )
     val kandidatStatusProducer = KandidatStatusProducer(

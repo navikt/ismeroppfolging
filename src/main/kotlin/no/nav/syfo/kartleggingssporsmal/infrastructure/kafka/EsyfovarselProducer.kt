@@ -3,8 +3,10 @@ package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.syfo.kartleggingssporsmal.application.IEsyfovarselProducer
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
+import no.nav.syfo.shared.util.configuredJacksonMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.serialization.Serializer
 import org.slf4j.LoggerFactory
 import java.io.Serializable
 import java.util.*
@@ -59,3 +61,9 @@ data class ArbeidstakerHendelse(
     override val type: EsyfovarselHendelse.HendelseType,
     val arbeidstakerFnr: String,
 ) : EsyfovarselHendelse
+
+class EsyfovarselHendelseSerializer : Serializer<EsyfovarselHendelse> {
+    private val mapper = configuredJacksonMapper()
+    override fun serialize(topic: String?, data: EsyfovarselHendelse?): ByteArray =
+        mapper.writeValueAsBytes(data)
+}
