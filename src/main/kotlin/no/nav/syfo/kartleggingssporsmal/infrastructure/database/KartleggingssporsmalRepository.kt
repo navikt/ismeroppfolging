@@ -1,6 +1,7 @@
 package no.nav.syfo.kartleggingssporsmal.infrastructure.database
 
 import no.nav.syfo.kartleggingssporsmal.application.IKartleggingssporsmalRepository
+import no.nav.syfo.kartleggingssporsmal.domain.JournalpostId
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.shared.domain.Personident
@@ -126,6 +127,29 @@ class KartleggingssporsmalRepository(
         }
     }
 
+    override fun getNotJournalforteKandidater(): List<KartleggingssporsmalKandidat> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_NOT_JOURNALFORTE).use {
+                it.executeQuery().toList { toPKartleggingssporsmalKandidat() }
+            }.map {
+                it.toKartleggingssporsmalKandidat()
+            }
+        }
+
+    override fun updateJournalpostidForKandidat(kandidat: KartleggingssporsmalKandidat, journalpostId: JournalpostId) {
+        database.connection.use { connection ->
+            connection.prepareStatement(SET_JOURNALPOST_ID).use {
+                it.setString(1, journalpostId.value)
+                it.setString(2, kandidat.uuid.toString())
+                val updated = it.executeUpdate()
+                if (updated != 1) {
+                    throw SQLException("Expected a single row to be updated, got update count $updated")
+                }
+            }
+            connection.commit()
+        }
+    }
+
     private fun Connection.markStoppunktAsProcessed(stoppunktId: Int) {
         this.prepareStatement(SET_STOPPUNKT_PROCESSED).use {
             it.setInt(1, stoppunktId)
@@ -192,6 +216,21 @@ class KartleggingssporsmalRepository(
             WHERE uuid = ?
             RETURNING *
         """
+
+        private const val GET_NOT_JOURNALFORTE =
+            """
+                 SELECT *
+                 FROM KARTLEGGINGSSPORSMAL_KANDIDAT
+                 WHERE journalpost_id IS NULL AND status = 'KANDIDAT' AND varslet_at IS NOT NULL
+                 ORDER BY created_at ASC
+            """
+
+        private const val SET_JOURNALPOST_ID =
+            """
+                UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
+                SET journalpost_id = ?
+                WHERE uuid = ?
+            """
     }
 }
 

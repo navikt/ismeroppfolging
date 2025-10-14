@@ -5,14 +5,19 @@ import io.ktor.server.application.*
 import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
+import no.nav.syfo.kartleggingssporsmal.application.IJournalforingService
 import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
+import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aClient
+import no.nav.syfo.kartleggingssporsmal.infrastructure.cronjob.JournalforKartleggingssporsmalCronjob
 import no.nav.syfo.kartleggingssporsmal.infrastructure.cronjob.KandidatStoppunktCronjob
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelseSerializer
+import no.nav.syfo.kartleggingssporsmal.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselProducer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatProducer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecordSerializer
@@ -67,6 +72,13 @@ fun main() {
         azureAdClient = azureAdClient,
         clientEnvironment = environment.clients.pdl,
     )
+    val pdfClient = PdfGenClient(
+        pdfGenBaseUrl = environment.clients.esyfopdfgen.baseUrl,
+    )
+    val dokarkivClient = DokarkivClient(
+        azureAdClient = azureAdClient,
+        dokarkivEnvironment = environment.clients.dokarkiv,
+    )
     val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
         azureAdClient = azureAdClient,
         clientEnvironment = environment.clients.isoppfolgingstilfelle,
@@ -89,6 +101,7 @@ fun main() {
 
     lateinit var senOppfolgingService: SenOppfolgingService
     lateinit var kartleggingssporsmalService: KartleggingssporsmalService
+    lateinit var journalforingService: IJournalforingService
 
     val applicationEngineEnvironment =
         applicationEnvironment {
@@ -128,6 +141,12 @@ fun main() {
                 vedtak14aClient = vedtak14aClient,
                 isKandidatPublishingEnabled = environment.isKandidatPublishingEnabled,
             )
+            journalforingService = JournalforingService(
+                dokarkivClient = dokarkivClient,
+                pdlClient = pdlClient,
+                pdfClient = pdfClient,
+                isJournalforingRetryEnabled = environment.isJournalforingRetryEnabled,
+            )
 
             apiModule(
                 applicationState = applicationState,
@@ -144,7 +163,8 @@ fun main() {
 
                 val cronjobs = listOf(
                     PublishKandidatStatusCronjob(senOppfolgingService),
-                    KandidatStoppunktCronjob(kartleggingssporsmalService)
+                    KandidatStoppunktCronjob(kartleggingssporsmalService),
+                    JournalforKartleggingssporsmalCronjob(kartleggingssporsmalRepository, journalforingService)
                 )
 
                 launchCronjobs(
