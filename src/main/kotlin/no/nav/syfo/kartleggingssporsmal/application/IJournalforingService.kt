@@ -6,6 +6,5 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 interface IJournalforingService {
     suspend fun journalfor(
         kandidatVarslet: KartleggingssporsmalKandidat,
-        pdf: ByteArray,
     ): Result<JournalpostId>
 }

@@ -7,6 +7,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
+import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.generators.generateJournalpostRequest
@@ -23,9 +24,11 @@ class JournalforingServiceTest {
 
     val externalMockEnvironment = ExternalMockEnvironment.instance
     val dokarkivMock = mockk<DokarkivClient>(relaxed = true)
+    val pdfClientMock = mockk<PdfGenClient>(relaxed = true)
     val journalforingService = JournalforingService(
         dokarkivClient = dokarkivMock,
         pdlClient = externalMockEnvironment.pdlClient,
+        pdfClient = pdfClientMock,
         isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
     )
 
@@ -33,6 +36,7 @@ class JournalforingServiceTest {
     fun setUp() {
         clearAllMocks()
         coEvery { dokarkivMock.journalfor(any()) } returns dokarkivResponse
+        coEvery { pdfClientMock.createKartleggingPdf(any(), any()) } returns UserConstants.PDF_DOKUMENT
     }
 
     @Test
@@ -44,7 +48,6 @@ class JournalforingServiceTest {
         val journalpostId = runBlocking {
             journalforingService.journalfor(
                 kandidat = kandidat,
-                pdf = UserConstants.PDF_VEDTAK,
             )
         }.getOrThrow()
 
@@ -55,7 +58,7 @@ class JournalforingServiceTest {
                 journalpostRequest = generateJournalpostRequest(
                     tittel = "Varsel om kartleggingsspørsmål",
                     brevkodeType = BrevkodeType.VARSEL_KARTLEGGINGSSPORSMAL,
-                    pdf = UserConstants.PDF_VEDTAK,
+                    pdf = UserConstants.PDF_DOKUMENT,
                     eksternReferanse = kandidat.uuid,
                     mottakerPersonident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
                     mottakerNavn = UserConstants.PERSON_FULLNAME,
@@ -75,7 +78,6 @@ class JournalforingServiceTest {
         val result = runBlocking {
             journalforingService.journalfor(
                 kandidat = kandidat,
-                pdf = UserConstants.PDF_VEDTAK,
             )
         }
 

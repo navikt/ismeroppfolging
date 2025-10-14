@@ -20,7 +20,7 @@ object UserConstants {
     val ARBEIDSTAKER_PERSONIDENT_PDL_FAILS = Personident("11111111666")
     val EXISTING_EKSTERN_REFERANSE_UUID: UUID = UUID.fromString("e7e8e9e0-e1e2-e3e4-e5e6-e7e8e9e0e1e2")
     val FAILING_EKSTERN_REFERANSE_UUID: UUID = UUID.randomUUID()
-    val PDF_VEDTAK = byteArrayOf(0x2E, 0x28)
+    val PDF_DOKUMENT = byteArrayOf(0x2E, 0x28)
 
     const val VEILEDER_IDENT = "Z999999"
     const val VIRKSOMHETSNUMMER = "123456789"

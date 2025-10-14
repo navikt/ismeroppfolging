@@ -7,6 +7,7 @@ data class ClientsEnvironment(
     val dokarkiv: ClientEnvironment,
     val veilarbvedtaksstotte: ClientEnvironment,
     val isoppfolgingstilfelle: ClientEnvironment,
+    val esyfopdfgen: ClientEnvironment,
 )
 
 data class ClientEnvironment(

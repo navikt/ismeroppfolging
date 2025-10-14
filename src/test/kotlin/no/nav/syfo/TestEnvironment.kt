@@ -56,6 +56,11 @@ fun testEnvironment() = Environment(
             baseUrl = "isoppfolgingstilfelleUrl",
             clientId = "dev-gcp.teamsykefravr.isoppfolgingstilfelle",
         ),
+        esyfopdfgen = ClientEnvironment(
+            baseUrl = "esyfopdfgenUrl",
+            clientId = "dev-gcp.team-esyfo.esyfopdfgen",
+
+        ),
     ),
     electorPath = "electorPath",
     isSvarTopicEnabled = true,
