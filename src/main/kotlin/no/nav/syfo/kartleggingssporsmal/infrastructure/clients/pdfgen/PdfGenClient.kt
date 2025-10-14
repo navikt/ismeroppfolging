@@ -24,7 +24,7 @@ class PdfGenClient(
             payload = payload,
             pdfUrl = "$pdfGenBaseUrl$API_BASE_PATH$KARTLEGGING_PATH",
             callId = callId,
-        ) ?: throw RuntimeException("Failed to request pdf for vedtak, callId: $callId")
+        ) ?: throw RuntimeException("Failed to request pdf, callId: $callId")
 
     private suspend inline fun <reified Payload> getPdf(
         payload: Payload,
@@ -39,9 +39,7 @@ class PdfGenClient(
                 setBody(payload)
             }
             response.body()
-        } catch (e: ClientRequestException) {
-            handleUnexpectedResponseException(pdfUrl, e.response, callId)
-        } catch (e: ServerResponseException) {
+        } catch (e: ResponseException) {
             handleUnexpectedResponseException(pdfUrl, e.response, callId)
         }
 
@@ -51,7 +49,7 @@ class PdfGenClient(
         callId: String,
     ): ByteArray? {
         log.error(
-            "Error while requesting PDF from ispdfgen with {}, {}, {}",
+            "Error while requesting PDF from syfooppdfgen with {}, {}, {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             StructuredArguments.keyValue("url", url),
             StructuredArguments.keyValue("callId", callId),
