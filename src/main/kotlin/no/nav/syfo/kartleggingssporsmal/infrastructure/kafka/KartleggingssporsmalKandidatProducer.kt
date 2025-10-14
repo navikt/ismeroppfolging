@@ -2,8 +2,10 @@ package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka
 
 import no.nav.syfo.kartleggingssporsmal.application.IKartleggingssporsmalKandidatProducer
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
+import no.nav.syfo.shared.util.configuredJacksonMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.serialization.Serializer
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -48,4 +50,10 @@ data class KartleggingssporsmalKandidatRecord(
                 varsletAt = kandidat.varsletAt?.toString(),
             )
     }
+}
+
+class KartleggingssporsmalKandidatRecordSerializer : Serializer<KartleggingssporsmalKandidatRecord> {
+    private val mapper = configuredJacksonMapper()
+    override fun serialize(topic: String?, data: KartleggingssporsmalKandidatRecord?): ByteArray =
+        mapper.writeValueAsBytes(data)
 }
