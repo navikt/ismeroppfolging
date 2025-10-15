@@ -22,6 +22,7 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselProducer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatProducer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecord
 import no.nav.syfo.shared.domain.Personident
+import no.nav.syfo.shared.infrastructure.database.getKandidatByStoppunktUUID
 import no.nav.syfo.shared.infrastructure.database.getKartleggingssporsmalStoppunkt
 import no.nav.syfo.shared.infrastructure.database.markStoppunktAsProcessed
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
@@ -37,6 +38,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.test.assertNull
 
 class KartleggingssporsmalServiceTest {
     private val database = ExternalMockEnvironment.instance.database
@@ -350,10 +352,11 @@ class KartleggingssporsmalServiceTest {
                 assertEquals(1, results.size)
                 assertTrue(results.first().isSuccess)
 
-                val kandidat = results.first().getOrThrow()
+                val stoppunkt = results.first().getOrThrow()
+                val kandidat = database.getKandidatByStoppunktUUID(stoppunkt.uuid)!!
 
-                assertEquals(oppfolgingstilfelle.personident, kandidat.personident)
-                assertEquals(KandidatStatus.KANDIDAT, kandidat.status)
+                assertEquals(oppfolgingstilfelle.personident, stoppunkt.personident)
+                assertEquals(KandidatStatus.KANDIDAT.name, kandidat.status)
                 assertNull(kandidat.varsletAt)
 
                 val processedStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
@@ -362,9 +365,9 @@ class KartleggingssporsmalServiceTest {
             }
         }
 
-        @ParameterizedTest(name = "processStoppunkter should process unprocessed stoppunkt and create IKKE_KANDIDAT for personident={0}, reason={1}")
+        @ParameterizedTest(name = "processStoppunkter should process unprocessed stoppunkt and not create kandidat for personident={0}, reason={1}")
         @MethodSource("no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalServiceTest#provideIkkeKandidatScenarios")
-        fun `processStoppunkter should create IKKE_KANDIDAT for various conditions`(
+        fun `processStoppunkter should not create kandidat for various conditions`(
             personident: String,
             reason: String,
         ) {
@@ -384,14 +387,12 @@ class KartleggingssporsmalServiceTest {
                 assertEquals(1, results.size)
                 assertTrue(results.first().isSuccess)
 
-                val kandidat = results.first().getOrThrow()
-
-                assertEquals(oppfolgingstilfelle.personident, kandidat.personident)
-                assertEquals(KandidatStatus.IKKE_KANDIDAT, kandidat.status)
-                assertNull(kandidat.varsletAt)
+                val stoppunkt = results.first().getOrThrow()
+                val kandidat = database.getKandidatByStoppunktUUID(stoppunkt.uuid)
+                assertNull(kandidat)
+                assertEquals(oppfolgingstilfelle.personident, stoppunkt.personident)
 
                 val processedStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
-                assertEquals(kandidat.personident, processedStoppunkt.personident)
                 assertNotNull(processedStoppunkt.processedAt)
             }
         }
@@ -411,10 +412,11 @@ class KartleggingssporsmalServiceTest {
                 kartleggingssporsmalRepository.createStoppunkt(firstStoppunkt)
                 val firstResults = kartleggingssporsmalService.processStoppunkter()
                 assertTrue(firstResults.first().isSuccess)
-                val firstKandidat = firstResults.first().getOrThrow()
-                assertEquals(KandidatStatus.KANDIDAT, firstKandidat.status)
+                val firstProcessedStoppunkt = firstResults.first().getOrThrow()
+                val firstKandidat = database.getKandidatByStoppunktUUID(firstProcessedStoppunkt.uuid)!!
+                assertEquals(KandidatStatus.KANDIDAT.name, firstKandidat.status)
 
-                // Genererer et nytt stoppunkt, som skal føre til IKKE_KANDIDAT fordi det allerede finnes en KANDIDAT i samme tilfelle
+                // Genererer et nytt stoppunkt, som ikke skal føre til en kandidat fordi det allerede finnes en KANDIDAT i samme tilfelle
                 val secondStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
                 assertNotNull(secondStoppunkt)
                 kartleggingssporsmalRepository.createStoppunkt(secondStoppunkt)
@@ -423,11 +425,10 @@ class KartleggingssporsmalServiceTest {
                 assertEquals(1, secondResults.size)
                 assertTrue(secondResults.first().isSuccess)
 
-                val secondKandidat = secondResults.first().getOrThrow()
-
-                assertEquals(oppfolgingstilfelle.personident, secondKandidat.personident)
-                assertEquals(KandidatStatus.IKKE_KANDIDAT, secondKandidat.status)
-                assertNull(secondKandidat.varsletAt)
+                val secondProcessedStoppunkt = secondResults.first().getOrThrow()
+                val secondKandidat = database.getKandidatByStoppunktUUID(secondProcessedStoppunkt.uuid)
+                assertNull(secondKandidat)
+                assertEquals(oppfolgingstilfelle.personident, secondProcessedStoppunkt.personident)
             }
         }
 

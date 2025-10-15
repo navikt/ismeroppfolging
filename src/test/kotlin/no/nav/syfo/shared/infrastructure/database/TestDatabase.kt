@@ -3,7 +3,9 @@ package no.nav.syfo.shared.infrastructure.database
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
+import no.nav.syfo.kartleggingssporsmal.infrastructure.database.PKartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.PKartleggingssporsmalStoppunkt
+import no.nav.syfo.kartleggingssporsmal.infrastructure.database.toPKartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.toPKartleggingssporsmalStoppunkt
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.PSenOppfolgingKandidat
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.PSenOppfolgingVurdering
@@ -102,6 +104,24 @@ fun TestDatabase.getKartleggingssporsmalStoppunkt(): List<PKartleggingssporsmalS
         connection.prepareStatement("SELECT * FROM KARTLEGGINGSSPORSMAL_STOPPUNKT").use {
             it.executeQuery().toList { toPKartleggingssporsmalStoppunkt() }
         }
+    }
+
+fun TestDatabase.getKandidatByStoppunktUUID(uuid: UUID): PKartleggingssporsmalKandidat? =
+    this.connection.use { connection ->
+        connection.prepareStatement(
+            """
+            SELECT * 
+              FROM KARTLEGGINGSSPORSMAL_KANDIDAT 
+             WHERE generated_by_stoppunkt_id = (
+                SELECT id 
+                  FROM KARTLEGGINGSSPORSMAL_STOPPUNKT 
+                 WHERE uuid = ?)
+            """.trimIndent()
+        )
+            .use {
+                it.setString(1, uuid.toString())
+                it.executeQuery().toList { toPKartleggingssporsmalKandidat() }
+            }.firstOrNull()
     }
 
 fun TestDatabase.setStoppunktDate(uuid: UUID, stoppunkt: LocalDate) {
