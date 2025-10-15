@@ -37,7 +37,6 @@ data class KartleggingssporsmalKandidatRecord(
     val uuid: UUID,
     val createdAt: String,
     val personident: String,
-    val status: String,
     val varsletAt: String?,
 ) {
     companion object {
@@ -46,7 +45,6 @@ data class KartleggingssporsmalKandidatRecord(
                 uuid = kandidat.uuid,
                 createdAt = kandidat.createdAt.toString(),
                 personident = kandidat.personident.toString(),
-                status = kandidat.status.name,
                 varsletAt = kandidat.varsletAt?.toString(),
             )
     }

@@ -49,7 +49,6 @@ class KartleggingssporsmalRepository(
                         uuid = kandidat.uuid,
                         createdAt = kandidat.createdAt,
                         personident = kandidat.personident,
-                        status = kandidat.status,
                         varsletAt = kandidat.varsletAt,
                         svarAt = kandidat.svarAt,
                         journalpostId = kandidat.journalpostId,
@@ -70,7 +69,6 @@ class KartleggingssporsmalRepository(
                         uuid = kandidat.uuid,
                         createdAt = kandidat.createdAt,
                         personident = kandidat.personident,
-                        status = kandidat.status,
                         varsletAt = kandidat.varsletAt,
                         svarAt = kandidat.svarAt,
                         journalpostId = kandidat.journalpostId,
@@ -89,14 +87,20 @@ class KartleggingssporsmalRepository(
                 it.setObject(2, kandidat.createdAt)
                 it.setString(3, kandidat.personident.value)
                 it.setInt(4, stoppunktId)
-                it.setString(5, kandidat.status.name)
-                it.setObject(6, kandidat.varsletAt)
-                it.setObject(7, kandidat.svarAt)
+                it.setObject(5, kandidat.varsletAt)
+                it.setObject(6, kandidat.svarAt)
                 it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
             }
             connection.markStoppunktAsProcessed(stoppunktId)
             connection.commit()
             pKartleggingssporsmalKandidat.toKartleggingssporsmalKandidat()
+        }
+    }
+
+    override suspend fun markStoppunktAsProcessed(stoppunktId: Int) {
+        return database.connection.use { connection ->
+            connection.markStoppunktAsProcessed(stoppunktId)
+            connection.commit()
         }
     }
 
@@ -194,10 +198,9 @@ class KartleggingssporsmalRepository(
                 created_at,
                 personident,
                 generated_by_stoppunkt_id,
-                status,
                 varslet_at,
                 svar_at
-            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?)
             RETURNING *
         """
 
@@ -255,7 +258,6 @@ internal fun ResultSet.toPKartleggingssporsmalKandidat(): PKartleggingssporsmalK
         createdAt = getObject("created_at", OffsetDateTime::class.java),
         personident = Personident(getString("personident")),
         generatedByStoppunktId = getInt("generated_by_stoppunkt_id"),
-        status = getString("status"),
         varsletAt = getObject("varslet_at", OffsetDateTime::class.java),
         svarAt = getObject("svar_at", OffsetDateTime::class.java),
         journalpostId = getString("journalpost_id")?.let { JournalpostId(it) },

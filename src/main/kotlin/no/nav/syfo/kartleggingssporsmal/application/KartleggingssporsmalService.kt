@@ -2,7 +2,6 @@ package no.nav.syfo.kartleggingssporsmal.application
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
@@ -55,7 +54,7 @@ class KartleggingssporsmalService(
         }
     }
 
-    suspend fun processStoppunkter(): List<Result<KartleggingssporsmalKandidat>> {
+    suspend fun processStoppunkter(): List<Result<KartleggingssporsmalStoppunkt>> {
         val unprocessedStoppunkter = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
         val callId = UUID.randomUUID().toString()
 
@@ -95,15 +94,18 @@ class KartleggingssporsmalService(
                     false
                 }
 
-                val kandidat = KartleggingssporsmalKandidat(
-                    personident = stoppunkt.personident,
-                    status = if (isKandidat) KandidatStatus.KANDIDAT else KandidatStatus.IKKE_KANDIDAT,
-                )
-
-                kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
-                    kandidat = kandidat,
-                    stoppunktId = stoppunktId,
-                )
+                if (isKandidat) {
+                    val kandidat = KartleggingssporsmalKandidat(
+                        personident = stoppunkt.personident,
+                    )
+                    kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                        kandidat = kandidat,
+                        stoppunktId = stoppunktId,
+                    )
+                } else {
+                    kartleggingssporsmalRepository.markStoppunktAsProcessed(stoppunktId)
+                }
+                stoppunkt
             }
         }
     }
@@ -113,8 +115,6 @@ class KartleggingssporsmalService(
 
         if (existingKandidat == null) {
             log.error("Mottok svar på kandidat som ikke finnes, med uuid: $kandidatUuid og svarId: $svarId")
-        } else if (existingKandidat.status != KandidatStatus.KANDIDAT) {
-            log.error("Mottok svar på person som er IKKE_KANDIDAT, med uuid: $kandidatUuid og svarId: $svarId")
         } else {
             val kandidatWithSvar = existingKandidat.addSvarAt(svarAt)
             kartleggingssporsmalRepository.updateSvarForKandidat(kandidatWithSvar)
