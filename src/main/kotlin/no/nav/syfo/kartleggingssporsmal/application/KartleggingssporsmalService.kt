@@ -2,6 +2,7 @@ package no.nav.syfo.kartleggingssporsmal.application
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
@@ -97,6 +98,7 @@ class KartleggingssporsmalService(
                 if (isKandidat) {
                     val kandidat = KartleggingssporsmalKandidat(
                         personident = stoppunkt.personident,
+                        status = KandidatStatus.KANDIDAT
                     )
                     kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                         kandidat = kandidat,
@@ -115,6 +117,8 @@ class KartleggingssporsmalService(
 
         if (existingKandidat == null) {
             log.error("Mottok svar på kandidat som ikke finnes, med uuid: $kandidatUuid og svarId: $svarId")
+        } else if (existingKandidat.status != KandidatStatus.KANDIDAT) {
+            log.error("Mottok svar på person som er IKKE_KANDIDAT, med uuid: $kandidatUuid og svarId: $svarId")
         } else {
             val kandidatWithSvar = existingKandidat.addSvarAt(svarAt)
             kartleggingssporsmalRepository.updateSvarForKandidat(kandidatWithSvar)
