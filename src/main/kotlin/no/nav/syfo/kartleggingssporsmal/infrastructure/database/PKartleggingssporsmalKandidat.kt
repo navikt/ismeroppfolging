@@ -13,6 +13,7 @@ data class PKartleggingssporsmalKandidat(
     val personident: Personident,
     val generatedByStoppunktId: Int,
     val status: String,
+    val publishedAt: OffsetDateTime?,
     val varsletAt: OffsetDateTime?,
     val svarAt: OffsetDateTime?,
     val journalpostId: JournalpostId?,
@@ -22,6 +23,7 @@ data class PKartleggingssporsmalKandidat(
         createdAt = createdAt,
         personident = personident,
         status = status,
+        publishedAt = publishedAt,
         varsletAt = varsletAt,
         svarAt = svarAt,
         journalpostId = journalpostId

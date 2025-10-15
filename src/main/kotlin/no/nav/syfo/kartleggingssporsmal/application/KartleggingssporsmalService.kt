@@ -104,6 +104,16 @@ class KartleggingssporsmalService(
                         kandidat = kandidat,
                         stoppunktId = stoppunktId,
                     )
+                    if (isKandidatPublishingEnabled) {
+                        if (kartleggingssporsmalKandidatProducer.send(kandidat).isSuccess) {
+                            kartleggingssporsmalRepository.updatePublishedAtForKandidat(kandidat)
+                            if (esyfoVarselProducer.sendKartleggingssporsmal(kandidat).isSuccess) {
+                                kartleggingssporsmalRepository.updateVarsletAtForKandidat(kandidat)
+                            }
+                        }
+                    } else {
+                        log.info("Kandidat publishing is disabled, not sending kandidat with uuid ${kandidat.uuid} to kafka topic")
+                    }
                 } else {
                     kartleggingssporsmalRepository.markStoppunktAsProcessed(stoppunktId)
                 }
