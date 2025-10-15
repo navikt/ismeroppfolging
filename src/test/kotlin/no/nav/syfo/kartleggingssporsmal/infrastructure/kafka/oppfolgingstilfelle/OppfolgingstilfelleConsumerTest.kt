@@ -1,4 +1,4 @@
-package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.consumer.oppfolgingstilfelle
+package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.oppfolgingstilfelle
 
 import io.mockk.clearAllMocks
 import io.mockk.every
@@ -12,9 +12,6 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselProducer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatProducer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecord
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfellePersonDTO
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.oppfolgingstilfelle.OPPFOLGINGSTILFELLE_PERSON_TOPIC
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.oppfolgingstilfelle.OppfolgingstilfelleConsumer
 import no.nav.syfo.shared.infrastructure.kafka.mockPollConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer

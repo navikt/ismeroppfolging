@@ -42,6 +42,29 @@ class EsyfovarselProducer(
         }
     }
 
+    override fun ferdigstillKartleggingssporsmalVarsel(kartleggingssporsmalKandidat: KartleggingssporsmalKandidat): Result<KartleggingssporsmalKandidat> {
+        val ferdigstillVarselHendelse = ArbeidstakerHendelse(
+            type = EsyfovarselHendelse.HendelseType.SM_KARTLEGGINGSSPORSMAL,
+            arbeidstakerFnr = kartleggingssporsmalKandidat.personident.value,
+            ferdigstill = true,
+        )
+        val personidentUuid = UUID.nameUUIDFromBytes(kartleggingssporsmalKandidat.personident.value.toByteArray())
+
+        return try {
+            producer.send(
+                ProducerRecord(
+                    ESYFOVARSEL_TOPIC,
+                    personidentUuid.toString(),
+                    ferdigstillVarselHendelse,
+                )
+            ).get()
+            Result.success(kartleggingssporsmalKandidat)
+        } catch (e: Exception) {
+            log.error("Exception was thrown when attempting to ferdigstille kartleggingssporsmal varsel (uuid: ${kartleggingssporsmalKandidat.uuid}) to esyfovarsel: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
     companion object {
         private const val ESYFOVARSEL_TOPIC = "team-esyfo.varselbus"
         private val log = LoggerFactory.getLogger(EsyfovarselProducer::class.java)
@@ -51,6 +74,7 @@ class EsyfovarselProducer(
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 sealed interface EsyfovarselHendelse : Serializable {
     val type: HendelseType
+    val ferdigstill: Boolean?
 
     enum class HendelseType {
         SM_KARTLEGGINGSSPORSMAL,
@@ -59,6 +83,7 @@ sealed interface EsyfovarselHendelse : Serializable {
 
 data class ArbeidstakerHendelse(
     override val type: EsyfovarselHendelse.HendelseType,
+    override val ferdigstill: Boolean? = null,
     val arbeidstakerFnr: String,
 ) : EsyfovarselHendelse
 
