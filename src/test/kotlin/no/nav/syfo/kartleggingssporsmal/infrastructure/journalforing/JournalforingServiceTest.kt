@@ -24,12 +24,9 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.Kartleggingssporsma
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecord
 import no.nav.syfo.kartleggingssporsmal.infrastructure.mock.dokarkivResponse
 import no.nav.syfo.kartleggingssporsmal.infrastructure.mock.mockedJournalpostId
-import no.nav.syfo.shared.infrastructure.database.TestDatabase
 import no.nav.syfo.shared.infrastructure.database.updateKandidatAsVarslet
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
