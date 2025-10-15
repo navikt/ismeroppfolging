@@ -390,7 +390,6 @@ class KartleggingssporsmalServiceTest {
                 val stoppunkt = results.first().getOrThrow()
                 val kandidat = database.getKandidatByStoppunktUUID(stoppunkt.uuid)
                 assertNull(kandidat)
-                assertEquals(oppfolgingstilfelle.personident, stoppunkt.personident)
 
                 val processedStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
                 assertNotNull(processedStoppunkt.processedAt)
@@ -398,7 +397,7 @@ class KartleggingssporsmalServiceTest {
         }
 
         @Test
-        fun `processStoppunkter should process unprocessed stoppunkt and create IKKE_KANDIDAT when already KANDIDAT in current tilfelle`() {
+        fun `processStoppunkter should process unprocessed stoppunkt and not create kandidat when already KANDIDAT in current tilfelle`() {
             val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
                 personident = ARBEIDSTAKER_PERSONIDENT,
                 tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
@@ -428,7 +427,6 @@ class KartleggingssporsmalServiceTest {
                 val secondProcessedStoppunkt = secondResults.first().getOrThrow()
                 val secondKandidat = database.getKandidatByStoppunktUUID(secondProcessedStoppunkt.uuid)
                 assertNull(secondKandidat)
-                assertEquals(oppfolgingstilfelle.personident, secondProcessedStoppunkt.personident)
             }
         }
 
