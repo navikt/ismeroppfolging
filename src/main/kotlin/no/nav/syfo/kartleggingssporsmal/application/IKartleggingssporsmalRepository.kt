@@ -11,6 +11,7 @@ interface IKartleggingssporsmalRepository {
     suspend fun getKandidat(personident: Personident): KartleggingssporsmalKandidat?
     suspend fun getKandidat(uuid: UUID): KartleggingssporsmalKandidat?
     suspend fun createKandidatAndMarkStoppunktAsProcessed(kandidat: KartleggingssporsmalKandidat, stoppunktId: Int): KartleggingssporsmalKandidat
+    suspend fun markStoppunktAsProcessed(stoppunktId: Int)
     suspend fun getUnprocessedStoppunkter(): List<Pair<Int, KartleggingssporsmalStoppunkt>>
     suspend fun updateSvarForKandidat(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat
     fun getNotJournalforteKandidater(): List<KartleggingssporsmalKandidat>

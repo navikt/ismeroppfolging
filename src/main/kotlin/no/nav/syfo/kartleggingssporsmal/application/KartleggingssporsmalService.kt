@@ -55,7 +55,7 @@ class KartleggingssporsmalService(
         }
     }
 
-    suspend fun processStoppunkter(): List<Result<KartleggingssporsmalKandidat>> {
+    suspend fun processStoppunkter(): List<Result<KartleggingssporsmalStoppunkt>> {
         val unprocessedStoppunkter = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
         val callId = UUID.randomUUID().toString()
 
@@ -95,15 +95,19 @@ class KartleggingssporsmalService(
                     false
                 }
 
-                val kandidat = KartleggingssporsmalKandidat(
-                    personident = stoppunkt.personident,
-                    status = if (isKandidat) KandidatStatus.KANDIDAT else KandidatStatus.IKKE_KANDIDAT,
-                )
-
-                kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
-                    kandidat = kandidat,
-                    stoppunktId = stoppunktId,
-                )
+                if (isKandidat) {
+                    val kandidat = KartleggingssporsmalKandidat(
+                        personident = stoppunkt.personident,
+                        status = KandidatStatus.KANDIDAT
+                    )
+                    kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                        kandidat = kandidat,
+                        stoppunktId = stoppunktId,
+                    )
+                } else {
+                    kartleggingssporsmalRepository.markStoppunktAsProcessed(stoppunktId)
+                }
+                stoppunkt
             }
         }
     }

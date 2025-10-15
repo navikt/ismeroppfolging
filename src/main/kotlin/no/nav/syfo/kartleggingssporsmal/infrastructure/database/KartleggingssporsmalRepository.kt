@@ -100,6 +100,13 @@ class KartleggingssporsmalRepository(
         }
     }
 
+    override suspend fun markStoppunktAsProcessed(stoppunktId: Int) {
+        return database.connection.use { connection ->
+            connection.markStoppunktAsProcessed(stoppunktId)
+            connection.commit()
+        }
+    }
+
     override suspend fun getUnprocessedStoppunkter(): List<Pair<Int, KartleggingssporsmalStoppunkt>> {
         return database.connection.use { connection ->
             connection.prepareStatement(GET_UNPROCESSED_STOPPUNKTER).use {
