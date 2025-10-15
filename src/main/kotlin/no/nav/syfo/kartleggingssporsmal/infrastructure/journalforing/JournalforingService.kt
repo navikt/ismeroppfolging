@@ -3,6 +3,7 @@ package no.nav.syfo.kartleggingssporsmal.infrastructure.journalforing
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfModel
 import no.nav.syfo.kartleggingssporsmal.application.IJournalforingService
+import no.nav.syfo.kartleggingssporsmal.application.IKartleggingssporsmalRepository
 import no.nav.syfo.kartleggingssporsmal.domain.JournalpostId
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.dokarkiv.DokarkivClient
@@ -19,11 +20,26 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.PdlClient
 import org.slf4j.LoggerFactory
 
 class JournalforingService(
+    private val kartleggingssporsmalRepository: IKartleggingssporsmalRepository,
     private val dokarkivClient: DokarkivClient,
     private val pdlClient: PdlClient,
     private val pdfClient: PdfGenClient,
     private val isJournalforingRetryEnabled: Boolean,
 ) : IJournalforingService {
+
+    override suspend fun journalforKandidater(): List<Result<JournalpostId>> {
+        val notJournalforteKartleggingssporsmal = kartleggingssporsmalRepository.getNotJournalforteKandidater()
+        return notJournalforteKartleggingssporsmal.map { kandidat ->
+            journalfor(kandidat).also { result ->
+                if (result.isSuccess) {
+                    kartleggingssporsmalRepository.updateJournalpostidForKandidat(
+                        kandidat = kandidat,
+                        journalpostId = result.getOrThrow(),
+                    )
+                }
+            }
+        }
+    }
 
     override suspend fun journalfor(kandidat: KartleggingssporsmalKandidat): Result<JournalpostId> = runCatching {
         val navn = pdlClient.getPerson(kandidat.personident).getOrNull()?.fullName

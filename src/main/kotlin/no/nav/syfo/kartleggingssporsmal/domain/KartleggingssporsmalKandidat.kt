@@ -12,6 +12,7 @@ data class KartleggingssporsmalKandidat private constructor(
     val status: KandidatStatus,
     val varsletAt: OffsetDateTime?,
     val svarAt: OffsetDateTime?,
+    val journalpostId: JournalpostId? = null,
 ) {
     constructor(
         personident: Personident,
@@ -37,6 +38,7 @@ data class KartleggingssporsmalKandidat private constructor(
             status: String,
             varsletAt: OffsetDateTime?,
             svarAt: OffsetDateTime?,
+            journalpostId: JournalpostId?
         ) = KartleggingssporsmalKandidat(
             uuid = uuid,
             createdAt = createdAt,
@@ -44,6 +46,7 @@ data class KartleggingssporsmalKandidat private constructor(
             status = KandidatStatus.valueOf(status),
             varsletAt = varsletAt,
             svarAt = svarAt,
+            journalpostId = journalpostId,
         )
     }
 }
