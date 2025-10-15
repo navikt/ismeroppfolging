@@ -142,6 +142,7 @@ fun main() {
                 isKandidatPublishingEnabled = environment.isKandidatPublishingEnabled,
             )
             journalforingService = JournalforingService(
+                kartleggingssporsmalRepository = kartleggingssporsmalRepository,
                 dokarkivClient = dokarkivClient,
                 pdlClient = pdlClient,
                 pdfClient = pdfClient,
@@ -164,7 +165,7 @@ fun main() {
                 val cronjobs = listOf(
                     PublishKandidatStatusCronjob(senOppfolgingService),
                     KandidatStoppunktCronjob(kartleggingssporsmalService),
-                    JournalforKartleggingssporsmalCronjob(kartleggingssporsmalRepository, journalforingService)
+                    JournalforKartleggingssporsmalCronjob(journalforingService)
                 )
 
                 launchCronjobs(

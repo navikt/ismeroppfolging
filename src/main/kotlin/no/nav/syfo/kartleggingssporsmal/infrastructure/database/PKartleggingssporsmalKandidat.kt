@@ -1,5 +1,6 @@
 package no.nav.syfo.kartleggingssporsmal.infrastructure.database
 
+import no.nav.syfo.kartleggingssporsmal.domain.JournalpostId
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.shared.domain.Personident
 import java.time.OffsetDateTime
@@ -14,6 +15,7 @@ data class PKartleggingssporsmalKandidat(
     val status: String,
     val varsletAt: OffsetDateTime?,
     val svarAt: OffsetDateTime?,
+    val journalpostId: JournalpostId?,
 ) {
     fun toKartleggingssporsmalKandidat() = KartleggingssporsmalKandidat.createFromDatabase(
         uuid = uuid,
@@ -22,5 +24,6 @@ data class PKartleggingssporsmalKandidat(
         status = status,
         varsletAt = varsletAt,
         svarAt = svarAt,
+        journalpostId = journalpostId
     )
 }

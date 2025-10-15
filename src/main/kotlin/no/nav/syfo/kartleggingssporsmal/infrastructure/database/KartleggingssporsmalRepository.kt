@@ -52,6 +52,7 @@ class KartleggingssporsmalRepository(
                         status = kandidat.status,
                         varsletAt = kandidat.varsletAt,
                         svarAt = kandidat.svarAt,
+                        journalpostId = kandidat.journalpostId,
                     )
                 }
         }
@@ -72,6 +73,7 @@ class KartleggingssporsmalRepository(
                         status = kandidat.status,
                         varsletAt = kandidat.varsletAt,
                         svarAt = kandidat.svarAt,
+                        journalpostId = kandidat.journalpostId,
                     )
                 }
         }
@@ -256,5 +258,6 @@ internal fun ResultSet.toPKartleggingssporsmalKandidat(): PKartleggingssporsmalK
         status = getString("status"),
         varsletAt = getObject("varslet_at", OffsetDateTime::class.java),
         svarAt = getObject("svar_at", OffsetDateTime::class.java),
+        journalpostId = getString("journalpost_id")?.let { JournalpostId(it) },
     )
 }

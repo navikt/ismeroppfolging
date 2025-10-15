@@ -7,30 +7,66 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
+import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
+import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFromKafka
 import no.nav.syfo.kartleggingssporsmal.generators.generateJournalpostRequest
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.dokarkiv.dto.BrevkodeType
+import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselProducer
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatProducer
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecord
 import no.nav.syfo.kartleggingssporsmal.infrastructure.mock.dokarkivResponse
 import no.nav.syfo.kartleggingssporsmal.infrastructure.mock.mockedJournalpostId
+import no.nav.syfo.shared.infrastructure.database.TestDatabase
+import no.nav.syfo.shared.infrastructure.database.updateKandidatAsVarslet
+import no.nav.syfo.shared.util.DAYS_IN_WEEK
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 import kotlin.getOrThrow
 import kotlin.test.assertEquals
 
 class JournalforingServiceTest {
 
     val externalMockEnvironment = ExternalMockEnvironment.instance
+    val testDatabase = externalMockEnvironment.database
     val dokarkivMock = mockk<DokarkivClient>(relaxed = true)
     val pdfClientMock = mockk<PdfGenClient>(relaxed = true)
+    val kartleggingssporsmalRepository = KartleggingssporsmalRepository(testDatabase)
     val journalforingService = JournalforingService(
+        kartleggingssporsmalRepository = kartleggingssporsmalRepository,
         dokarkivClient = dokarkivMock,
         pdlClient = externalMockEnvironment.pdlClient,
         pdfClient = pdfClientMock,
         isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
     )
+
+    private val mockEsyfoVarselProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
+    private val esyfovarselProducer = EsyfovarselProducer(mockEsyfoVarselProducer)
+    private val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatRecord>>()
+    private val kartleggingssporsmalKandidatProducer = KartleggingssporsmalKandidatProducer(mockKandidatProducer)
+
+    private val kartleggingssporsmalService = KartleggingssporsmalService(
+        behandlendeEnhetClient = externalMockEnvironment.behandlendeEnhetClient,
+        kartleggingssporsmalRepository = kartleggingssporsmalRepository,
+        oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
+        esyfoVarselProducer = esyfovarselProducer,
+        kartleggingssporsmalKandidatProducer = kartleggingssporsmalKandidatProducer,
+        pdlClient = externalMockEnvironment.pdlClient,
+        vedtak14aClient = externalMockEnvironment.vedtak14aClient,
+        isKandidatPublishingEnabled = false,
+    )
+    val stoppunktStartIntervalDays = 7L * DAYS_IN_WEEK
 
     @BeforeEach
     fun setUp() {
@@ -41,15 +77,24 @@ class JournalforingServiceTest {
 
     @Test
     fun `sender forventet journalpost til dokarkiv`() {
-        val kandidat = KartleggingssporsmalKandidat(
-            personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-            status = KandidatStatus.KANDIDAT,
+        val tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays)
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+            personident = ARBEIDSTAKER_PERSONIDENT,
+            tilfelleStart = tilfelleStart,
+            tilfelleEnd = LocalDate.now().plusDays(1),
         )
+        val firstKandidat = runBlocking {
+            kartleggingssporsmalRepository.createStoppunkt(KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)!!)
+            kartleggingssporsmalService.processStoppunkter()
+            kartleggingssporsmalRepository.getKandidat(ARBEIDSTAKER_PERSONIDENT)
+        }
+
+        assertEquals(KandidatStatus.KANDIDAT, firstKandidat!!.status)
+        testDatabase.updateKandidatAsVarslet(firstKandidat)
+
         val journalpostId = runBlocking {
-            journalforingService.journalfor(
-                kandidat = kandidat,
-            )
-        }.getOrThrow()
+            journalforingService.journalforKandidater()
+        }.first().getOrThrow()
 
         assertEquals(journalpostId, mockedJournalpostId)
 
@@ -59,13 +104,17 @@ class JournalforingServiceTest {
                     tittel = "Varsel om kartleggingsspørsmål",
                     brevkodeType = BrevkodeType.VARSEL_KARTLEGGINGSSPORSMAL,
                     pdf = UserConstants.PDF_DOKUMENT,
-                    eksternReferanse = kandidat.uuid,
-                    mottakerPersonident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+                    eksternReferanse = firstKandidat.uuid,
+                    mottakerPersonident = ARBEIDSTAKER_PERSONIDENT,
                     mottakerNavn = UserConstants.PERSON_FULLNAME,
-                    brukerPersonident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+                    brukerPersonident = ARBEIDSTAKER_PERSONIDENT,
                 )
             )
         }
+        val updatedKandidat = runBlocking {
+            kartleggingssporsmalRepository.getKandidat(ARBEIDSTAKER_PERSONIDENT)
+        }
+        assertEquals(journalpostId, updatedKandidat!!.journalpostId)
     }
 
     @Test

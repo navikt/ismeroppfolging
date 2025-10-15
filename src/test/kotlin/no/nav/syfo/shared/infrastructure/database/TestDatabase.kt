@@ -1,6 +1,7 @@
 package no.nav.syfo.shared.infrastructure.database
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.PKartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.toPKartleggingssporsmalStoppunkt
@@ -119,6 +120,20 @@ fun TestDatabase.markStoppunktAsProcessed(stoppunkt: KartleggingssporsmalStoppun
         connection.prepareStatement("UPDATE KARTLEGGINGSSPORSMAL_STOPPUNKT SET processed_at = now() WHERE uuid = ?")
             .use {
                 it.setString(1, stoppunkt.uuid.toString())
+                val updated = it.executeUpdate()
+                if (updated != 1) {
+                    throw SQLException("Expected a single row to be updated, got update count $updated")
+                }
+            }
+        connection.commit()
+    }
+}
+
+fun TestDatabase.updateKandidatAsVarslet(kandidat: KartleggingssporsmalKandidat) {
+    this.connection.use { connection ->
+        connection.prepareStatement("UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT SET varslet_at = now() WHERE uuid = ?")
+            .use {
+                it.setString(1, kandidat.uuid.toString())
                 val updated = it.executeUpdate()
                 if (updated != 1) {
                     throw SQLException("Expected a single row to be updated, got update count $updated")
