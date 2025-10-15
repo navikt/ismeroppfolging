@@ -1,4 +1,4 @@
-package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.consumer.kartleggingssporsmalsvar
+package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.kartleggingssporsmalsvar
 
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
@@ -8,9 +8,6 @@ import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.kartleggingssporsmalsvar.KARTLEGGINGSSPORSMAL_SVAR_TOPIC
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.kartleggingssporsmalsvar.KafkaKartleggingssporsmalSvarDTO
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.kartleggingssporsmalsvar.KartleggingssporsmalSvarConsumer
 import no.nav.syfo.shared.infrastructure.kafka.mockPollConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.junit.jupiter.api.AfterEach
