@@ -129,8 +129,7 @@ class KartleggingssporsmalRepository(
     override suspend fun updateVarsletAtForKandidat(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat {
         return database.connection.use { connection ->
             val updatedKandidat = connection.prepareStatement(UPDATE_KANDIDAT_VARSLET_AT).use {
-                it.setObject(1, kandidat.varsletAt)
-                it.setString(2, kandidat.uuid.toString())
+                it.setString(1, kandidat.uuid.toString())
                 it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
             }
             connection.commit()
@@ -141,8 +140,7 @@ class KartleggingssporsmalRepository(
     override suspend fun updatePublishedAtForKandidat(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat {
         return database.connection.use { connection ->
             val updatedKandidat = connection.prepareStatement(UPDATE_KANDIDAT_PUBLISHED_AT).use {
-                it.setObject(1, kandidat.publishedAt)
-                it.setString(2, kandidat.uuid.toString())
+                it.setString(1, kandidat.uuid.toString())
                 it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
             }
             connection.commit()
@@ -247,14 +245,14 @@ class KartleggingssporsmalRepository(
 
         private const val UPDATE_KANDIDAT_PUBLISHED_AT = """
             UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
-            SET published_at = ?
+            SET published_at = now()
             WHERE uuid = ?
             RETURNING *
         """
 
         private const val UPDATE_KANDIDAT_VARSLET_AT = """
             UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
-            SET varslet_at = ?
+            SET varslet_at = now()
             WHERE uuid = ?
             RETURNING *
         """

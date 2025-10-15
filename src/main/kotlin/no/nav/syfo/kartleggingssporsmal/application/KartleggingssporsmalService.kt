@@ -100,15 +100,15 @@ class KartleggingssporsmalService(
                         personident = stoppunkt.personident,
                         status = KandidatStatus.KANDIDAT
                     )
-                    kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                    val persistedKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                         kandidat = kandidat,
                         stoppunktId = stoppunktId,
                     )
                     if (isKandidatPublishingEnabled) {
-                        if (kartleggingssporsmalKandidatProducer.send(kandidat).isSuccess) {
-                            kartleggingssporsmalRepository.updatePublishedAtForKandidat(kandidat)
-                            if (esyfoVarselProducer.sendKartleggingssporsmal(kandidat).isSuccess) {
-                                kartleggingssporsmalRepository.updateVarsletAtForKandidat(kandidat)
+                        if (kartleggingssporsmalKandidatProducer.send(persistedKandidat).isSuccess) {
+                            kartleggingssporsmalRepository.updatePublishedAtForKandidat(persistedKandidat)
+                            if (esyfoVarselProducer.sendKartleggingssporsmal(persistedKandidat).isSuccess) {
+                                kartleggingssporsmalRepository.updateVarsletAtForKandidat(persistedKandidat)
                             }
                         }
                     } else {
