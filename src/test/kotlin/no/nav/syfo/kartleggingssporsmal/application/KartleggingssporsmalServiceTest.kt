@@ -355,7 +355,7 @@ class KartleggingssporsmalServiceTest {
                 val stoppunkt = results.first().getOrThrow()
                 val kandidat = database.getKandidatByStoppunktUUID(stoppunkt.uuid)!!
 
-                assertEquals(oppfolgingstilfelle.personident, stoppunkt.personident)
+                assertEquals(oppfolgingstilfelle.personident, kandidat.personident)
                 assertEquals(KandidatStatus.KANDIDAT.name, kandidat.status)
                 assertNull(kandidat.varsletAt)
 
