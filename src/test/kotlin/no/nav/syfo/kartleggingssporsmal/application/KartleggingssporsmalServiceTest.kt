@@ -44,10 +44,10 @@ class KartleggingssporsmalServiceTest {
     private val database = ExternalMockEnvironment.instance.database
     private val kartleggingssporsmalRepository = KartleggingssporsmalRepository(database)
 
-    private val mockEsyfoVarselProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
+    private val mockEsyfoVarselProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>(relaxed = true)
     private val esyfovarselProducer = EsyfovarselProducer(mockEsyfoVarselProducer)
 
-    private val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatRecord>>()
+    private val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatRecord>>(relaxed = true)
     private val kartleggingssporsmalKandidatProducer = KartleggingssporsmalKandidatProducer(mockKandidatProducer)
 
     private val kartleggingssporsmalService = KartleggingssporsmalService(
@@ -59,6 +59,17 @@ class KartleggingssporsmalServiceTest {
         pdlClient = ExternalMockEnvironment.instance.pdlClient,
         vedtak14aClient = ExternalMockEnvironment.instance.vedtak14aClient,
         isKandidatPublishingEnabled = false,
+    )
+
+    private val kartleggingssporsmalServiceWithKandidatPublishingEnabled = KartleggingssporsmalService(
+        behandlendeEnhetClient = ExternalMockEnvironment.instance.behandlendeEnhetClient,
+        kartleggingssporsmalRepository = kartleggingssporsmalRepository,
+        oppfolgingstilfelleClient = ExternalMockEnvironment.instance.oppfolgingstilfelleClient,
+        esyfoVarselProducer = esyfovarselProducer,
+        kartleggingssporsmalKandidatProducer = kartleggingssporsmalKandidatProducer,
+        pdlClient = ExternalMockEnvironment.instance.pdlClient,
+        vedtak14aClient = ExternalMockEnvironment.instance.vedtak14aClient,
+        isKandidatPublishingEnabled = true,
     )
 
     @BeforeEach
@@ -358,6 +369,39 @@ class KartleggingssporsmalServiceTest {
                 assertEquals(oppfolgingstilfelle.personident, kandidat.personident)
                 assertEquals(KandidatStatus.KANDIDAT.name, kandidat.status)
                 assertNull(kandidat.varsletAt)
+                assertNull(kandidat.publishedAt)
+
+                val processedStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+                assertEquals(kandidat.personident, processedStoppunkt.personident)
+                assertNotNull(processedStoppunkt.processedAt)
+            }
+        }
+
+        @Test
+        fun `processStoppunkter should process unprocessed stoppunkt and create KANDIDAT and publish when enabled`() {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+            assertNotNull(stoppunkt)
+
+            runBlocking {
+                kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+
+                val results = kartleggingssporsmalServiceWithKandidatPublishingEnabled.processStoppunkter()
+
+                assertEquals(1, results.size)
+                assertTrue(results.first().isSuccess)
+
+                val stoppunkt = results.first().getOrThrow()
+                val kandidat = database.getKandidatByStoppunktUUID(stoppunkt.uuid)!!
+
+                assertEquals(oppfolgingstilfelle.personident, kandidat.personident)
+                assertEquals(KandidatStatus.KANDIDAT.name, kandidat.status)
+                assertNotNull(kandidat.varsletAt)
+                assertNotNull(kandidat.publishedAt)
 
                 val processedStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
                 assertEquals(kandidat.personident, processedStoppunkt.personident)

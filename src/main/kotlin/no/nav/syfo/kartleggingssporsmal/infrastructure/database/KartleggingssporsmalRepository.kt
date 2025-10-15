@@ -92,8 +92,9 @@ class KartleggingssporsmalRepository(
                 it.setString(3, kandidat.personident.value)
                 it.setInt(4, stoppunktId)
                 it.setString(5, kandidat.status.name)
-                it.setObject(6, kandidat.varsletAt)
-                it.setObject(7, kandidat.svarAt)
+                it.setObject(6, kandidat.publishedAt)
+                it.setObject(7, kandidat.varsletAt)
+                it.setObject(8, kandidat.svarAt)
                 it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
             }
             connection.markStoppunktAsProcessed(stoppunktId)
@@ -226,9 +227,10 @@ class KartleggingssporsmalRepository(
                 personident,
                 generated_by_stoppunkt_id,
                 status,
+                published_at,
                 varslet_at,
                 svar_at
-            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?)
             RETURNING *
         """
 
