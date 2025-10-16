@@ -105,7 +105,13 @@ class KartleggingssporsmalService(
                         stoppunktId = stoppunktId,
                     )
                     if (isKandidatPublishingEnabled) {
-                        if (kartleggingssporsmalKandidatProducer.send(persistedKandidat).isSuccess) {
+                        if (
+                            kartleggingssporsmalKandidatProducer.send(
+                                kandidat = persistedKandidat,
+                                status = persistedKandidat.status,
+                                statusTidspunkt = persistedKandidat.createdAt,
+                            ).isSuccess
+                        ) {
                             val statusEndring = kartleggingssporsmalRepository.getKandidatStatusendringer(
                                 persistedKandidat.uuid
                             ).firstOrNull() ?: throw IllegalStateException("Klarte ikke finne statusendring for kandidat ${persistedKandidat.uuid}")
