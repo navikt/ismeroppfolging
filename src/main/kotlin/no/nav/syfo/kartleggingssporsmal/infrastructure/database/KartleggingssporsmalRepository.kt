@@ -146,18 +146,6 @@ class KartleggingssporsmalRepository(
         }
     }
 
-    override suspend fun updateSvarForKandidat(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat {
-        return database.connection.use { connection ->
-            val updatedKandidat = connection.prepareStatement(UPDATE_KANDIDAT_SVAR_AT).use {
-                it.setObject(1, kandidat.svarAt)
-                it.setString(2, kandidat.uuid.toString())
-                it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
-            }
-            connection.commit()
-            updatedKandidat.toKartleggingssporsmalKandidat()
-        }
-    }
-
     override fun getNotJournalforteKandidater(): List<KartleggingssporsmalKandidat> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_NOT_JOURNALFORTE).use {
