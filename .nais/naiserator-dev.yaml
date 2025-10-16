@@ -115,4 +115,4 @@ spec:
     - name: IS_JOURNALFORING_RETRY_ENABLED
       value: "false"
     - name: IS_KANDIDAT_PUBLISHING_ENABLED
-      value: "true"
+      value: "false"
