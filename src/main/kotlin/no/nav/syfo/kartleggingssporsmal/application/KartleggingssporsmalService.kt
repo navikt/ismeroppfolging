@@ -130,8 +130,7 @@ class KartleggingssporsmalService(
         } else if (existingKandidat.status != KandidatStatus.KANDIDAT) {
             log.error("Mottok svar på person som er IKKE_KANDIDAT, med uuid: $kandidatUuid og svarId: $svarId")
         } else {
-            val kandidatWithSvar = existingKandidat.addSvarAt(svarAt)
-            kartleggingssporsmalRepository.updateSvarForKandidat(kandidatWithSvar)
+            // TODO: Lagre svar
         }
     }
 

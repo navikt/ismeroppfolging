@@ -12,7 +12,6 @@ data class KartleggingssporsmalKandidat private constructor(
     val status: KandidatStatus,
     val publishedAt: OffsetDateTime?,
     val varsletAt: OffsetDateTime?,
-    val svarAt: OffsetDateTime?,
     val journalpostId: JournalpostId? = null,
 ) {
     constructor(
@@ -25,11 +24,6 @@ data class KartleggingssporsmalKandidat private constructor(
         status = status,
         publishedAt = null,
         varsletAt = null,
-        svarAt = null,
-    )
-
-    fun addSvarAt(svarAt: OffsetDateTime): KartleggingssporsmalKandidat = this.copy(
-        svarAt = svarAt,
     )
 
     companion object {
@@ -40,7 +34,6 @@ data class KartleggingssporsmalKandidat private constructor(
             status: String,
             publishedAt: OffsetDateTime?,
             varsletAt: OffsetDateTime?,
-            svarAt: OffsetDateTime?,
             journalpostId: JournalpostId?
         ) = KartleggingssporsmalKandidat(
             uuid = uuid,
@@ -49,7 +42,6 @@ data class KartleggingssporsmalKandidat private constructor(
             status = KandidatStatus.valueOf(status),
             publishedAt = publishedAt,
             varsletAt = varsletAt,
-            svarAt = svarAt,
             journalpostId = journalpostId,
         )
     }
