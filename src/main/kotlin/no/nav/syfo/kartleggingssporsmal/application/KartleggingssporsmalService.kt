@@ -100,10 +100,20 @@ class KartleggingssporsmalService(
                         personident = stoppunkt.personident,
                         status = KandidatStatus.KANDIDAT
                     )
-                    kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                    val persistedKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                         kandidat = kandidat,
                         stoppunktId = stoppunktId,
                     )
+                    if (isKandidatPublishingEnabled) {
+                        if (kartleggingssporsmalKandidatProducer.send(persistedKandidat).isSuccess) {
+                            kartleggingssporsmalRepository.updatePublishedAtForKandidat(persistedKandidat)
+                            if (esyfoVarselProducer.sendKartleggingssporsmal(persistedKandidat).isSuccess) {
+                                kartleggingssporsmalRepository.updateVarsletAtForKandidat(persistedKandidat)
+                            }
+                        }
+                    } else {
+                        log.info("Kandidat publishing is disabled, not sending kandidat with uuid ${kandidat.uuid} to kafka topic")
+                    }
                 } else {
                     kartleggingssporsmalRepository.markStoppunktAsProcessed(stoppunktId)
                 }

@@ -1,6 +1,9 @@
 package no.nav.syfo.kartleggingssporsmal.application
 
+import io.mockk.coEvery
 import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
@@ -17,7 +20,9 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFromKafka
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.ArbeidstakerHendelse
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse.HendelseType
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselProducer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatProducer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecord
@@ -28,6 +33,8 @@ import no.nav.syfo.shared.infrastructure.database.markStoppunktAsProcessed
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import no.nav.syfo.shared.util.toLocalDateOslo
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -38,16 +45,17 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.concurrent.Future
 import kotlin.test.assertNull
 
 class KartleggingssporsmalServiceTest {
     private val database = ExternalMockEnvironment.instance.database
     private val kartleggingssporsmalRepository = KartleggingssporsmalRepository(database)
 
-    private val mockEsyfoVarselProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
+    private val mockEsyfoVarselProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>(relaxed = true)
     private val esyfovarselProducer = EsyfovarselProducer(mockEsyfoVarselProducer)
 
-    private val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatRecord>>()
+    private val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatRecord>>(relaxed = true)
     private val kartleggingssporsmalKandidatProducer = KartleggingssporsmalKandidatProducer(mockKandidatProducer)
 
     private val kartleggingssporsmalService = KartleggingssporsmalService(
@@ -61,9 +69,22 @@ class KartleggingssporsmalServiceTest {
         isKandidatPublishingEnabled = false,
     )
 
+    private val kartleggingssporsmalServiceWithKandidatPublishingEnabled = KartleggingssporsmalService(
+        behandlendeEnhetClient = ExternalMockEnvironment.instance.behandlendeEnhetClient,
+        kartleggingssporsmalRepository = kartleggingssporsmalRepository,
+        oppfolgingstilfelleClient = ExternalMockEnvironment.instance.oppfolgingstilfelleClient,
+        esyfoVarselProducer = esyfovarselProducer,
+        kartleggingssporsmalKandidatProducer = kartleggingssporsmalKandidatProducer,
+        pdlClient = ExternalMockEnvironment.instance.pdlClient,
+        vedtak14aClient = ExternalMockEnvironment.instance.vedtak14aClient,
+        isKandidatPublishingEnabled = true,
+    )
+
     @BeforeEach
     fun setUp() {
         database.resetDatabase()
+        coEvery { mockKandidatProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
+        coEvery { mockEsyfoVarselProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
     }
 
     val stoppunktStartIntervalDays = 6L * DAYS_IN_WEEK
@@ -335,7 +356,7 @@ class KartleggingssporsmalServiceTest {
     inner class ProcessStoppunkter {
 
         @Test
-        fun `processStoppunkter should process unprocessed stoppunkt and create KANDIDAT`() {
+        fun `processStoppunkter should process unprocessed stoppunkt and create KANDIDAT but not publish when not enabled`() {
             val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
                 personident = ARBEIDSTAKER_PERSONIDENT,
                 tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
@@ -358,6 +379,54 @@ class KartleggingssporsmalServiceTest {
                 assertEquals(oppfolgingstilfelle.personident, kandidat.personident)
                 assertEquals(KandidatStatus.KANDIDAT.name, kandidat.status)
                 assertNull(kandidat.varsletAt)
+                assertNull(kandidat.publishedAt)
+                verify(exactly = 0) { mockKandidatProducer.send(any()) }
+                verify(exactly = 0) { mockEsyfoVarselProducer.send(any()) }
+
+                val processedStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+                assertEquals(kandidat.personident, processedStoppunkt.personident)
+                assertNotNull(processedStoppunkt.processedAt)
+            }
+        }
+
+        @Test
+        fun `processStoppunkter should process unprocessed stoppunkt and create KANDIDAT and publish when enabled`() {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+            assertNotNull(stoppunkt)
+
+            runBlocking {
+                kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+
+                val results = kartleggingssporsmalServiceWithKandidatPublishingEnabled.processStoppunkter()
+
+                assertEquals(1, results.size)
+                assertTrue(results.first().isSuccess)
+
+                val stoppunkt = results.first().getOrThrow()
+                val kandidat = database.getKandidatByStoppunktUUID(stoppunkt.uuid)!!
+
+                assertEquals(oppfolgingstilfelle.personident, kandidat.personident)
+                assertEquals(KandidatStatus.KANDIDAT.name, kandidat.status)
+                assertNotNull(kandidat.varsletAt)
+                assertNotNull(kandidat.publishedAt)
+
+                val producerRecordSlot = slot<ProducerRecord<String, KartleggingssporsmalKandidatRecord>>()
+                verify(exactly = 1) { mockKandidatProducer.send(capture(producerRecordSlot)) }
+                val record = producerRecordSlot.captured.value()
+                assertEquals(kandidat.uuid, record.uuid)
+                assertEquals(kandidat.personident.value, record.personident)
+                assertEquals(KandidatStatus.KANDIDAT.name, record.status)
+
+                val producerEsyfoRecordSlot = slot<ProducerRecord<String, EsyfovarselHendelse>>()
+                verify(exactly = 1) { mockEsyfoVarselProducer.send(capture(producerEsyfoRecordSlot)) }
+                val recordEsyfoVarsel = producerEsyfoRecordSlot.captured.value()
+                assertEquals(kandidat.personident.value, (recordEsyfoVarsel as ArbeidstakerHendelse).arbeidstakerFnr)
+                assertEquals(HendelseType.SM_KARTLEGGINGSSPORSMAL, recordEsyfoVarsel.type)
 
                 val processedStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
                 assertEquals(kandidat.personident, processedStoppunkt.personident)

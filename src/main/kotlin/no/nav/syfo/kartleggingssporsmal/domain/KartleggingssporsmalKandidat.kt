@@ -10,6 +10,7 @@ data class KartleggingssporsmalKandidat private constructor(
     val createdAt: OffsetDateTime,
     val personident: Personident,
     val status: KandidatStatus,
+    val publishedAt: OffsetDateTime?,
     val varsletAt: OffsetDateTime?,
     val svarAt: OffsetDateTime?,
     val journalpostId: JournalpostId? = null,
@@ -22,6 +23,7 @@ data class KartleggingssporsmalKandidat private constructor(
         createdAt = nowUTC(),
         personident = personident,
         status = status,
+        publishedAt = null,
         varsletAt = null,
         svarAt = null,
     )
@@ -36,6 +38,7 @@ data class KartleggingssporsmalKandidat private constructor(
             createdAt: OffsetDateTime,
             personident: Personident,
             status: String,
+            publishedAt: OffsetDateTime?,
             varsletAt: OffsetDateTime?,
             svarAt: OffsetDateTime?,
             journalpostId: JournalpostId?
@@ -44,6 +47,7 @@ data class KartleggingssporsmalKandidat private constructor(
             createdAt = createdAt,
             personident = personident,
             status = KandidatStatus.valueOf(status),
+            publishedAt = publishedAt,
             varsletAt = varsletAt,
             svarAt = svarAt,
             journalpostId = journalpostId,
