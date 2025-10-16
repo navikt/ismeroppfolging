@@ -45,7 +45,7 @@ data class KartleggingssporsmalKandidatRecord(
             KartleggingssporsmalKandidatRecord(
                 uuid = kandidat.uuid,
                 createdAt = kandidat.createdAt.toString(),
-                personident = kandidat.personident.toString(),
+                personident = kandidat.personident.value,
                 status = kandidat.status.name,
                 varsletAt = kandidat.varsletAt?.toString(),
             )
