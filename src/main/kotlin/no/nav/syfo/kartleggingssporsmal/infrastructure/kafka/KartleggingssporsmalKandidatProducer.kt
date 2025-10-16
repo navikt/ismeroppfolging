@@ -1,24 +1,36 @@
 package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka
 
 import no.nav.syfo.kartleggingssporsmal.application.IKartleggingssporsmalKandidatProducer
+import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.shared.util.configuredJacksonMapper
+import no.nav.syfo.shared.util.toLocalDateTimeOslo
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serializer
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.*
 
-class KartleggingssporsmalKandidatProducer(private val producer: KafkaProducer<String, KartleggingssporsmalKandidatRecord>) :
+class KartleggingssporsmalKandidatProducer(private val producer: KafkaProducer<String, KartleggingssporsmalKandidatStatusRecord>) :
     IKartleggingssporsmalKandidatProducer {
 
-    override fun send(kandidat: KartleggingssporsmalKandidat): Result<KartleggingssporsmalKandidat> =
+    override fun send(
+        kandidat: KartleggingssporsmalKandidat,
+        status: KandidatStatus,
+        statusTidspunkt: OffsetDateTime,
+    ): Result<KartleggingssporsmalKandidat> =
         try {
             val personidentKey = UUID.nameUUIDFromBytes(kandidat.personident.toString().toByteArray()).toString()
             val record = ProducerRecord(
                 TOPIC,
                 personidentKey,
-                KartleggingssporsmalKandidatRecord.from(kandidat = kandidat),
+                KartleggingssporsmalKandidatStatusRecord.from(
+                    kandidat = kandidat,
+                    status = status,
+                    statusTidspunkt = statusTidspunkt,
+                ),
             )
             producer.send(record).get()
             Result.success(kandidat)
@@ -33,27 +45,29 @@ class KartleggingssporsmalKandidatProducer(private val producer: KafkaProducer<S
     }
 }
 
-data class KartleggingssporsmalKandidatRecord(
-    val uuid: UUID,
-    val createdAt: String,
+data class KartleggingssporsmalKandidatStatusRecord(
+    val kandidatUuid: UUID,
     val personident: String,
+    val statusTidspunkt: LocalDateTime,
     val status: String,
-    val varsletAt: String?,
 ) {
     companion object {
-        fun from(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidatRecord =
-            KartleggingssporsmalKandidatRecord(
-                uuid = kandidat.uuid,
-                createdAt = kandidat.createdAt.toString(),
+        fun from(
+            kandidat: KartleggingssporsmalKandidat,
+            status: KandidatStatus,
+            statusTidspunkt: OffsetDateTime,
+        ): KartleggingssporsmalKandidatStatusRecord =
+            KartleggingssporsmalKandidatStatusRecord(
+                kandidatUuid = kandidat.uuid,
                 personident = kandidat.personident.value,
-                status = kandidat.status.name,
-                varsletAt = kandidat.varsletAt?.toString(),
+                statusTidspunkt = statusTidspunkt.toLocalDateTimeOslo(),
+                status = status.name,
             )
     }
 }
 
-class KartleggingssporsmalKandidatRecordSerializer : Serializer<KartleggingssporsmalKandidatRecord> {
+class KartleggingssporsmalKandidatRecordSerializer : Serializer<KartleggingssporsmalKandidatStatusRecord> {
     private val mapper = configuredJacksonMapper()
-    override fun serialize(topic: String?, data: KartleggingssporsmalKandidatRecord?): ByteArray =
+    override fun serialize(topic: String?, data: KartleggingssporsmalKandidatStatusRecord?): ByteArray =
         mapper.writeValueAsBytes(data)
 }

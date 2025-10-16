@@ -21,7 +21,7 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.database.Kartleggingsspor
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselProducer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatProducer
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecord
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatStatusRecord
 import no.nav.syfo.kartleggingssporsmal.infrastructure.mock.dokarkivResponse
 import no.nav.syfo.kartleggingssporsmal.infrastructure.mock.mockedJournalpostId
 import no.nav.syfo.shared.infrastructure.database.updateKandidatAsVarslet
@@ -50,7 +50,7 @@ class JournalforingServiceTest {
 
     private val mockEsyfoVarselProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
     private val esyfovarselProducer = EsyfovarselProducer(mockEsyfoVarselProducer)
-    private val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatRecord>>()
+    private val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatStatusRecord>>()
     private val kartleggingssporsmalKandidatProducer = KartleggingssporsmalKandidatProducer(mockKandidatProducer)
 
     private val kartleggingssporsmalService = KartleggingssporsmalService(

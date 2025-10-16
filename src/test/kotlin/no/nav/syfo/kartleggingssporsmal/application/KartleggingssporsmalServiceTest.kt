@@ -25,7 +25,7 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse.HendelseType
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselProducer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatProducer
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecord
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatStatusRecord
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.infrastructure.database.getKandidatByStoppunktUUID
 import no.nav.syfo.shared.infrastructure.database.getKartleggingssporsmalStoppunkt
@@ -54,7 +54,7 @@ class KartleggingssporsmalServiceTest {
     private val mockEsyfoVarselProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>(relaxed = true)
     private val esyfovarselProducer = EsyfovarselProducer(mockEsyfoVarselProducer)
 
-    private val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatRecord>>(relaxed = true)
+    private val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatStatusRecord>>(relaxed = true)
     private val kartleggingssporsmalKandidatProducer = KartleggingssporsmalKandidatProducer(mockKandidatProducer)
 
     private val kartleggingssporsmalService = KartleggingssporsmalService(
@@ -420,10 +420,10 @@ class KartleggingssporsmalServiceTest {
                 assertNotNull(kandidat.varsletAt)
                 assertNotNull(kandidatStatus.publishedAt)
 
-                val producerRecordSlot = slot<ProducerRecord<String, KartleggingssporsmalKandidatRecord>>()
+                val producerRecordSlot = slot<ProducerRecord<String, KartleggingssporsmalKandidatStatusRecord>>()
                 verify(exactly = 1) { mockKandidatProducer.send(capture(producerRecordSlot)) }
                 val record = producerRecordSlot.captured.value()
-                assertEquals(kandidat.uuid, record.uuid)
+                assertEquals(kandidat.uuid, record.kandidatUuid)
                 assertEquals(kandidat.personident.value, record.personident)
                 assertEquals(KandidatStatus.KANDIDAT.name, record.status)
 
