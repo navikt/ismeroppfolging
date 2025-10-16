@@ -213,7 +213,7 @@ class KartleggingssporsmalRepository(
                 generated_by_stoppunkt_id,
                 status,
                 published_at,
-                varslet_at,
+                varslet_at
             ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?)
             RETURNING *
         """
