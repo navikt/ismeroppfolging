@@ -147,10 +147,10 @@ class KartleggingssporsmalRepository(
         }
     }
 
-    override suspend fun updatePublishedAtForKandidat(kandidat: KartleggingssporsmalKandidat) {
+    override suspend fun updatePublishedAtForKandidatStatusendring(kandidatStatus: KartleggingssporsmalKandidatStatusendring) {
         return database.connection.use { connection ->
-            connection.prepareStatement(UPDATE_KANDIDAT_PUBLISHED_AT).use {
-                it.setString(1, kandidat.uuid.toString())
+            connection.prepareStatement(UPDATE_KANDIDATSTATUSENDRING_PUBLISHED_AT).use {
+                it.setString(1, kandidatStatus.uuid.toString())
                 val rowCount = it.executeUpdate()
                 if (rowCount != 1) {
                     throw SQLException("Expected a single row to be updated, got update count $rowCount")
@@ -281,12 +281,10 @@ class KartleggingssporsmalRepository(
             WHERE id = ?
         """
 
-        private const val UPDATE_KANDIDAT_PUBLISHED_AT = """
+        private const val UPDATE_KANDIDATSTATUSENDRING_PUBLISHED_AT = """
             UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT_STATUSENDRING
             SET published_at = now()
-            WHERE kandidat_id = (
-                SELECT id FROM KARTLEGGINGSSPORSMAL_KANDIDAT WHERE uuid = ?
-            ) AND status = 'KANDIDAT';
+            WHERE uuid = ?
         """
 
         private const val UPDATE_KANDIDAT_VARSLET_AT = """

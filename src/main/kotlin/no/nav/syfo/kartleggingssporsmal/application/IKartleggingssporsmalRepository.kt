@@ -18,7 +18,7 @@ interface IKartleggingssporsmalRepository {
     ): KartleggingssporsmalKandidat
     suspend fun markStoppunktAsProcessed(stoppunktId: Int)
     suspend fun getUnprocessedStoppunkter(): List<Pair<Int, KartleggingssporsmalStoppunkt>>
-    suspend fun updatePublishedAtForKandidat(kandidat: KartleggingssporsmalKandidat)
+    suspend fun updatePublishedAtForKandidatStatusendring(kandidatStatus: KartleggingssporsmalKandidatStatusendring)
     suspend fun updateVarsletAtForKandidat(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat
     fun getNotJournalforteKandidater(): List<KartleggingssporsmalKandidat>
     fun updateJournalpostidForKandidat(kandidat: KartleggingssporsmalKandidat, journalpostId: JournalpostId)

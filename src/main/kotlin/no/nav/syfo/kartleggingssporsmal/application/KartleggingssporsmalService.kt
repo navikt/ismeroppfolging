@@ -106,7 +106,10 @@ class KartleggingssporsmalService(
                     )
                     if (isKandidatPublishingEnabled) {
                         if (kartleggingssporsmalKandidatProducer.send(persistedKandidat).isSuccess) {
-                            kartleggingssporsmalRepository.updatePublishedAtForKandidat(persistedKandidat)
+                            val statusEndring = kartleggingssporsmalRepository.getKandidatStatusendringer(
+                                persistedKandidat.uuid
+                            ).firstOrNull() ?: throw IllegalStateException("Klarte ikke finne statusendring for kandidat ${persistedKandidat.uuid}")
+                            kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(statusEndring)
                             if (esyfoVarselProducer.sendKartleggingssporsmal(persistedKandidat).isSuccess) {
                                 kartleggingssporsmalRepository.updateVarsletAtForKandidat(persistedKandidat)
                             }
