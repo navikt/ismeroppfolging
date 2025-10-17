@@ -105,10 +105,15 @@ class KartleggingssporsmalService(
                         stoppunktId = stoppunktId,
                     )
                     if (isKandidatPublishingEnabled) {
-                        if (kartleggingssporsmalKandidatProducer.send(persistedKandidat).isSuccess) {
-                            val statusEndring = kartleggingssporsmalRepository.getKandidatStatusendringer(
-                                persistedKandidat.uuid
-                            ).firstOrNull() ?: throw IllegalStateException("Klarte ikke finne statusendring for kandidat ${persistedKandidat.uuid}")
+                        val statusEndring = kartleggingssporsmalRepository.getKandidatStatusendringer(
+                            persistedKandidat.uuid
+                        ).firstOrNull() ?: throw IllegalStateException("Klarte ikke finne statusendring for kandidat ${persistedKandidat.uuid}")
+                        if (
+                            kartleggingssporsmalKandidatProducer.send(
+                                kandidat = persistedKandidat,
+                                statusEndring = statusEndring,
+                            ).isSuccess
+                        ) {
                             kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(statusEndring)
                             if (esyfoVarselProducer.sendKartleggingssporsmal(persistedKandidat).isSuccess) {
                                 kartleggingssporsmalRepository.updateVarsletAtForKandidat(persistedKandidat)
