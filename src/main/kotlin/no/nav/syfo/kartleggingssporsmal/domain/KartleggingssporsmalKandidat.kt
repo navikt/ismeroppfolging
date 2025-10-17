@@ -5,6 +5,15 @@ import no.nav.syfo.shared.util.nowUTC
 import java.time.OffsetDateTime
 import java.util.*
 
+/**
+ * KartleggingssporsmalKandidat representerer en kandidat for kartleggingsspørsmål.
+ *
+ * Se også [KartleggingssporsmalKandidatStatusendring] for å se statusendringer over tid knyttet til kandidaten.
+ *
+ * @property status forteller om nåværende status for kandidaten
+ * @property varsletAt tidspunktet kandidaten fikk tilsendt kartleggingsspørsmål
+ * @property journalpostId er id'en fra journalposten som ble opprettet når kartleggingsspørsmål ble sendt
+ */
 data class KartleggingssporsmalKandidat private constructor(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
@@ -31,7 +40,7 @@ data class KartleggingssporsmalKandidat private constructor(
             personident: Personident,
             status: String,
             varsletAt: OffsetDateTime?,
-            journalpostId: JournalpostId?
+            journalpostId: JournalpostId?,
         ) = KartleggingssporsmalKandidat(
             uuid = uuid,
             createdAt = createdAt,
