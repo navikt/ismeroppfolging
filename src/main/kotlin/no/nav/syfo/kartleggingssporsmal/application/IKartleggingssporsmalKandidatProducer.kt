@@ -1,13 +1,11 @@
 package no.nav.syfo.kartleggingssporsmal.application
 
-import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
-import java.time.OffsetDateTime
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
 
 interface IKartleggingssporsmalKandidatProducer {
     fun send(
         kandidat: KartleggingssporsmalKandidat,
-        status: KandidatStatus,
-        statusTidspunkt: OffsetDateTime,
+        statusEndring: KartleggingssporsmalKandidatStatusendring,
     ): Result<KartleggingssporsmalKandidat>
 }
