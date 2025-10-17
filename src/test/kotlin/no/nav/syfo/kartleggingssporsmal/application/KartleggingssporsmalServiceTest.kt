@@ -374,11 +374,14 @@ class KartleggingssporsmalServiceTest {
 
                 val stoppunkt = results.first().getOrThrow()
                 val kandidat = database.getKandidatByStoppunktUUID(stoppunkt.uuid)!!
+                val kandidatStatusList = kartleggingssporsmalRepository.getKandidatStatusendringer(kandidat.uuid)
+                assertEquals(1, kandidatStatusList.size)
+                val kandidatStatus = kandidatStatusList.first()
 
                 assertEquals(oppfolgingstilfelle.personident, kandidat.personident)
                 assertEquals(KandidatStatus.KANDIDAT.name, kandidat.status)
                 assertNull(kandidat.varsletAt)
-                assertNull(kandidat.publishedAt)
+                assertNull(kandidatStatus.publishedAt)
                 verify(exactly = 0) { mockKandidatProducer.send(any()) }
                 verify(exactly = 0) { mockEsyfoVarselProducer.send(any()) }
 
@@ -408,11 +411,14 @@ class KartleggingssporsmalServiceTest {
 
                 val stoppunkt = results.first().getOrThrow()
                 val kandidat = database.getKandidatByStoppunktUUID(stoppunkt.uuid)!!
+                val kandidatStatusList = kartleggingssporsmalRepository.getKandidatStatusendringer(kandidat.uuid)
+                assertEquals(1, kandidatStatusList.size)
+                val kandidatStatus = kandidatStatusList.first()
 
                 assertEquals(oppfolgingstilfelle.personident, kandidat.personident)
                 assertEquals(KandidatStatus.KANDIDAT.name, kandidat.status)
                 assertNotNull(kandidat.varsletAt)
-                assertNotNull(kandidat.publishedAt)
+                assertNotNull(kandidatStatus.publishedAt)
 
                 val producerRecordSlot = slot<ProducerRecord<String, KartleggingssporsmalKandidatRecord>>()
                 verify(exactly = 1) { mockKandidatProducer.send(capture(producerRecordSlot)) }

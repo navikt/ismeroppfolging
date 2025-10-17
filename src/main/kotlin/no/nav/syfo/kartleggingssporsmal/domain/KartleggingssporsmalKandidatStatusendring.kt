@@ -1,48 +1,39 @@
 package no.nav.syfo.kartleggingssporsmal.domain
 
-import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.util.nowUTC
 import java.time.OffsetDateTime
 import java.util.*
 
-data class KartleggingssporsmalKandidat private constructor(
+data class KartleggingssporsmalKandidatStatusendring private constructor(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
-    val personident: Personident,
     val status: KandidatStatus,
-    val varsletAt: OffsetDateTime?,
-    val journalpostId: JournalpostId? = null,
+    val publishedAt: OffsetDateTime?,
+    val svarAt: OffsetDateTime?,
 ) {
     constructor(
-        personident: Personident,
         status: KandidatStatus,
     ) : this(
         uuid = UUID.randomUUID(),
         createdAt = nowUTC(),
-        personident = personident,
         status = status,
-        varsletAt = null,
+        publishedAt = null,
+        svarAt = null,
     )
 
     companion object {
         fun createFromDatabase(
             uuid: UUID,
             createdAt: OffsetDateTime,
-            personident: Personident,
             status: String,
-            varsletAt: OffsetDateTime?,
-            journalpostId: JournalpostId?
-        ) = KartleggingssporsmalKandidat(
+            publishedAt: OffsetDateTime?,
+            svarAt: OffsetDateTime?,
+        ) = KartleggingssporsmalKandidatStatusendring(
             uuid = uuid,
             createdAt = createdAt,
-            personident = personident,
             status = KandidatStatus.valueOf(status),
-            varsletAt = varsletAt,
-            journalpostId = journalpostId,
+            publishedAt = publishedAt,
+            svarAt = svarAt,
         )
     }
-}
-
-enum class KandidatStatus {
-    KANDIDAT, IKKE_KANDIDAT,
 }
