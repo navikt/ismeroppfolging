@@ -20,7 +20,7 @@ fun launchKartleggingssporsmalSvarConsumer(
 ) {
     val consumerProperties = kafkaAivenConsumerConfig<KafkaKartleggingssporsmalSvarDTODeserializer>(
         kafkaEnvironment = kafkaEnvironment,
-        offsetResetStrategy = OffsetResetStrategy.EARLIEST,
+        offsetResetStrategy = OffsetResetStrategy.LATEST,
     )
     consumerProperties.apply {
         this[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
