@@ -100,7 +100,6 @@ class KartleggingssporsmalService(
                         personident = stoppunkt.personident,
                         status = KandidatStatus.KANDIDAT
                     )
-                    // TODO: Denne må også lagre en rad i kandidat_statusendring, det burde vel være i samme connection, som i forslaget?
                     val persistedKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                         kandidat = kandidat,
                         stoppunktId = stoppunktId,
