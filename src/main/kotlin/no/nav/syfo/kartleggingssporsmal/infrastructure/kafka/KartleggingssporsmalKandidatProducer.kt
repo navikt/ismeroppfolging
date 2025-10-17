@@ -1,8 +1,8 @@
 package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka
 
 import no.nav.syfo.kartleggingssporsmal.application.IKartleggingssporsmalKandidatProducer
-import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
 import no.nav.syfo.shared.util.configuredJacksonMapper
 import no.nav.syfo.shared.util.toLocalDateTimeOslo
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -10,7 +10,6 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serializer
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
 import java.util.*
 
 class KartleggingssporsmalKandidatProducer(private val producer: KafkaProducer<String, KartleggingssporsmalKandidatStatusRecord>) :
@@ -18,8 +17,7 @@ class KartleggingssporsmalKandidatProducer(private val producer: KafkaProducer<S
 
     override fun send(
         kandidat: KartleggingssporsmalKandidat,
-        status: KandidatStatus,
-        statusTidspunkt: OffsetDateTime,
+        statusEndring: KartleggingssporsmalKandidatStatusendring,
     ): Result<KartleggingssporsmalKandidat> =
         try {
             val personidentKey = UUID.nameUUIDFromBytes(kandidat.personident.toString().toByteArray()).toString()
@@ -28,8 +26,7 @@ class KartleggingssporsmalKandidatProducer(private val producer: KafkaProducer<S
                 personidentKey,
                 KartleggingssporsmalKandidatStatusRecord.from(
                     kandidat = kandidat,
-                    status = status,
-                    statusTidspunkt = statusTidspunkt,
+                    statusEndring = statusEndring,
                 ),
             )
             producer.send(record).get()
@@ -48,20 +45,19 @@ class KartleggingssporsmalKandidatProducer(private val producer: KafkaProducer<S
 data class KartleggingssporsmalKandidatStatusRecord(
     val kandidatUuid: UUID,
     val personident: String,
-    val statusTidspunkt: LocalDateTime,
+    val createdAt: LocalDateTime,
     val status: String,
 ) {
     companion object {
         fun from(
             kandidat: KartleggingssporsmalKandidat,
-            status: KandidatStatus,
-            statusTidspunkt: OffsetDateTime,
+            statusEndring: KartleggingssporsmalKandidatStatusendring,
         ): KartleggingssporsmalKandidatStatusRecord =
             KartleggingssporsmalKandidatStatusRecord(
                 kandidatUuid = kandidat.uuid,
                 personident = kandidat.personident.value,
-                statusTidspunkt = statusTidspunkt.toLocalDateTimeOslo(),
-                status = status.name,
+                createdAt = statusEndring.createdAt.toLocalDateTimeOslo(),
+                status = statusEndring.status.name,
             )
     }
 }

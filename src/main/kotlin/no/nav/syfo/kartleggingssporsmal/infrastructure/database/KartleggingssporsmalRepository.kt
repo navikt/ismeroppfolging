@@ -148,7 +148,7 @@ class KartleggingssporsmalRepository(
     }
 
     override suspend fun updatePublishedAtForKandidatStatusendring(kandidatStatus: KartleggingssporsmalKandidatStatusendring) {
-        return database.connection.use { connection ->
+        database.connection.use { connection ->
             connection.prepareStatement(UPDATE_KANDIDATSTATUSENDRING_PUBLISHED_AT).use {
                 it.setString(1, kandidatStatus.uuid.toString())
                 val rowCount = it.executeUpdate()
