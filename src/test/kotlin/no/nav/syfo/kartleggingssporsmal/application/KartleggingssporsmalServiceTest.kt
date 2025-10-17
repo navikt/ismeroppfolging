@@ -637,39 +637,6 @@ class KartleggingssporsmalServiceTest {
         }
 
         @Test
-        fun `registrerSvar should not store svar when IKKE_KANDIDAT`() {
-            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
-                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
-                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
-            )
-            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
-            assertNotNull(stoppunkt)
-
-            runBlocking {
-                kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
-                val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
-
-                val kandidat = KartleggingssporsmalKandidat(
-                    personident = ARBEIDSTAKER_PERSONIDENT,
-                    status = KandidatStatus.IKKE_KANDIDAT,
-                )
-                val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
-                    kandidat = kandidat,
-                    stoppunktId = createdStoppunkt.id,
-                )
-
-                kartleggingssporsmalService.registrerSvar(
-                    kandidatUuid = createdKandidat.uuid,
-                    svarAt = OffsetDateTime.now(),
-                    svarId = UUID.randomUUID(),
-                )
-
-                val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
-                // TODO: Assert feil når svar mottatt og det ikke finnes kandidat
-            }
-        }
-
-        @Test
         fun `registrerSvar should not store svar when no existing kandidat`() {
             val kandidatUuid = UUID.randomUUID()
             runBlocking {

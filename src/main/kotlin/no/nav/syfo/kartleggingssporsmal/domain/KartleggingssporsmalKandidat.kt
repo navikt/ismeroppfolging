@@ -44,5 +44,5 @@ data class KartleggingssporsmalKandidat private constructor(
 }
 
 enum class KandidatStatus {
-    KANDIDAT, IKKE_KANDIDAT,
+    KANDIDAT,
 }
