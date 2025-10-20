@@ -4,12 +4,10 @@ import no.nav.syfo.kartleggingssporsmal.application.IKartleggingssporsmalKandida
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
 import no.nav.syfo.shared.util.configuredJacksonMapper
-import no.nav.syfo.shared.util.toLocalDateTimeOslo
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serializer
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.*
 
