@@ -7,7 +7,7 @@ import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselProducer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatProducer
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecord
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatStatusRecord
 import no.nav.syfo.senoppfolging.application.SenOppfolgingService
 import no.nav.syfo.senoppfolging.infrastructure.database.repository.SenOppfolgingRepository
 import no.nav.syfo.shared.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
@@ -31,7 +31,7 @@ fun Application.testApiModule(
     val mockEsyfoVarselProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
     val esyfovarselProducer = EsyfovarselProducer(mockEsyfoVarselProducer)
 
-    val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatRecord>>()
+    val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatStatusRecord>>()
     val kartleggingssporsmalKandidatProducer = KartleggingssporsmalKandidatProducer(mockKandidatProducer)
 
     val kartleggingssporsmalService = kartleggingssporsmalServiceMock ?: KartleggingssporsmalService(

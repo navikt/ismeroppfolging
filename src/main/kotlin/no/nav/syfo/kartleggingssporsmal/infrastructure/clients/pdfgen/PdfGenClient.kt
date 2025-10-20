@@ -58,7 +58,7 @@ class PdfGenClient(
     }
 
     companion object {
-        private const val API_BASE_PATH = "api/v1/genpdf"
+        private const val API_BASE_PATH = "/api/v1/genpdf"
         const val KARTLEGGING_PATH = "/kartlegging/utsending"
 
         private val log = LoggerFactory.getLogger(PdfGenClient::class.java)

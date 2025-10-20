@@ -11,7 +11,7 @@ import no.nav.syfo.kartleggingssporsmal.generators.createKafkaOppfolgingstilfell
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselProducer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatProducer
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecord
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatStatusRecord
 import no.nav.syfo.shared.infrastructure.kafka.mockPollConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -29,7 +29,7 @@ class OppfolgingstilfelleConsumerTest {
     private val mockEsyfoVarselProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
     private val esyfovarselProducer = EsyfovarselProducer(mockEsyfoVarselProducer)
 
-    private val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatRecord>>()
+    private val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatStatusRecord>>()
     private val kartleggingssporsmalKandidatProducer = KartleggingssporsmalKandidatProducer(mockKandidatProducer)
 
     private val kartleggingssporsmalService = KartleggingssporsmalService(
