@@ -24,13 +24,13 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.Kartleggingssporsma
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatStatusRecord
 import no.nav.syfo.kartleggingssporsmal.infrastructure.mock.dokarkivResponse
 import no.nav.syfo.kartleggingssporsmal.infrastructure.mock.mockedJournalpostId
+import no.nav.syfo.shared.infrastructure.database.dropData
 import no.nav.syfo.shared.infrastructure.database.updateKandidatAsVarslet
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import kotlin.getOrThrow
 import kotlin.test.assertEquals
 
 class JournalforingServiceTest {
@@ -70,6 +70,7 @@ class JournalforingServiceTest {
         clearAllMocks()
         coEvery { dokarkivMock.journalfor(any()) } returns dokarkivResponse
         coEvery { pdfClientMock.createKartleggingPdf(any(), any()) } returns UserConstants.PDF_DOKUMENT
+        testDatabase.dropData()
     }
 
     @Test

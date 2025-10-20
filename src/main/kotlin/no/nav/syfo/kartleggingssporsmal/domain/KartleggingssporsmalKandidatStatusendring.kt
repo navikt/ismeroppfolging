@@ -4,7 +4,7 @@ import no.nav.syfo.shared.util.nowUTC
 import java.time.OffsetDateTime
 import java.util.*
 
-data class KartleggingssporsmalKandidatStatusendring private constructor(
+class KartleggingssporsmalKandidatStatusendring private constructor(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val status: KandidatStatus,
@@ -13,12 +13,13 @@ data class KartleggingssporsmalKandidatStatusendring private constructor(
 ) {
     constructor(
         status: KandidatStatus,
+        svarAt: OffsetDateTime? = null,
     ) : this(
         uuid = UUID.randomUUID(),
         createdAt = nowUTC(),
         status = status,
         publishedAt = null,
-        svarAt = null,
+        svarAt = svarAt,
     )
 
     companion object {
