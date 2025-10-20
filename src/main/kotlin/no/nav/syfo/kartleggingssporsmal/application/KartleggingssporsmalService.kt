@@ -11,6 +11,7 @@ import no.nav.syfo.shared.util.toLocalDateOslo
 import org.slf4j.LoggerFactory
 import java.time.OffsetDateTime
 import java.util.*
+import kotlin.IllegalArgumentException
 
 class KartleggingssporsmalService(
     private val behandlendeEnhetClient: IBehandlendeEnhetClient,
@@ -138,6 +139,22 @@ class KartleggingssporsmalService(
             val kandidat = existingKandidat.registrerStatusEndring(statusendring)
             val createdStatusendring = kartleggingssporsmalRepository.createKandidatSvar(kandidat, statusendring)
             kartleggingssporsmalKandidatProducer.send(kandidat, createdStatusendring)
+                .map { kandidat ->
+                    kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdStatusendring)
+                }
+        }
+    }
+
+    suspend fun registrerFerdigBehandlet(personIdent: Personident) {
+        val existingKandidat = kartleggingssporsmalRepository.getKandidat(personIdent)
+
+        if (existingKandidat == null || existingKandidat.status == KandidatStatus.FERDIG_BEHANDLET) {
+            throw IllegalArgumentException("Kandidat finnes ikke, eller er allerede ferdig behandlet")
+        } else {
+            val statusendring = KartleggingssporsmalKandidatStatusendring(status = KandidatStatus.FERDIG_BEHANDLET)
+            val updatedKandidat = existingKandidat.registrerStatusEndring(statusendring)
+            val createdStatusendring = kartleggingssporsmalRepository.createKandidatSvar(updatedKandidat, statusendring)
+            kartleggingssporsmalKandidatProducer.send(updatedKandidat, createdStatusendring)
                 .map { kandidat ->
                     kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdStatusendring)
                 }

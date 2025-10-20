@@ -33,5 +33,19 @@ fun Route.registerKartleggingssporsmalEndpoints(
                 }
             }
         }
+        post("/kandidater") {
+            val personident = call.getPersonident()
+                ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
+            validateVeilederAccess(
+                action = API_ACTION,
+                personident = personident,
+                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+            ) {
+                kartleggingssporsmalService.registrerFerdigBehandlet(
+                    personIdent = personident,
+                )
+                call.respond(HttpStatusCode.OK)
+            }
+        }
     }
 }

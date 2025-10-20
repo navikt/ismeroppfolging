@@ -6,8 +6,10 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
+import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
@@ -34,6 +36,7 @@ class KartleggingssporsmalEndpointsTest {
         issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
         navIdent = UserConstants.VEILEDER_IDENT,
     )
+    private val kartleggingssporsmalUrl = "/api/internad/v1/kartleggingssporsmal/kandidater"
 
     private fun ApplicationTestBuilder.setupApiAndClient(kartleggingssporsmalServiceMock: KartleggingssporsmalService? = null): HttpClient {
         application {
@@ -58,9 +61,6 @@ class KartleggingssporsmalEndpointsTest {
     @Nested
     @DisplayName("Get kartleggingssporsmal")
     inner class GetKartleggingssporsmal {
-
-        private val kartleggingssporsmalUrl = "/api/internad/v1/kartleggingssporsmal/kandidater"
-
         @Test
         fun `Returns status OK if valid token is supplied and kandidat exists`() = testApplication {
             val client = setupApiAndClient(kartleggingssporsmalServiceMock)
@@ -135,5 +135,35 @@ class KartleggingssporsmalEndpointsTest {
 
                 assertEquals(HttpStatusCode.BadRequest, response.status)
             }
+    }
+
+    @Nested
+    @DisplayName("Post kartleggingssporsmal")
+    inner class PostKartleggingssporsmal {
+        @Test
+        fun `Returns status OK if valid token is supplied and kandidat exists`() = testApplication {
+            val client = setupApiAndClient(kartleggingssporsmalServiceMock)
+            coEvery { kartleggingssporsmalServiceMock.registrerFerdigBehandlet(ARBEIDSTAKER_PERSONIDENT) } just Runs
+
+            val response = client.post(kartleggingssporsmalUrl) {
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_PERSONIDENT.value)
+            }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+        }
+
+        @Test
+        fun `Returns status NotFound if valid token is supplied, but kandidat doesn't exist`() = testApplication {
+            val client = setupApiAndClient(kartleggingssporsmalServiceMock)
+            coEvery { kartleggingssporsmalServiceMock.registrerFerdigBehandlet(ARBEIDSTAKER_PERSONIDENT) } throws IllegalArgumentException()
+
+            val response = client.post(kartleggingssporsmalUrl) {
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_PERSONIDENT.value)
+            }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+        }
     }
 }

@@ -196,9 +196,8 @@ class KartleggingssporsmalRepository(
     private fun Connection.getKandidat(personident: Personident): PKartleggingssporsmalKandidat? =
         this.prepareStatement(GET_KANDIDAT).use {
             it.setString(1, personident.value)
-            it.executeQuery().toList { toPKartleggingssporsmalKandidat() }
+            it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.firstOrNull()
         }
-            .maxByOrNull { it.createdAt }
 
     private fun Connection.markStoppunktAsProcessed(stoppunktId: Int) {
         this.prepareStatement(SET_STOPPUNKT_PROCESSED).use {
