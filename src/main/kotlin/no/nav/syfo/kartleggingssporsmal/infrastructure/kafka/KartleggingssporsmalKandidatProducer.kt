@@ -10,6 +10,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serializer
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.*
 
 class KartleggingssporsmalKandidatProducer(private val producer: KafkaProducer<String, KartleggingssporsmalKandidatStatusRecord>) :
@@ -45,7 +46,7 @@ class KartleggingssporsmalKandidatProducer(private val producer: KafkaProducer<S
 data class KartleggingssporsmalKandidatStatusRecord(
     val kandidatUuid: UUID,
     val personident: String,
-    val createdAt: LocalDateTime,
+    val createdAt: OffsetDateTime,
     val status: String,
 ) {
     companion object {
@@ -56,7 +57,7 @@ data class KartleggingssporsmalKandidatStatusRecord(
             KartleggingssporsmalKandidatStatusRecord(
                 kandidatUuid = kandidat.uuid,
                 personident = kandidat.personident.value,
-                createdAt = statusEndring.createdAt.toLocalDateTimeOslo(),
+                createdAt = statusEndring.createdAt,
                 status = statusEndring.status.name,
             )
     }
