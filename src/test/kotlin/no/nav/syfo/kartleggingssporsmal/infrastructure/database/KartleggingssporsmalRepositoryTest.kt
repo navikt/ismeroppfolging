@@ -5,16 +5,14 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFromKafka
 import no.nav.syfo.shared.infrastructure.database.getKartleggingssporsmalStoppunkt
 import no.nav.syfo.shared.infrastructure.database.markStoppunktAsProcessed
 import no.nav.syfo.shared.infrastructure.database.setStoppunktDate
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertNull
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
@@ -234,7 +232,13 @@ class KartleggingssporsmalRepositoryTest {
                 stoppunktId = createdStoppunkt.id,
             )
 
-            // TODO: Implement testing for updating svar_at
+            val statusendring = KartleggingssporsmalKandidatStatusendring(KandidatStatus.SVAR_MOTTATT, OffsetDateTime.now())
+            kartleggingssporsmalRepository.createKandidatSvar(createdKandidat, statusendring)
+
+            val hentetKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
+            val hentetStatusendring = kartleggingssporsmalRepository.getKandidatStatusendringer(kandidat.uuid).first()
+            assertEquals(KandidatStatus.SVAR_MOTTATT, hentetKandidat?.status)
+            assertNotNull(hentetStatusendring.svarAt)
         }
     }
 
@@ -244,12 +248,12 @@ class KartleggingssporsmalRepositoryTest {
             personident = ARBEIDSTAKER_PERSONIDENT,
             status = KandidatStatus.KANDIDAT,
         )
-        // TODO: Implement test
-//        runBlocking {
-//            assertThrows<NoSuchElementException> {
-//                // TODO: Add repository function to update svar_at
-//            }
-//        }
+        val statusendring = KartleggingssporsmalKandidatStatusendring(KandidatStatus.SVAR_MOTTATT, OffsetDateTime.now())
+        runBlocking {
+            assertThrows<NoSuchElementException> {
+                kartleggingssporsmalRepository.createKandidatSvar(kandidat, statusendring)
+            }
+        }
     }
 
     @Test

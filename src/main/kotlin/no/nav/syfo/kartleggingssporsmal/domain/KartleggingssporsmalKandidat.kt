@@ -33,6 +33,9 @@ data class KartleggingssporsmalKandidat private constructor(
         varsletAt = null,
     )
 
+    fun registrerStatusEndring(statusEndring: KartleggingssporsmalKandidatStatusendring) =
+        this.copy(status = statusEndring.status)
+
     companion object {
         fun createFromDatabase(
             uuid: UUID,
@@ -53,5 +56,5 @@ data class KartleggingssporsmalKandidat private constructor(
 }
 
 enum class KandidatStatus {
-    KANDIDAT,
+    KANDIDAT, SVAR_MOTTATT
 }

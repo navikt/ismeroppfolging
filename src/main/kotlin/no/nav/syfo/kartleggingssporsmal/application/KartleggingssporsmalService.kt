@@ -2,11 +2,8 @@ package no.nav.syfo.kartleggingssporsmal.application
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
-import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
-import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
+import no.nav.syfo.kartleggingssporsmal.domain.*
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
-import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.model.getAlder
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aResponseDTO
 import no.nav.syfo.shared.domain.Personident
@@ -107,7 +104,8 @@ class KartleggingssporsmalService(
                     if (isKandidatPublishingEnabled) {
                         val statusEndring = kartleggingssporsmalRepository.getKandidatStatusendringer(
                             persistedKandidat.uuid
-                        ).firstOrNull() ?: throw IllegalStateException("Klarte ikke finne statusendring for kandidat ${persistedKandidat.uuid}")
+                        ).firstOrNull()
+                            ?: throw IllegalStateException("Klarte ikke finne statusendring for kandidat ${persistedKandidat.uuid}")
                         if (
                             kartleggingssporsmalKandidatProducer.send(
                                 kandidat = persistedKandidat,
@@ -135,10 +133,14 @@ class KartleggingssporsmalService(
 
         if (existingKandidat == null) {
             log.error("Mottok svar på kandidat som ikke finnes, med uuid: $kandidatUuid og svarId: $svarId")
-        } else if (existingKandidat.status != KandidatStatus.KANDIDAT) {
-            log.error("Mottok svar på person som er IKKE_KANDIDAT, med uuid: $kandidatUuid og svarId: $svarId")
         } else {
-            // TODO: Lagre svar
+            val statusendring = KartleggingssporsmalKandidatStatusendring(status = KandidatStatus.SVAR_MOTTATT, svarAt = svarAt)
+            val kandidat = existingKandidat.registrerStatusEndring(statusendring)
+            val createdStatusendring = kartleggingssporsmalRepository.createKandidatSvar(kandidat, statusendring)
+            kartleggingssporsmalKandidatProducer.send(kandidat, createdStatusendring)
+                .map { kandidat ->
+                    kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdStatusendring)
+                }
         }
     }
 

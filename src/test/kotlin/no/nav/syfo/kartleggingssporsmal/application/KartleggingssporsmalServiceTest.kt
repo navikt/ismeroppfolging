@@ -20,23 +20,23 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFromKafka
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.ArbeidstakerHendelse
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.*
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse.HendelseType
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselProducer
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatProducer
-import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatStatusRecord
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.infrastructure.database.getKandidatByStoppunktUUID
 import no.nav.syfo.shared.infrastructure.database.getKartleggingssporsmalStoppunkt
 import no.nav.syfo.shared.infrastructure.database.markStoppunktAsProcessed
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
+import no.nav.syfo.shared.util.toLocalDateOslo
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
-import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -45,6 +45,7 @@ import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.Future
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class KartleggingssporsmalServiceTest {
@@ -583,7 +584,8 @@ class KartleggingssporsmalServiceTest {
                     kandidat = kandidat,
                     stoppunktId = createdStoppunkt.id,
                 )
-                // TODO: Assert svar ikke mottatt
+                val statusendringSvarIkkeMottatt = kartleggingssporsmalRepository.getKandidatStatusendringer(createdKandidat.uuid).first()
+                assertNull(statusendringSvarIkkeMottatt.svarAt)
 
                 kartleggingssporsmalService.registrerSvar(
                     kandidatUuid = createdKandidat.uuid,
@@ -592,7 +594,9 @@ class KartleggingssporsmalServiceTest {
                 )
 
                 val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
-                // TODO: Assert svar mottatt
+                val statusendringSvarMottatt = kartleggingssporsmalRepository.getKandidatStatusendringer(createdKandidat.uuid).first()
+                assertEquals(KandidatStatus.SVAR_MOTTATT, fetchedKandidat?.status)
+                assertNotNull(statusendringSvarMottatt.svarAt)
             }
         }
 
@@ -617,7 +621,8 @@ class KartleggingssporsmalServiceTest {
                     kandidat = kandidat,
                     stoppunktId = createdStoppunkt.id,
                 )
-                // TODO: Assert svar ikke mottatt
+                val statusendringSvarIkkeMottatt = kartleggingssporsmalRepository.getKandidatStatusendringer(createdKandidat.uuid).first()
+                assertNull(statusendringSvarIkkeMottatt.svarAt)
 
                 kartleggingssporsmalService.registrerSvar(
                     kandidatUuid = createdKandidat.uuid,
@@ -632,7 +637,9 @@ class KartleggingssporsmalServiceTest {
                 )
 
                 val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
-                // TODO: Assert andre svar mottatt oppdatert
+                val statusendringSvarOppdatert = kartleggingssporsmalRepository.getKandidatStatusendringer(createdKandidat.uuid).first()
+                assertEquals(KandidatStatus.SVAR_MOTTATT, fetchedKandidat?.status)
+                assertEquals(secondSvarAt.toLocalDateOslo(), statusendringSvarOppdatert.svarAt?.toLocalDateOslo())
             }
         }
 
