@@ -185,10 +185,11 @@ class KartleggingssporsmalRepository(
         this.prepareStatement(CREATE_KANDIDAT).use {
             it.setString(1, kandidat.uuid.toString())
             it.setObject(2, kandidat.createdAt)
-            it.setString(3, kandidat.personident.value)
-            it.setInt(4, stoppunktId)
-            it.setString(5, kandidat.status.name)
-            it.setObject(6, kandidat.varsletAt)
+            it.setObject(3, kandidat.createdAt)
+            it.setString(4, kandidat.personident.value)
+            it.setInt(5, stoppunktId)
+            it.setString(6, kandidat.status.name)
+            it.setObject(7, kandidat.varsletAt)
             it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
         }
 
@@ -277,11 +278,12 @@ class KartleggingssporsmalRepository(
                 id,
                 uuid,
                 created_at,
+                updated_at,
                 personident,
                 generated_by_stoppunkt_id,
                 status,
                 varslet_at
-            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?)
+            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?)
             RETURNING *
         """
 
@@ -317,7 +319,7 @@ class KartleggingssporsmalRepository(
 
         private const val UPDATE_KANDIDAT_VARSLET_AT = """
             UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
-            SET varslet_at = now()
+            SET varslet_at = now(), updated_at = now()
             WHERE uuid = ?
             RETURNING *
         """
@@ -333,14 +335,14 @@ class KartleggingssporsmalRepository(
         private const val SET_JOURNALPOST_ID =
             """
                 UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
-                SET journalpost_id = ?
+                SET journalpost_id = ?, updated_at = now()
                 WHERE uuid = ?
             """
 
         private const val UPDATE_KANDIDAT_STATUS =
             """
                 UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
-                SET status = ?
+                SET status = ?, updated_at = now()
                 WHERE uuid = ?
             """
     }
