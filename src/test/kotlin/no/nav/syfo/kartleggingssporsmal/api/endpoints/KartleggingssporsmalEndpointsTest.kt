@@ -142,8 +142,12 @@ class KartleggingssporsmalEndpointsTest {
     inner class PostKartleggingssporsmal {
         @Test
         fun `Returns status OK if valid token is supplied and kandidat exists`() = testApplication {
+            val kandidat = KartleggingssporsmalKandidat(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                status = KandidatStatus.KANDIDAT,
+            )
             val client = setupApiAndClient(kartleggingssporsmalServiceMock)
-            coEvery { kartleggingssporsmalServiceMock.registrerFerdigBehandlet(ARBEIDSTAKER_PERSONIDENT, any()) } just Runs
+            coEvery { kartleggingssporsmalServiceMock.registrerFerdigBehandlet(ARBEIDSTAKER_PERSONIDENT, any()) } returns kandidat
 
             val response = client.post(kartleggingssporsmalUrl) {
                 bearerAuth(validToken)

@@ -148,7 +148,7 @@ class KartleggingssporsmalService(
     suspend fun registrerFerdigBehandlet(
         personident: Personident,
         veilederident: String,
-    ) {
+    ): KartleggingssporsmalKandidat {
         val existingKandidat = kartleggingssporsmalRepository.getKandidat(personident)
 
         if (existingKandidat?.status != KandidatStatus.SVAR_MOTTATT) {
@@ -167,6 +167,7 @@ class KartleggingssporsmalService(
                 .map { kandidat ->
                     kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdStatusendring)
                 }
+            return updatedKandidat
         }
     }
 

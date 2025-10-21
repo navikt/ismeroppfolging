@@ -45,11 +45,11 @@ fun Route.registerKartleggingssporsmalEndpoints(
                 personident = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
-                kartleggingssporsmalService.registrerFerdigBehandlet(
+                val kandidat = kartleggingssporsmalService.registrerFerdigBehandlet(
                     personident = personident,
                     veilederident = veilederident,
                 )
-                call.respond(HttpStatusCode.OK)
+                call.respond<KartleggingssporsmalKandidat>(HttpStatusCode.OK, kandidat)
             }
         }
     }
