@@ -660,6 +660,7 @@ class KartleggingssporsmalServiceTest {
             }
         }
     }
+
     @Nested
     @DisplayName("Test registrering of ferdig behandlet")
     inner class RegistrerFerdigBehandlet {
@@ -729,6 +730,7 @@ class KartleggingssporsmalServiceTest {
                 }
             }
         }
+
         @Test
         fun `registrer ferdig behandlet should not store status if no kandidat`() {
             runBlocking {
