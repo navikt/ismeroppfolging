@@ -6,10 +6,8 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
-import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
-import io.mockk.just
 import io.mockk.mockk
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
