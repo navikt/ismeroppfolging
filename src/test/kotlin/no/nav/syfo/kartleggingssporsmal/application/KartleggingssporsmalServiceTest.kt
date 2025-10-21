@@ -703,6 +703,14 @@ class KartleggingssporsmalServiceTest {
                 assertEquals(KandidatStatus.FERDIG_BEHANDLET, fetchedKandidat?.status)
                 assertEquals(KandidatStatus.FERDIG_BEHANDLET, statusendring?.status)
                 assertEquals(UserConstants.VEILEDER_IDENT, statusendring?.veilederident)
+
+                assertNotNull(statusendring.publishedAt)
+                val producerRecordSlot = mutableListOf<ProducerRecord<String, KartleggingssporsmalKandidatStatusRecord>>()
+                verify(exactly = 2) { mockKandidatProducer.send(capture(producerRecordSlot)) }
+                val lastRecord = producerRecordSlot.last().value()
+                assertEquals(createdKandidat.uuid, lastRecord.kandidatUuid)
+                assertEquals(ARBEIDSTAKER_PERSONIDENT.value, lastRecord.personident)
+                assertEquals(KandidatStatus.FERDIG_BEHANDLET.name, lastRecord.status)
             }
         }
 
