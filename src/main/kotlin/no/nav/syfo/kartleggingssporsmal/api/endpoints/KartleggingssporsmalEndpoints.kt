@@ -8,6 +8,7 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.shared.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.shared.infrastructure.clients.veiledertilgang.validateVeilederAccess
 import no.nav.syfo.shared.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.shared.util.getNAVIdent
 import no.nav.syfo.shared.util.getPersonident
 
 private const val API_ACTION = "access received kartleggingssporsmål for person"
@@ -36,13 +37,17 @@ fun Route.registerKartleggingssporsmalEndpoints(
         post("/kandidater") {
             val personident = call.getPersonident()
                 ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
+            val veilederident = call.getNAVIdent()
+                ?: throw IllegalArgumentException("Failed to $API_ACTION: No NAV_IDENT supplied in request header")
+
             validateVeilederAccess(
                 action = API_ACTION,
                 personident = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
                 kartleggingssporsmalService.registrerFerdigBehandlet(
-                    personIdent = personident,
+                    personident = personident,
+                    veilederident = veilederident,
                 )
                 call.respond(HttpStatusCode.OK)
             }

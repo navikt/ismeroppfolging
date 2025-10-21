@@ -10,16 +10,19 @@ class KartleggingssporsmalKandidatStatusendring private constructor(
     val status: KandidatStatus,
     val publishedAt: OffsetDateTime?,
     val svarAt: OffsetDateTime?,
+    val veilederident: String?,
 ) {
     constructor(
         status: KandidatStatus,
         svarAt: OffsetDateTime? = null,
+        veilederident: String? = null,
     ) : this(
         uuid = UUID.randomUUID(),
         createdAt = nowUTC(),
         status = status,
         publishedAt = null,
         svarAt = svarAt,
+        veilederident = veilederident,
     )
 
     companion object {
@@ -29,12 +32,14 @@ class KartleggingssporsmalKandidatStatusendring private constructor(
             status: String,
             publishedAt: OffsetDateTime?,
             svarAt: OffsetDateTime?,
+            veilederident: String?
         ) = KartleggingssporsmalKandidatStatusendring(
             uuid = uuid,
             createdAt = createdAt,
             status = KandidatStatus.valueOf(status),
             publishedAt = publishedAt,
             svarAt = svarAt,
+            veilederident = veilederident,
         )
     }
 }

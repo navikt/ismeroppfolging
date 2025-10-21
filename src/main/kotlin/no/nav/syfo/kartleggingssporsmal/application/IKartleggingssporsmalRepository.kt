@@ -17,7 +17,7 @@ interface IKartleggingssporsmalRepository {
         stoppunktId: Int,
     ): KartleggingssporsmalKandidat
 
-    suspend fun createKandidatSvar(
+    suspend fun createKandidatStatusendring(
         kandidat: KartleggingssporsmalKandidat,
         kandidatStatusendring: KartleggingssporsmalKandidatStatusendring,
     ): KartleggingssporsmalKandidatStatusendring

@@ -137,7 +137,7 @@ class KartleggingssporsmalService(
         } else {
             val statusendring = KartleggingssporsmalKandidatStatusendring(status = KandidatStatus.SVAR_MOTTATT, svarAt = svarAt)
             val kandidat = existingKandidat.registrerStatusEndring(statusendring)
-            val createdStatusendring = kartleggingssporsmalRepository.createKandidatSvar(kandidat, statusendring)
+            val createdStatusendring = kartleggingssporsmalRepository.createKandidatStatusendring(kandidat, statusendring)
             kartleggingssporsmalKandidatProducer.send(kandidat, createdStatusendring)
                 .map { kandidat ->
                     kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdStatusendring)
@@ -145,15 +145,24 @@ class KartleggingssporsmalService(
         }
     }
 
-    suspend fun registrerFerdigBehandlet(personIdent: Personident) {
-        val existingKandidat = kartleggingssporsmalRepository.getKandidat(personIdent)
+    suspend fun registrerFerdigBehandlet(
+        personident: Personident,
+        veilederident: String,
+    ) {
+        val existingKandidat = kartleggingssporsmalRepository.getKandidat(personident)
 
-        if (existingKandidat == null || existingKandidat.status == KandidatStatus.FERDIG_BEHANDLET) {
+        if (existingKandidat?.status != KandidatStatus.SVAR_MOTTATT) {
             throw IllegalArgumentException("Kandidat finnes ikke, eller er allerede ferdig behandlet")
         } else {
-            val statusendring = KartleggingssporsmalKandidatStatusendring(status = KandidatStatus.FERDIG_BEHANDLET)
+            val statusendring = KartleggingssporsmalKandidatStatusendring(
+                status = KandidatStatus.FERDIG_BEHANDLET,
+                veilederident = veilederident,
+            )
             val updatedKandidat = existingKandidat.registrerStatusEndring(statusendring)
-            val createdStatusendring = kartleggingssporsmalRepository.createKandidatSvar(updatedKandidat, statusendring)
+            val createdStatusendring = kartleggingssporsmalRepository.createKandidatStatusendring(
+                kandidat = updatedKandidat,
+                kandidatStatusendring = statusendring,
+            )
             kartleggingssporsmalKandidatProducer.send(updatedKandidat, createdStatusendring)
                 .map { kandidat ->
                     kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdStatusendring)

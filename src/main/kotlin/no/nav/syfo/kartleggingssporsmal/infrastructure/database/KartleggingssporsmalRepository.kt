@@ -167,7 +167,7 @@ class KartleggingssporsmalRepository(
         }
     }
 
-    override suspend fun createKandidatSvar(
+    override suspend fun createKandidatStatusendring(
         kandidat: KartleggingssporsmalKandidat,
         kandidatStatusendring: KartleggingssporsmalKandidatStatusendring,
     ): KartleggingssporsmalKandidatStatusendring =
@@ -176,7 +176,10 @@ class KartleggingssporsmalRepository(
                 ?: throw NoSuchElementException("Kandidat med UUID ${kandidat.uuid} finnes ikke i databasen")
             val pStatusendring = connection.createStatusendring(kandidatStatusendring = kandidatStatusendring, kandidatId = pKandidat.id)
                 .toKartleggingssporsmalKandidatStatusendring()
-            connection.updateKandidatStatus(kandidat.uuid, kandidatStatusendring.status)
+            connection.updateKandidatStatus(
+                kandidatUuid = kandidat.uuid,
+                status = kandidatStatusendring.status,
+            )
             connection.commit()
             pStatusendring
         }
@@ -220,6 +223,7 @@ class KartleggingssporsmalRepository(
             it.setString(4, kandidatStatusendring.status.name)
             it.setObject(5, kandidatStatusendring.publishedAt)
             it.setObject(6, kandidatStatusendring.svarAt)
+            it.setString(7, kandidatStatusendring.veilederident)
             it.executeQuery()
                 .toList { toPKartleggingssporsmalKandidatStatusendring() }
                 .single()
@@ -294,8 +298,9 @@ class KartleggingssporsmalRepository(
                 created_at,
                 status,
                 published_at,
-                svar_at
-            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?)
+                svar_at,
+                veilederident
+            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?)
             RETURNING *
         """
 
@@ -381,5 +386,6 @@ internal fun ResultSet.toPKartleggingssporsmalKandidatStatusendring(): PKartlegg
         status = getString("status"),
         publishedAt = getObject("published_at", OffsetDateTime::class.java),
         svarAt = getObject("svar_at", OffsetDateTime::class.java),
+        veilederident = getString("veilederident"),
     )
 }

@@ -143,7 +143,7 @@ class KartleggingssporsmalEndpointsTest {
         @Test
         fun `Returns status OK if valid token is supplied and kandidat exists`() = testApplication {
             val client = setupApiAndClient(kartleggingssporsmalServiceMock)
-            coEvery { kartleggingssporsmalServiceMock.registrerFerdigBehandlet(ARBEIDSTAKER_PERSONIDENT) } just Runs
+            coEvery { kartleggingssporsmalServiceMock.registrerFerdigBehandlet(ARBEIDSTAKER_PERSONIDENT, any()) } just Runs
 
             val response = client.post(kartleggingssporsmalUrl) {
                 bearerAuth(validToken)
@@ -156,7 +156,7 @@ class KartleggingssporsmalEndpointsTest {
         @Test
         fun `Returns status NotFound if valid token is supplied, but kandidat doesn't exist`() = testApplication {
             val client = setupApiAndClient(kartleggingssporsmalServiceMock)
-            coEvery { kartleggingssporsmalServiceMock.registrerFerdigBehandlet(ARBEIDSTAKER_PERSONIDENT) } throws IllegalArgumentException()
+            coEvery { kartleggingssporsmalServiceMock.registrerFerdigBehandlet(ARBEIDSTAKER_PERSONIDENT, any()) } throws IllegalArgumentException()
 
             val response = client.post(kartleggingssporsmalUrl) {
                 bearerAuth(validToken)
