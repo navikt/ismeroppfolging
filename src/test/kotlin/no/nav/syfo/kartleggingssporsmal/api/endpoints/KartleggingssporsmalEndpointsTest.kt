@@ -34,7 +34,6 @@ class KartleggingssporsmalEndpointsTest {
         issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
         navIdent = UserConstants.VEILEDER_IDENT,
     )
-    private val kartleggingssporsmalUrl = "/api/internad/v1/kartleggingssporsmal/kandidater"
 
     private fun ApplicationTestBuilder.setupApiAndClient(kartleggingssporsmalServiceMock: KartleggingssporsmalService? = null): HttpClient {
         application {
@@ -59,6 +58,8 @@ class KartleggingssporsmalEndpointsTest {
     @Nested
     @DisplayName("Get kartleggingssporsmal")
     inner class GetKartleggingssporsmal {
+        private val kartleggingssporsmalUrl = "/api/internad/v1/kartleggingssporsmal/kandidater"
+
         @Test
         fun `Returns status OK if valid token is supplied and kandidat exists`() = testApplication {
             val client = setupApiAndClient(kartleggingssporsmalServiceMock)
@@ -138,6 +139,8 @@ class KartleggingssporsmalEndpointsTest {
     @Nested
     @DisplayName("Post kartleggingssporsmal")
     inner class PostKartleggingssporsmal {
+        private val kartleggingssporsmalFerdigbehandleUrl = "/api/internad/v1/kartleggingssporsmal/kandidater/ferdigbehandle"
+
         @Test
         fun `Returns status OK if valid token is supplied and kandidat exists`() = testApplication {
             val kandidat = KartleggingssporsmalKandidat(
@@ -147,7 +150,7 @@ class KartleggingssporsmalEndpointsTest {
             val client = setupApiAndClient(kartleggingssporsmalServiceMock)
             coEvery { kartleggingssporsmalServiceMock.registrerFerdigBehandlet(ARBEIDSTAKER_PERSONIDENT, any()) } returns kandidat
 
-            val response = client.post(kartleggingssporsmalUrl) {
+            val response = client.post(kartleggingssporsmalFerdigbehandleUrl) {
                 bearerAuth(validToken)
                 header(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_PERSONIDENT.value)
             }
@@ -160,7 +163,7 @@ class KartleggingssporsmalEndpointsTest {
             val client = setupApiAndClient(kartleggingssporsmalServiceMock)
             coEvery { kartleggingssporsmalServiceMock.registrerFerdigBehandlet(ARBEIDSTAKER_PERSONIDENT, any()) } throws IllegalArgumentException()
 
-            val response = client.post(kartleggingssporsmalUrl) {
+            val response = client.post(kartleggingssporsmalFerdigbehandleUrl) {
                 bearerAuth(validToken)
                 header(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_PERSONIDENT.value)
             }
