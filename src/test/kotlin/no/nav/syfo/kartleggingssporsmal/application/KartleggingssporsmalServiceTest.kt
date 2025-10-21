@@ -690,10 +690,13 @@ class KartleggingssporsmalServiceTest {
                     svarAt = OffsetDateTime.now(),
                     svarId = UUID.randomUUID(),
                 )
-                kartleggingssporsmalService.registrerFerdigBehandlet(
+                val returnedKandidat = kartleggingssporsmalService.registrerFerdigBehandlet(
                     personident = ARBEIDSTAKER_PERSONIDENT,
                     veilederident = UserConstants.VEILEDER_IDENT,
                 )
+                assertEquals(createdKandidat.uuid, returnedKandidat.uuid)
+                assertEquals(ARBEIDSTAKER_PERSONIDENT, returnedKandidat.personident)
+                assertEquals(KandidatStatus.FERDIG_BEHANDLET, returnedKandidat.status)
 
                 val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
                 val statusendring = kartleggingssporsmalRepository.getKandidatStatusendringer(createdKandidat.uuid).first()
