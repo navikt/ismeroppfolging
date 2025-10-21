@@ -11,7 +11,6 @@ import no.nav.syfo.shared.util.toLocalDateOslo
 import org.slf4j.LoggerFactory
 import java.time.OffsetDateTime
 import java.util.*
-import kotlin.IllegalArgumentException
 
 class KartleggingssporsmalService(
     private val behandlendeEnhetClient: IBehandlendeEnhetClient,
