@@ -146,8 +146,9 @@ class KartleggingssporsmalService(
             kartleggingssporsmalKandidatProducer.send(kandidat, createdStatusendring)
                 .map { kandidat ->
                     kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdStatusendring)
-                    esyfoVarselProducer.ferdigstillKartleggingssporsmalVarsel(kandidat)
                 }
+
+            esyfoVarselProducer.ferdigstillKartleggingssporsmalVarsel(kandidat)
         }
     }
 
