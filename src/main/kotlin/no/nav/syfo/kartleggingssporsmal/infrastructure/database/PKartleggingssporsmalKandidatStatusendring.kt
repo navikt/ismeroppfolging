@@ -12,6 +12,7 @@ data class PKartleggingssporsmalKandidatStatusendring(
     val status: String,
     val publishedAt: OffsetDateTime?,
     val svarAt: OffsetDateTime?,
+    val veilederident: String?,
 ) {
     fun toKartleggingssporsmalKandidatStatusendring() = KartleggingssporsmalKandidatStatusendring.createFromDatabase(
         uuid = uuid,
@@ -19,5 +20,6 @@ data class PKartleggingssporsmalKandidatStatusendring(
         status = status,
         publishedAt = publishedAt,
         svarAt = svarAt,
+        veilederident = veilederident,
     )
 }

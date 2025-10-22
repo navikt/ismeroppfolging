@@ -6,6 +6,7 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
+import no.nav.syfo.UserConstants
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_ERROR
@@ -37,6 +38,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -655,6 +657,100 @@ class KartleggingssporsmalServiceTest {
 
                 val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(kandidatUuid)
                 assertNull(fetchedKandidat)
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Test registrering of ferdig behandlet")
+    inner class RegistrerFerdigBehandlet {
+
+        @Test
+        fun `registrer ferdig behandlet should store status and veilederident`() {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)!!
+            runBlocking {
+                kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+                val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+                val kandidat = KartleggingssporsmalKandidat(
+                    personident = ARBEIDSTAKER_PERSONIDENT,
+                    status = KandidatStatus.KANDIDAT,
+                )
+                val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                    kandidat = kandidat,
+                    stoppunktId = createdStoppunkt.id,
+                )
+
+                kartleggingssporsmalService.registrerSvar(
+                    kandidatUuid = createdKandidat.uuid,
+                    svarAt = OffsetDateTime.now(),
+                    svarId = UUID.randomUUID(),
+                )
+                val returnedKandidat = kartleggingssporsmalService.registrerFerdigBehandlet(
+                    uuid = createdKandidat.uuid,
+                    veilederident = UserConstants.VEILEDER_IDENT,
+                )
+                assertEquals(createdKandidat.uuid, returnedKandidat.uuid)
+                assertEquals(ARBEIDSTAKER_PERSONIDENT, returnedKandidat.personident)
+                assertEquals(KandidatStatus.FERDIG_BEHANDLET, returnedKandidat.status)
+
+                val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
+                val statusendring = kartleggingssporsmalRepository.getKandidatStatusendringer(createdKandidat.uuid).first()
+                assertEquals(KandidatStatus.FERDIG_BEHANDLET, fetchedKandidat?.status)
+                assertEquals(KandidatStatus.FERDIG_BEHANDLET, statusendring?.status)
+                assertEquals(UserConstants.VEILEDER_IDENT, statusendring?.veilederident)
+
+                assertNotNull(statusendring.publishedAt)
+                val producerRecordSlot = mutableListOf<ProducerRecord<String, KartleggingssporsmalKandidatStatusRecord>>()
+                verify(exactly = 2) { mockKandidatProducer.send(capture(producerRecordSlot)) }
+                val lastRecord = producerRecordSlot.last().value()
+                assertEquals(createdKandidat.uuid, lastRecord.kandidatUuid)
+                assertEquals(ARBEIDSTAKER_PERSONIDENT.value, lastRecord.personident)
+                assertEquals(KandidatStatus.FERDIG_BEHANDLET.name, lastRecord.status)
+            }
+        }
+
+        @Test
+        fun `registrer ferdig behandlet should not store status if not svar mottatt`() {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)!!
+            runBlocking {
+                kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+                val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+                val kandidat = KartleggingssporsmalKandidat(
+                    personident = ARBEIDSTAKER_PERSONIDENT,
+                    status = KandidatStatus.KANDIDAT,
+                )
+                kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                    kandidat = kandidat,
+                    stoppunktId = createdStoppunkt.id,
+                )
+                assertThrows<IllegalArgumentException> {
+                    kartleggingssporsmalService.registrerFerdigBehandlet(
+                        uuid = kandidat.uuid,
+                        veilederident = UserConstants.VEILEDER_IDENT,
+                    )
+                }
+            }
+        }
+
+        @Test
+        fun `registrer ferdig behandlet should not store status if no kandidat`() {
+            runBlocking {
+                assertThrows<IllegalArgumentException> {
+                    kartleggingssporsmalService.registrerFerdigBehandlet(
+                        uuid = UUID.randomUUID(),
+                        veilederident = UserConstants.VEILEDER_IDENT,
+                    )
+                }
             }
         }
     }

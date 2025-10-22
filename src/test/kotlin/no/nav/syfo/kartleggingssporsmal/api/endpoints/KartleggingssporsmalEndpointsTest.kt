@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import java.util.UUID
 
 class KartleggingssporsmalEndpointsTest {
 
@@ -58,7 +59,6 @@ class KartleggingssporsmalEndpointsTest {
     @Nested
     @DisplayName("Get kartleggingssporsmal")
     inner class GetKartleggingssporsmal {
-
         private val kartleggingssporsmalUrl = "/api/internad/v1/kartleggingssporsmal/kandidater"
 
         @Test
@@ -135,5 +135,41 @@ class KartleggingssporsmalEndpointsTest {
 
                 assertEquals(HttpStatusCode.BadRequest, response.status)
             }
+    }
+
+    @Nested
+    @DisplayName("Post kartleggingssporsmal")
+    inner class PostKartleggingssporsmal {
+        private val kartleggingssporsmalFerdigbehandleUrl = "/api/internad/v1/kartleggingssporsmal/kandidater/"
+
+        @Test
+        fun `Returns status OK if valid token is supplied and kandidat exists`() = testApplication {
+            val kandidat = KartleggingssporsmalKandidat(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                status = KandidatStatus.KANDIDAT,
+            )
+            val client = setupApiAndClient(kartleggingssporsmalServiceMock)
+            coEvery { kartleggingssporsmalServiceMock.registrerFerdigBehandlet(kandidat.uuid, any()) } returns kandidat
+
+            val response = client.put("$kartleggingssporsmalFerdigbehandleUrl${kandidat.uuid}") {
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_PERSONIDENT.value)
+            }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+        }
+
+        @Test
+        fun `Returns status NotFound if valid token is supplied, but kandidat doesn't exist`() = testApplication {
+            val client = setupApiAndClient(kartleggingssporsmalServiceMock)
+            coEvery { kartleggingssporsmalServiceMock.registrerFerdigBehandlet(any(), any()) } throws IllegalArgumentException()
+
+            val response = client.put("$kartleggingssporsmalFerdigbehandleUrl${UUID.randomUUID()}") {
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_PERSONIDENT.value)
+            }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+        }
     }
 }
