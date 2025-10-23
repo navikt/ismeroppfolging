@@ -134,21 +134,14 @@ class KartleggingssporsmalService(
         if (existingKandidat == null) {
             log.error("Mottok svar på kandidat som ikke finnes, med uuid: $kandidatUuid og svarId: $svarId")
         } else {
-            val statusendring = KartleggingssporsmalKandidatStatusendring(
-                status = KandidatStatus.SVAR_MOTTATT,
-                svarAt = svarAt,
-            )
-            val kandidat = existingKandidat.registrerStatusEndring(statusendring)
-            val createdStatusendring = kartleggingssporsmalRepository.createKandidatStatusendring(
-                kandidat = kandidat,
-                kandidatStatusendring = statusendring,
-            )
-            kartleggingssporsmalKandidatProducer.send(kandidat, createdStatusendring)
+            val mottattSvarKandidat = existingKandidat.registrerSvarMottatt(svarAt)
+            val createdMottattSvarKandidat = kartleggingssporsmalRepository.createKandidatStatusendring(kandidat = mottattSvarKandidat)
+            kartleggingssporsmalKandidatProducer.send(mottattSvarKandidat, createdMottattSvarKandidat)
                 .map { kandidat ->
-                    kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdStatusendring)
+                    kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdMottattSvarKandidat)
                 }
 
-            esyfoVarselProducer.ferdigstillKartleggingssporsmalVarsel(kandidat)
+            esyfoVarselProducer.ferdigstillKartleggingssporsmalVarsel(mottattSvarKandidat)
         }
     }
 
@@ -156,26 +149,16 @@ class KartleggingssporsmalService(
         uuid: UUID,
         veilederident: String,
     ): KartleggingssporsmalKandidat {
-        val existingKandidat = kartleggingssporsmalRepository.getKandidat(uuid)
+        val existingKandidat =
+            kartleggingssporsmalRepository.getKandidat(uuid) ?: throw IllegalArgumentException("Kandidat med uuid $uuid finnes ikke")
+        val ferdigbehandletKandidat = existingKandidat.ferdigbehandleVurdering(veilederident)
 
-        if (existingKandidat?.status != KandidatStatus.SVAR_MOTTATT) {
-            throw IllegalArgumentException("Kandidat finnes ikke, eller er allerede ferdig behandlet")
-        } else {
-            val statusendring = KartleggingssporsmalKandidatStatusendring(
-                status = KandidatStatus.FERDIGBEHANDLET,
-                veilederident = veilederident,
-            )
-            val updatedKandidat = existingKandidat.registrerStatusEndring(statusendring)
-            val createdStatusendring = kartleggingssporsmalRepository.createKandidatStatusendring(
-                kandidat = updatedKandidat,
-                kandidatStatusendring = statusendring,
-            )
-            kartleggingssporsmalKandidatProducer.send(updatedKandidat, createdStatusendring)
-                .map { kandidat ->
-                    kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdStatusendring)
-                }
-            return updatedKandidat
-        }
+        val updatedKandidat = kartleggingssporsmalRepository.createKandidatStatusendring(kandidat = ferdigbehandletKandidat)
+        kartleggingssporsmalKandidatProducer.send(updatedKandidat)
+            .map { kandidat ->
+                kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdStatusendring)
+            }
+        return updatedKandidat
     }
 
     private suspend fun findPilotStoppunkter(
