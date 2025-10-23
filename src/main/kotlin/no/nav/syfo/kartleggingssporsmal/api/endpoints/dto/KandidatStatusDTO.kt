@@ -14,7 +14,12 @@ data class KandidatStatusDTO(
     val svarAt: OffsetDateTime?,
     val status: KandidatStatus,
     val statusAt: OffsetDateTime,
-    val statusVeilederident: String?,
+    val vurdering: KartleggingVurderingDTO?,
+)
+
+data class KartleggingVurderingDTO(
+    val vurdertAt: OffsetDateTime,
+    val vurdertBy: String,
 )
 
 fun KartleggingssporsmalKandidat.toKandidatStatusDTO(
@@ -23,12 +28,14 @@ fun KartleggingssporsmalKandidat.toKandidatStatusDTO(
     kandidatUuid = this.uuid,
     personident = this.personident,
     varsletAt = this.varsletAt,
-    svarAt = kandidatStatusListe.firstOrNull { it.status == KandidatStatus.SVAR_MOTTATT }?.createdAt,
+    svarAt = kandidatStatusListe.firstOrNull { it.status == KandidatStatus.SVAR_MOTTATT }?.svarAt,
     status = this.status,
     statusAt = kandidatStatusListe.firstOrNull { it.status == this.status }?.createdAt ?: this.createdAt,
-    statusVeilederident = if (this.status == KandidatStatus.FERDIG_BEHANDLET) {
-        kandidatStatusListe.firstOrNull { it.status == KandidatStatus.FERDIG_BEHANDLET }?.veilederident
-    } else {
-        null
-    },
+    vurdering = if (this.status == KandidatStatus.FERDIG_BEHANDLET) {
+        val ferdigBehandletStatus = kandidatStatusListe.first { it.status == KandidatStatus.FERDIG_BEHANDLET }
+        KartleggingVurderingDTO(
+            vurdertAt = ferdigBehandletStatus.createdAt,
+            vurdertBy = ferdigBehandletStatus.veilederident!!,
+        )
+    } else null,
 )
