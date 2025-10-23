@@ -690,7 +690,7 @@ class KartleggingssporsmalServiceTest {
                     svarAt = OffsetDateTime.now(),
                     svarId = UUID.randomUUID(),
                 )
-                val returnedKandidat = kartleggingssporsmalService.registrerFerdigBehandlet(
+                val returnedKandidat = kartleggingssporsmalService.registrerFerdigbehandlet(
                     uuid = createdKandidat.uuid,
                     veilederident = UserConstants.VEILEDER_IDENT,
                 )
@@ -734,7 +734,7 @@ class KartleggingssporsmalServiceTest {
                     stoppunktId = createdStoppunkt.id,
                 )
                 assertThrows<IllegalArgumentException> {
-                    kartleggingssporsmalService.registrerFerdigBehandlet(
+                    kartleggingssporsmalService.registrerFerdigbehandlet(
                         uuid = kandidat.uuid,
                         veilederident = UserConstants.VEILEDER_IDENT,
                     )
@@ -746,7 +746,7 @@ class KartleggingssporsmalServiceTest {
         fun `registrer ferdig behandlet should not store status if no kandidat`() {
             runBlocking {
                 assertThrows<IllegalArgumentException> {
-                    kartleggingssporsmalService.registrerFerdigBehandlet(
+                    kartleggingssporsmalService.registrerFerdigbehandlet(
                         uuid = UUID.randomUUID(),
                         veilederident = UserConstants.VEILEDER_IDENT,
                     )

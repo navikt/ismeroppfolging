@@ -53,7 +53,7 @@ fun Route.registerKartleggingssporsmalEndpoints(
                 personident = kandidat.personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
-                val kandidat = kartleggingssporsmalService.registrerFerdigBehandlet(
+                val kandidat = kartleggingssporsmalService.registrerFerdigbehandlet(
                     uuid = kandidatUUID,
                     veilederident = veilederident,
                 )

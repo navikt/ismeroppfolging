@@ -144,7 +144,7 @@ class KartleggingssporsmalService(
         }
     }
 
-    suspend fun registrerFerdigBehandlet(
+    suspend fun registrerFerdigbehandlet(
         uuid: UUID,
         veilederident: String,
     ): KartleggingssporsmalKandidat {
