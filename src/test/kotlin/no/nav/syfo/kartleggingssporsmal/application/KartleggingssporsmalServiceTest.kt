@@ -696,12 +696,12 @@ class KartleggingssporsmalServiceTest {
                 )
                 assertEquals(createdKandidat.uuid, returnedKandidat.uuid)
                 assertEquals(ARBEIDSTAKER_PERSONIDENT, returnedKandidat.personident)
-                assertEquals(KandidatStatus.FERDIG_BEHANDLET, returnedKandidat.status)
+                assertEquals(KandidatStatus.FERDIGBEHANDLET, returnedKandidat.status)
 
                 val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
                 val statusendring = kartleggingssporsmalRepository.getKandidatStatusendringer(createdKandidat.uuid).first()
-                assertEquals(KandidatStatus.FERDIG_BEHANDLET, fetchedKandidat?.status)
-                assertEquals(KandidatStatus.FERDIG_BEHANDLET, statusendring?.status)
+                assertEquals(KandidatStatus.FERDIGBEHANDLET, fetchedKandidat?.status)
+                assertEquals(KandidatStatus.FERDIGBEHANDLET, statusendring?.status)
                 assertEquals(UserConstants.VEILEDER_IDENT, statusendring?.veilederident)
 
                 assertNotNull(statusendring.publishedAt)
@@ -710,7 +710,7 @@ class KartleggingssporsmalServiceTest {
                 val lastRecord = producerRecordSlot.last().value()
                 assertEquals(createdKandidat.uuid, lastRecord.kandidatUuid)
                 assertEquals(ARBEIDSTAKER_PERSONIDENT.value, lastRecord.personident)
-                assertEquals(KandidatStatus.FERDIG_BEHANDLET.name, lastRecord.status)
+                assertEquals(KandidatStatus.FERDIGBEHANDLET.name, lastRecord.status)
             }
         }
 

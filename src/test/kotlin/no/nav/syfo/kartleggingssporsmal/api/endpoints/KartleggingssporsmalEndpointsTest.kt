@@ -150,11 +150,11 @@ class KartleggingssporsmalEndpointsTest {
         fun `Returns status OK if valid token is supplied and kandidat exists`() = testApplication {
             val kandidat = KartleggingssporsmalKandidat(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                status = KandidatStatus.FERDIG_BEHANDLET,
+                status = KandidatStatus.FERDIGBEHANDLET,
             )
             val svarAt = nowUTC().minusDays(1)
             val ferdigBehandletStatus = KartleggingssporsmalKandidatStatusendring(
-                status = KandidatStatus.FERDIG_BEHANDLET,
+                status = KandidatStatus.FERDIGBEHANDLET,
                 veilederident = UserConstants.VEILEDER_IDENT
             )
             val kandidatStatusList = listOf(
@@ -183,7 +183,7 @@ class KartleggingssporsmalEndpointsTest {
             assertEquals(kandidat.uuid, responseDTO.kandidatUuid)
             assertEquals(kandidat.personident, responseDTO.personident)
             assertEquals(svarAt, responseDTO.svarAt)
-            assertEquals(KandidatStatus.FERDIG_BEHANDLET, responseDTO.status)
+            assertEquals(KandidatStatus.FERDIGBEHANDLET, responseDTO.status)
             assertEquals(UserConstants.VEILEDER_IDENT, responseDTO.vurdering?.vurdertBy)
             assertEquals(ferdigBehandletStatus.createdAt, responseDTO.vurdering?.vurdertAt)
         }

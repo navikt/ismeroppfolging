@@ -154,7 +154,7 @@ class KartleggingssporsmalService(
             throw IllegalArgumentException("Kandidat finnes ikke, eller er allerede ferdig behandlet")
         } else {
             val statusendring = KartleggingssporsmalKandidatStatusendring(
-                status = KandidatStatus.FERDIG_BEHANDLET,
+                status = KandidatStatus.FERDIGBEHANDLET,
                 veilederident = veilederident,
             )
             val updatedKandidat = existingKandidat.registrerStatusEndring(statusendring)

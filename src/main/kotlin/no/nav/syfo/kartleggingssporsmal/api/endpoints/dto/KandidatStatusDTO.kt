@@ -31,11 +31,10 @@ fun KartleggingssporsmalKandidat.toKandidatStatusDTO(
     svarAt = kandidatStatusListe.firstOrNull { it.status == KandidatStatus.SVAR_MOTTATT }?.svarAt,
     status = this.status,
     statusAt = kandidatStatusListe.firstOrNull { it.status == this.status }?.createdAt ?: this.createdAt,
-    vurdering = if (this.status == KandidatStatus.FERDIG_BEHANDLET) {
-        val ferdigBehandletStatus = kandidatStatusListe.first { it.status == KandidatStatus.FERDIG_BEHANDLET }
+    vurdering = kandidatStatusListe.firstOrNull { it.status == KandidatStatus.FERDIGBEHANDLET }?.let {
         KartleggingVurderingDTO(
-            vurdertAt = ferdigBehandletStatus.createdAt,
-            vurdertBy = ferdigBehandletStatus.veilederident!!,
+            vurdertAt = it.createdAt,
+            vurdertBy = it.veilederident!!,
         )
-    } else null,
+    },
 )
