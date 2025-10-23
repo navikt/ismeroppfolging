@@ -233,7 +233,7 @@ class KartleggingssporsmalRepositoryTest {
             )
 
             val statusendring = KartleggingssporsmalKandidatStatusendring(KandidatStatus.SVAR_MOTTATT, OffsetDateTime.now())
-            kartleggingssporsmalRepository.createKandidatSvar(createdKandidat, statusendring)
+            kartleggingssporsmalRepository.createKandidatStatusendring(createdKandidat, statusendring)
 
             val hentetKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
             val hentetStatusendring = kartleggingssporsmalRepository.getKandidatStatusendringer(kandidat.uuid).first()
@@ -251,7 +251,7 @@ class KartleggingssporsmalRepositoryTest {
         val statusendring = KartleggingssporsmalKandidatStatusendring(KandidatStatus.SVAR_MOTTATT, OffsetDateTime.now())
         runBlocking {
             assertThrows<NoSuchElementException> {
-                kartleggingssporsmalRepository.createKandidatSvar(kandidat, statusendring)
+                kartleggingssporsmalRepository.createKandidatStatusendring(kandidat, statusendring)
             }
         }
     }

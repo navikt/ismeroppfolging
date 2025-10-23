@@ -136,11 +136,37 @@ class KartleggingssporsmalService(
         } else {
             val statusendring = KartleggingssporsmalKandidatStatusendring(status = KandidatStatus.SVAR_MOTTATT, svarAt = svarAt)
             val kandidat = existingKandidat.registrerStatusEndring(statusendring)
-            val createdStatusendring = kartleggingssporsmalRepository.createKandidatSvar(kandidat, statusendring)
+            val createdStatusendring = kartleggingssporsmalRepository.createKandidatStatusendring(kandidat, statusendring)
             kartleggingssporsmalKandidatProducer.send(kandidat, createdStatusendring)
                 .map { kandidat ->
                     kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdStatusendring)
                 }
+        }
+    }
+
+    suspend fun registrerFerdigbehandlet(
+        uuid: UUID,
+        veilederident: String,
+    ): KartleggingssporsmalKandidat {
+        val existingKandidat = kartleggingssporsmalRepository.getKandidat(uuid)
+
+        if (existingKandidat?.status != KandidatStatus.SVAR_MOTTATT) {
+            throw IllegalArgumentException("Kandidat finnes ikke, eller er allerede ferdig behandlet")
+        } else {
+            val statusendring = KartleggingssporsmalKandidatStatusendring(
+                status = KandidatStatus.FERDIGBEHANDLET,
+                veilederident = veilederident,
+            )
+            val updatedKandidat = existingKandidat.registrerStatusEndring(statusendring)
+            val createdStatusendring = kartleggingssporsmalRepository.createKandidatStatusendring(
+                kandidat = updatedKandidat,
+                kandidatStatusendring = statusendring,
+            )
+            kartleggingssporsmalKandidatProducer.send(updatedKandidat, createdStatusendring)
+                .map { kandidat ->
+                    kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdStatusendring)
+                }
+            return updatedKandidat
         }
     }
 
@@ -203,6 +229,13 @@ class KartleggingssporsmalService(
     suspend fun getKandidat(personident: Personident): KartleggingssporsmalKandidat? {
         return kartleggingssporsmalRepository.getKandidat(personident)
     }
+
+    suspend fun getKandidat(uuid: UUID): KartleggingssporsmalKandidat? {
+        return kartleggingssporsmalRepository.getKandidat(uuid)
+    }
+
+    suspend fun getKandidatStatus(kandidatUuid: UUID): List<KartleggingssporsmalKandidatStatusendring> =
+        kartleggingssporsmalRepository.getKandidatStatusendringer(kandidatUuid)
 
     companion object {
         private val log = LoggerFactory.getLogger(KartleggingssporsmalService::class.java)
