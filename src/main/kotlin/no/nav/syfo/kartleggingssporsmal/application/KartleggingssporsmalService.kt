@@ -134,13 +134,21 @@ class KartleggingssporsmalService(
         if (existingKandidat == null) {
             log.error("Mottok svar på kandidat som ikke finnes, med uuid: $kandidatUuid og svarId: $svarId")
         } else {
-            val statusendring = KartleggingssporsmalKandidatStatusendring(status = KandidatStatus.SVAR_MOTTATT, svarAt = svarAt)
+            val statusendring = KartleggingssporsmalKandidatStatusendring(
+                status = KandidatStatus.SVAR_MOTTATT,
+                svarAt = svarAt,
+            )
             val kandidat = existingKandidat.registrerStatusEndring(statusendring)
-            val createdStatusendring = kartleggingssporsmalRepository.createKandidatStatusendring(kandidat, statusendring)
+            val createdStatusendring = kartleggingssporsmalRepository.createKandidatStatusendring(
+                kandidat = kandidat,
+                kandidatStatusendring = statusendring,
+            )
             kartleggingssporsmalKandidatProducer.send(kandidat, createdStatusendring)
                 .map { kandidat ->
                     kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdStatusendring)
                 }
+
+            esyfoVarselProducer.ferdigstillKartleggingssporsmalVarsel(kandidat)
         }
     }
 

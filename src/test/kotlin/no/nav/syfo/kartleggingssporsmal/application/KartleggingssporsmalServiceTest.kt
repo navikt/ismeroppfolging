@@ -566,7 +566,7 @@ class KartleggingssporsmalServiceTest {
     inner class RegistrerSvar {
 
         @Test
-        fun `registrerSvar should store svar when svar on existing kandidat`() {
+        fun `registrerSvar should store svar, publish on kafka and ferdigstille varsel when svar on existing kandidat`() {
             val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
                 tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
                 antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
@@ -599,11 +599,25 @@ class KartleggingssporsmalServiceTest {
                 val statusendringSvarMottatt = kartleggingssporsmalRepository.getKandidatStatusendringer(createdKandidat.uuid).first()
                 assertEquals(KandidatStatus.SVAR_MOTTATT, fetchedKandidat?.status)
                 assertNotNull(statusendringSvarMottatt.svarAt)
+
+                val producerRecordSlotKandidat = slot<ProducerRecord<String, KartleggingssporsmalKandidatStatusRecord>>()
+                val producerRecordSlotVarsel = slot<ProducerRecord<String, EsyfovarselHendelse>>()
+                verify(exactly = 1) {
+                    mockKandidatProducer.send(capture(producerRecordSlotKandidat))
+                    mockEsyfoVarselProducer.send(capture(producerRecordSlotVarsel))
+                }
+
+                val kandidatHendelse = producerRecordSlotKandidat.captured.value()
+                assertEquals(kandidatHendelse.status, KandidatStatus.SVAR_MOTTATT.name)
+
+                val esyfovarselHendelse = producerRecordSlotVarsel.captured.value()
+                assertEquals(esyfovarselHendelse.type, HendelseType.SM_KARTLEGGINGSSPORSMAL)
+                assertTrue(esyfovarselHendelse.ferdigstill!!)
             }
         }
 
         @Test
-        fun `registrerSvar should store svar again when two svar on existing kandidat`() {
+        fun `registrerSvar should store svar, publish on kafka and ferdigstille varsel twice when two svar on existing kandidat`() {
             val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
                 tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
                 antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
@@ -639,9 +653,17 @@ class KartleggingssporsmalServiceTest {
                 )
 
                 val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
-                val statusendringSvarOppdatert = kartleggingssporsmalRepository.getKandidatStatusendringer(createdKandidat.uuid).first()
+                val statusendringer = kartleggingssporsmalRepository.getKandidatStatusendringer(createdKandidat.uuid)
+                assertEquals(2, statusendringer.filter { it.status == KandidatStatus.SVAR_MOTTATT }.size)
+
+                val statusendringSvarOppdatert = statusendringer.first()
                 assertEquals(KandidatStatus.SVAR_MOTTATT, fetchedKandidat?.status)
                 assertEquals(secondSvarAt.toLocalDateOslo(), statusendringSvarOppdatert.svarAt?.toLocalDateOslo())
+
+                verify(exactly = 2) {
+                    mockKandidatProducer.send(any())
+                    mockEsyfoVarselProducer.send(any())
+                }
             }
         }
 
@@ -657,6 +679,11 @@ class KartleggingssporsmalServiceTest {
 
                 val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(kandidatUuid)
                 assertNull(fetchedKandidat)
+
+                verify(exactly = 0) {
+                    mockKandidatProducer.send(any())
+                    mockEsyfoVarselProducer.send(any())
+                }
             }
         }
     }
