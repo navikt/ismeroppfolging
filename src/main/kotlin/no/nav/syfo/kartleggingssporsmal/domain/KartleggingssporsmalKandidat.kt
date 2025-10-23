@@ -18,7 +18,7 @@ data class KartleggingssporsmalKandidat private constructor(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val personident: Personident,
-    val status: KandidatStatus,
+    val status: KartleggingssporsmalKandidatStatusendring,
     val varsletAt: OffsetDateTime?,
     val journalpostId: JournalpostId? = null,
 ) {
@@ -35,6 +35,18 @@ data class KartleggingssporsmalKandidat private constructor(
 
     fun registrerStatusEndring(statusEndring: KartleggingssporsmalKandidatStatusendring) =
         this.copy(status = statusEndring.status)
+
+    fun registrerSvarMottatt(svarAt: OffsetDateTime) =
+        this.copy(
+            status = KartleggingssporsmalKandidatStatusendring.SvarMottatt(svarAt = svarAt),
+        )
+
+    fun ferdigbehandleVurdering(veilederident: String): KartleggingssporsmalKandidat {
+        if (this.status !is KartleggingssporsmalKandidatStatusendring.SvarMottatt) {
+            throw IllegalArgumentException("Kandidat er allerede ferdig behandlet, eller har ikke mottatt svar enda")
+        }
+        return this.copy(status = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet(veilederident = veilederident))
+    }
 
     companion object {
         fun createFromDatabase(
