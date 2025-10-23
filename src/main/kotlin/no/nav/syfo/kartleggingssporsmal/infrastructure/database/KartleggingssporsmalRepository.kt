@@ -87,9 +87,7 @@ class KartleggingssporsmalRepository(
         return database.connection.use { connection ->
             val pKartleggingssporsmalKandidat = connection.createKandidat(kandidat, stoppunktId)
             connection.createStatusendring(
-                kandidatStatusendring = KartleggingssporsmalKandidatStatusendring(
-                    status = kandidat.status,
-                ),
+                kandidat = kandidat,
                 kandidatId = pKartleggingssporsmalKandidat.id,
             )
             connection.markStoppunktAsProcessed(stoppunktId)
@@ -133,10 +131,10 @@ class KartleggingssporsmalRepository(
         }
     }
 
-    override suspend fun updatePublishedAtForKandidatStatusendring(kandidatStatus: KartleggingssporsmalKandidatStatusendring) {
+    override suspend fun updatePublishedAtForKandidatStatusendring(kandidat: KartleggingssporsmalKandidat) {
         database.connection.use { connection ->
             connection.prepareStatement(UPDATE_KANDIDATSTATUSENDRING_PUBLISHED_AT).use {
-                it.setString(1, kandidatStatus.uuid.toString())
+                it.setString(1, kandidat.status.uuid.toString())
                 val rowCount = it.executeUpdate()
                 if (rowCount != 1) {
                     throw SQLException("Expected a single row to be updated, got update count $rowCount")
@@ -171,19 +169,18 @@ class KartleggingssporsmalRepository(
 
     override suspend fun createKandidatStatusendring(
         kandidat: KartleggingssporsmalKandidat,
-        kandidatStatusendring: KartleggingssporsmalKandidatStatusendring,
-    ): KartleggingssporsmalKandidatStatusendring =
+    ): KartleggingssporsmalKandidat =
         database.connection.use { connection ->
             val pKandidat = connection.getKandidat(kandidat.personident)
                 ?: throw NoSuchElementException("Kandidat med UUID ${kandidat.uuid} finnes ikke i databasen")
-            val pStatusendring = connection.createStatusendring(kandidatStatusendring = kandidatStatusendring, kandidatId = pKandidat.id)
+            connection.createStatusendring(kandidat = kandidat, kandidatId = pKandidat.id)
                 .toKartleggingssporsmalKandidatStatusendring()
             connection.updateKandidatStatus(
                 kandidatUuid = kandidat.uuid,
-                status = kandidatStatusendring.status,
+                status = kandidat.status.status,
             )
             connection.commit()
-            pStatusendring
+            kandidat
         }
 
     private fun Connection.createKandidat(kandidat: KartleggingssporsmalKandidat, stoppunktId: Int): PKartleggingssporsmalKandidat =
@@ -193,7 +190,7 @@ class KartleggingssporsmalRepository(
             it.setObject(3, kandidat.createdAt)
             it.setString(4, kandidat.personident.value)
             it.setInt(5, stoppunktId)
-            it.setString(6, kandidat.status.name)
+            it.setString(6, kandidat.status.status.name)
             it.setObject(7, kandidat.varsletAt)
             it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
         }
@@ -215,17 +212,20 @@ class KartleggingssporsmalRepository(
     }
 
     private fun Connection.createStatusendring(
-        kandidatStatusendring: KartleggingssporsmalKandidatStatusendring,
+        kandidat: KartleggingssporsmalKandidat,
         kandidatId: Int,
     ): PKartleggingssporsmalKandidatStatusendring =
         this.prepareStatement(CREATE_KANDIDAT_STATUSENDRING).use {
-            it.setString(1, kandidatStatusendring.uuid.toString())
+            it.setString(1, kandidat.uuid.toString())
             it.setInt(2, kandidatId)
-            it.setObject(3, kandidatStatusendring.createdAt)
-            it.setString(4, kandidatStatusendring.status.name)
-            it.setObject(5, kandidatStatusendring.publishedAt)
-            it.setObject(6, kandidatStatusendring.svarAt)
-            it.setString(7, kandidatStatusendring.veilederident)
+            it.setObject(3, kandidat.createdAt)
+            it.setString(4, kandidat.status.status.name)
+            it.setObject(5, kandidat.status.publishedAt)
+            it.setObject(6, if (kandidat.status is KartleggingssporsmalKandidatStatusendring.SvarMottatt) kandidat.status.svarAt else null)
+            it.setString(
+                7,
+                if (kandidat.status is KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet) kandidat.status.veilederident else null
+            )
             it.executeQuery()
                 .toList { toPKartleggingssporsmalKandidatStatusendring() }
                 .single()

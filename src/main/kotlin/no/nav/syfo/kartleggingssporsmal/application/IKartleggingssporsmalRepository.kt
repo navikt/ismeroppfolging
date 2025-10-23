@@ -17,14 +17,11 @@ interface IKartleggingssporsmalRepository {
         stoppunktId: Int,
     ): KartleggingssporsmalKandidat
 
-    suspend fun createKandidatStatusendring(
-        kandidat: KartleggingssporsmalKandidat,
-        kandidatStatusendring: KartleggingssporsmalKandidatStatusendring,
-    ): KartleggingssporsmalKandidatStatusendring
+    suspend fun createKandidatStatusendring(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat
 
     suspend fun markStoppunktAsProcessed(stoppunktId: Int)
     suspend fun getUnprocessedStoppunkter(): List<Pair<Int, KartleggingssporsmalStoppunkt>>
-    suspend fun updatePublishedAtForKandidatStatusendring(kandidatStatus: KartleggingssporsmalKandidatStatusendring)
+    suspend fun updatePublishedAtForKandidatStatusendring(kandidat: KartleggingssporsmalKandidat)
     suspend fun updateVarsletAtForKandidat(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat
     fun getNotJournalforteKandidater(): List<KartleggingssporsmalKandidat>
     fun updateJournalpostidForKandidat(kandidat: KartleggingssporsmalKandidat, journalpostId: JournalpostId)
