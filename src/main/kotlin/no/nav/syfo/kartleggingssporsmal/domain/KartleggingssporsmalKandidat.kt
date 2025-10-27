@@ -5,6 +5,14 @@ import no.nav.syfo.shared.util.nowUTC
 import java.time.OffsetDateTime
 import java.util.*
 
+// Refaktorering av domenet
+//
+// status: KartleggingssporsmalKandidatStatusendring
+// - Får ikke en komplett representasjon av domenet uten.
+//
+// Når denne kobles på må også dette representeres i databasen.
+//
+
 /**
  * KartleggingssporsmalKandidat representerer en kandidat for kartleggingsspørsmål.
  *
@@ -14,7 +22,7 @@ import java.util.*
  * @property varsletAt tidspunktet kandidaten fikk tilsendt kartleggingsspørsmål
  * @property journalpostId er id'en fra journalposten som ble opprettet når kartleggingsspørsmål ble sendt
  */
-data class KartleggingssporsmalKandidat private constructor(
+data class KartleggingssporsmalKandidat(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val personident: Personident,
@@ -22,19 +30,6 @@ data class KartleggingssporsmalKandidat private constructor(
     val varsletAt: OffsetDateTime?,
     val journalpostId: JournalpostId? = null,
 ) {
-    constructor(
-        personident: Personident,
-        status: KandidatStatus,
-    ) : this(
-        uuid = UUID.randomUUID(),
-        createdAt = nowUTC(),
-        personident = personident,
-        status = status,
-        varsletAt = null,
-    )
-
-    fun registrerStatusEndring(statusEndring: KartleggingssporsmalKandidatStatusendring) =
-        this.copy(status = statusEndring.status)
 
     fun registrerSvarMottatt(svarAt: OffsetDateTime) =
         this.copy(
@@ -49,6 +44,18 @@ data class KartleggingssporsmalKandidat private constructor(
     }
 
     companion object {
+
+        fun create(
+            personident: Personident,
+        ) = KartleggingssporsmalKandidat(
+            uuid = UUID.randomUUID(),
+            createdAt = nowUTC(),
+            personident = personident,
+            status = KartleggingssporsmalKandidatStatusendring.Kandidat(),
+            varsletAt = null,
+            journalpostId = null,
+        )
+
         fun createFromDatabase(
             uuid: UUID,
             createdAt: OffsetDateTime,
@@ -60,7 +67,17 @@ data class KartleggingssporsmalKandidat private constructor(
             uuid = uuid,
             createdAt = createdAt,
             personident = personident,
-            status = KandidatStatus.valueOf(status),
+            status =
+                when (KandidatStatus.valueOf(status)) {
+                    KandidatStatus.KANDIDAT -> KartleggingssporsmalKandidatStatusendring.Kandidat()
+                    KandidatStatus.SVAR_MOTTATT -> KartleggingssporsmalKandidatStatusendring.SvarMottatt(
+                        svarAt = varsletAt
+                            ?: throw IllegalArgumentException("varsletAt kan ikke være null når status er SVAR_MOTTATT")
+                    )
+                    KandidatStatus.FERDIGBEHANDLET -> KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet(
+                        veilederident = "UNKNOWN",
+                    )
+                },
             varsletAt = varsletAt,
             journalpostId = journalpostId,
         )

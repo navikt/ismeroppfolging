@@ -50,13 +50,15 @@ class KartleggingssporsmalRepository(
         }
     }
 
+    // TODO: Denne må også inneholde data fra KARTLEGGINGSSPORSMAL_KANDIDAT_STATUSENDRING tabell
     override suspend fun getKandidat(uuid: UUID): KartleggingssporsmalKandidat? {
         return database.connection.use { connection ->
-            connection.prepareStatement(GET_KANDIDAT_BY_UUID).use {
+            val kandidatResult = connection.prepareStatement(GET_KANDIDAT_BY_UUID).use {
                 it.setString(1, uuid.toString())
                 it.executeQuery().toList { toPKartleggingssporsmalKandidat() }
-            }
-                .firstOrNull()
+            }.firstOrNull()
+            val statusendringResult = connection.getKandidatStatusendringer(uuid).firstOrNull()
+            kandidatResult
                 ?.let { kandidat ->
                     KartleggingssporsmalKandidat.createFromDatabase(
                         uuid = kandidat.uuid,
@@ -70,15 +72,11 @@ class KartleggingssporsmalRepository(
         }
     }
 
-    override suspend fun getKandidatStatusendringer(kandidatUuid: UUID): List<KartleggingssporsmalKandidatStatusendring> {
-        return database.connection.use { connection ->
-            connection.prepareStatement(GET_KANDIDAT_STATUSENDRINGER_BY_KANDIDAT_UUID).use {
-                it.setString(1, kandidatUuid.toString())
-                it.executeQuery()
-                    .toList { toPKartleggingssporsmalKandidatStatusendring().toKartleggingssporsmalKandidatStatusendring() }
-            }
+    override suspend fun getKandidatStatusendringer(kandidatUuid: UUID): List<KartleggingssporsmalKandidatStatusendring> =
+        database.connection.use { connection ->
+            connection.getKandidatStatusendringer(kandidatUuid)
+                .map { it.toKartleggingssporsmalKandidatStatusendring() }
         }
-    }
 
     override suspend fun createKandidatAndMarkStoppunktAsProcessed(
         kandidat: KartleggingssporsmalKandidat,
@@ -201,6 +199,13 @@ class KartleggingssporsmalRepository(
             it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.firstOrNull()
         }
 
+    private fun Connection.getKandidatStatusendringer(kandidatUuid: UUID): List<PKartleggingssporsmalKandidatStatusendring> =
+        this.prepareStatement(GET_KANDIDAT_STATUSENDRINGER_BY_KANDIDAT_UUID).use {
+            it.setString(1, kandidatUuid.toString())
+            it.executeQuery()
+                .toList { toPKartleggingssporsmalKandidatStatusendring() }
+        }
+
     private fun Connection.markStoppunktAsProcessed(stoppunktId: Int) {
         this.prepareStatement(SET_STOPPUNKT_PROCESSED).use {
             it.setInt(1, stoppunktId)
@@ -234,16 +239,12 @@ class KartleggingssporsmalRepository(
     private fun Connection.updateKandidatStatus(
         kandidatUuid: UUID,
         status: KandidatStatus,
-    ) {
+    ): PKartleggingssporsmalKandidat =
         this.prepareStatement(UPDATE_KANDIDAT_STATUS).use {
             it.setString(1, status.name)
             it.setString(2, kandidatUuid.toString())
-            val updated = it.executeUpdate()
-            if (updated != 1) {
-                throw SQLException("Expected a single row to be updated, got update count $updated")
-            }
+            it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
         }
-    }
 
     companion object {
         private const val CREATE_STOPPUNKT = """

@@ -12,8 +12,8 @@ import no.nav.syfo.infrastructure.clients.pdfgen.BrevData
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfModel
 import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
-import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFromKafka
 import no.nav.syfo.kartleggingssporsmal.generators.generateJournalpostRequest
@@ -31,6 +31,7 @@ import no.nav.syfo.shared.infrastructure.database.updateKandidatAsVarslet
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import no.nav.syfo.shared.util.toLocalDateOslo
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -90,8 +91,8 @@ class JournalforingServiceTest {
             kartleggingssporsmalRepository.getKandidat(ARBEIDSTAKER_PERSONIDENT)
         }
 
-        assertEquals(KandidatStatus.KANDIDAT, firstKandidat!!.status)
-        testDatabase.updateKandidatAsVarslet(firstKandidat)
+        assertTrue(firstKandidat?.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
+        testDatabase.updateKandidatAsVarslet(firstKandidat!!)
 
         val varsletKandidat = runBlocking {
             kartleggingssporsmalRepository.getKandidat(firstKandidat.uuid)!!
@@ -134,10 +135,7 @@ class JournalforingServiceTest {
 
     @Test
     fun `feiler når kall til pdl feiler`() {
-        val kandidat = KartleggingssporsmalKandidat(
-            personident = UserConstants.ARBEIDSTAKER_PERSONIDENT_PDL_FAILS,
-            status = KandidatStatus.KANDIDAT,
-        )
+        val kandidat = KartleggingssporsmalKandidat.create(personident = UserConstants.ARBEIDSTAKER_PERSONIDENT_PDL_FAILS)
 
         val result = runBlocking {
             journalforingService.journalfor(

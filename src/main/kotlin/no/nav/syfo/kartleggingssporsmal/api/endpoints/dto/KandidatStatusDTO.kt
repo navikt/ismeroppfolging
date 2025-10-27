@@ -5,7 +5,7 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
 import no.nav.syfo.shared.domain.Personident
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 
 data class KandidatStatusDTO(
     val kandidatUuid: UUID,
@@ -23,18 +23,20 @@ data class KartleggingVurderingDTO(
 )
 
 fun KartleggingssporsmalKandidat.toKandidatStatusDTO(
-    kandidatStatusListe: List<KartleggingssporsmalKandidatStatusendring>
+    kandidatStatusListe: List<KartleggingssporsmalKandidatStatusendring>,
 ): KandidatStatusDTO = KandidatStatusDTO(
     kandidatUuid = this.uuid,
     personident = this.personident,
     varsletAt = this.varsletAt,
-    svarAt = kandidatStatusListe.firstOrNull { it.status == KandidatStatus.SVAR_MOTTATT }?.svarAt,
-    status = this.status,
-    statusAt = kandidatStatusListe.firstOrNull { it.status == this.status }?.createdAt ?: this.createdAt,
-    vurdering = kandidatStatusListe.firstOrNull { it.status == KandidatStatus.FERDIGBEHANDLET }?.let {
-        KartleggingVurderingDTO(
-            vurdertAt = it.createdAt,
-            vurdertBy = it.veilederident!!,
-        )
-    },
+    svarAt = kandidatStatusListe.firstOrNull { it is KartleggingssporsmalKandidatStatusendring.SvarMottatt }
+        ?.let { (it as KartleggingssporsmalKandidatStatusendring.SvarMottatt).svarAt },
+    status = this.status.status,
+    statusAt = this.createdAt,
+    vurdering = kandidatStatusListe.firstOrNull { it is KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet }
+        ?.let {
+            KartleggingVurderingDTO(
+                vurdertAt = it.createdAt,
+                vurdertBy = (it as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet).veilederident,
+            )
+        },
 )

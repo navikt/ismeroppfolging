@@ -33,7 +33,7 @@ sealed class KartleggingssporsmalKandidatStatusendring(
         override val uuid: UUID,
         override val createdAt: OffsetDateTime,
         override val publishedAt: OffsetDateTime?,
-        val svarAt: OffsetDateTime?,
+        val svarAt: OffsetDateTime,
     ) : KartleggingssporsmalKandidatStatusendring(
         uuid,
         createdAt,
@@ -63,7 +63,7 @@ sealed class KartleggingssporsmalKandidatStatusendring(
         publishedAt = null,
     ) {
         override val status: KandidatStatus = KandidatStatus.FERDIGBEHANDLET
-        
+
         constructor(veilederident: String) : this(
             uuid = UUID.randomUUID(),
             createdAt = nowUTC(),
@@ -93,7 +93,7 @@ sealed class KartleggingssporsmalKandidatStatusendring(
                         uuid = uuid,
                         createdAt = createdAt,
                         publishedAt = publishedAt,
-                        svarAt = svarAt,
+                        svarAt = svarAt!!,
                     )
                 KandidatStatus.FERDIGBEHANDLET.name ->
                     Ferdigbehandlet(
