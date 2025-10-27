@@ -46,7 +46,7 @@ data class KartleggingssporsmalKandidatStatusRecord(
                 kandidatUuid = kandidat.uuid,
                 personident = kandidat.personident.value,
                 createdAt = kandidat.status.createdAt,
-                status = kandidat.status.status.name,
+                status = kandidat.status.kandidatStatus.name,
             )
     }
 }

@@ -412,7 +412,6 @@ class KartleggingssporsmalServiceTest {
                 val stoppunkt = results.first().getOrThrow()
                 val kandidat = database.getKandidatByStoppunktUUID(stoppunkt.uuid)!!
                 val kandidatStatusList = kartleggingssporsmalRepository.getKandidatStatusendringer(kandidat.uuid)
-                assertEquals(1, kandidatStatusList.size)
                 val kandidatStatus = kandidatStatusList.first()
 
                 assertEquals(oppfolgingstilfelle.personident, kandidat.personident)
@@ -581,17 +580,21 @@ class KartleggingssporsmalServiceTest {
                     kandidat = kandidat,
                     stoppunktId = createdStoppunkt.id,
                 )
-                val statusendringSvarIkkeMottatt = kartleggingssporsmalRepository.getKandidatStatusendringer(createdKandidat.uuid).first()
-                assertTrue(statusendringSvarIkkeMottatt !is KartleggingssporsmalKandidatStatusendring.SvarMottatt)
+                assertTrue(kandidat.status !is KartleggingssporsmalKandidatStatusendring.SvarMottatt)
 
+                val svarAt = OffsetDateTime.now().minusDays(1)
                 kartleggingssporsmalService.registrerSvar(
                     kandidatUuid = createdKandidat.uuid,
-                    svarAt = OffsetDateTime.now(),
+                    svarAt = svarAt,
                     svarId = UUID.randomUUID(),
                 )
 
                 val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
                 assertTrue(fetchedKandidat?.status is KartleggingssporsmalKandidatStatusendring.SvarMottatt)
+                assertEquals(
+                    (fetchedKandidat?.status as KartleggingssporsmalKandidatStatusendring.SvarMottatt).svarAt.toLocalDateOslo(),
+                    svarAt.toLocalDateOslo()
+                )
 
                 val producerRecordSlotKandidat = slot<ProducerRecord<String, KartleggingssporsmalKandidatStatusRecord>>()
                 val producerRecordSlotVarsel = slot<ProducerRecord<String, EsyfovarselHendelse>>()
@@ -644,7 +647,7 @@ class KartleggingssporsmalServiceTest {
 
                 val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
                 val statusendringer = kartleggingssporsmalRepository.getKandidatStatusendringer(createdKandidat.uuid)
-                assertEquals(2, statusendringer.filter { it.status == KandidatStatus.SVAR_MOTTATT }.size)
+                assertEquals(2, statusendringer.filter { it.kandidatStatus == KandidatStatus.SVAR_MOTTATT }.size)
 
                 assertTrue(fetchedKandidat?.status is KartleggingssporsmalKandidatStatusendring.SvarMottatt)
                 assertEquals(
@@ -707,25 +710,26 @@ class KartleggingssporsmalServiceTest {
                     svarAt = OffsetDateTime.now(),
                     svarId = UUID.randomUUID(),
                 )
+                val ferdigbehandletBy = UserConstants.VEILEDER_IDENT
                 val returnedKandidat = kartleggingssporsmalService.registrerFerdigbehandlet(
                     uuid = createdKandidat.uuid,
-                    veilederident = UserConstants.VEILEDER_IDENT,
+                    veilederident = ferdigbehandletBy,
                 )
                 assertEquals(createdKandidat.uuid, returnedKandidat.uuid)
                 assertEquals(ARBEIDSTAKER_PERSONIDENT, returnedKandidat.personident)
                 assertTrue(returnedKandidat.status is KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet)
+                assertEquals(
+                    ferdigbehandletBy,
+                    (returnedKandidat.status as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet).veilederident
+                )
 
                 val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
-                val statusendring = kartleggingssporsmalRepository.getKandidatStatusendringer(createdKandidat.uuid).first()
                 assertTrue(fetchedKandidat?.status is KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet)
-                assertEquals(KandidatStatus.FERDIGBEHANDLET, statusendring.status)
-                //TODO Legg til
-//                assertEquals(
-//                    UserConstants.VEILEDER_IDENT,
-//                    (fetchedKandidat?.status as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet).veilederident
-//                )
-
-                assertNotNull(statusendring.publishedAt)
+                assertEquals(
+                    UserConstants.VEILEDER_IDENT,
+                    (fetchedKandidat?.status as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet).veilederident
+                )
+                assertNotNull(fetchedKandidat.status.publishedAt)
                 val producerRecordSlot = mutableListOf<ProducerRecord<String, KartleggingssporsmalKandidatStatusRecord>>()
                 verify(exactly = 2) { mockKandidatProducer.send(capture(producerRecordSlot)) }
                 val lastRecord = producerRecordSlot.last().value()

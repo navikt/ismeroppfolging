@@ -4,12 +4,25 @@ import no.nav.syfo.shared.util.nowUTC
 import java.time.OffsetDateTime
 import java.util.*
 
+/**
+ * KartleggingssporsmalKandidatStatusendring representerer en status for en kandidat til kartleggingsspørsmål [KartleggingssporsmalKandidat].
+ *
+ * Det finnes tre typer statusendringer:
+ * - [Kandidat]: Når en person blir opprettet som kandidat til å motta kartleggingsspørsmål.
+ * - [SvarMottatt]: Når kandidaten har sendt inn svar på kartleggingsspørsmålene.
+ * - [Ferdigbehandlet]: Når en veileder har ferdigbehandlet kandidatens svar.
+ *
+ * Felles felt:
+ * @property uuid Unik identifikator for statusendringen.
+ * @property createdAt Tidspunktet statusendringen ble opprettet.
+ * @property publishedAt Tidspunktet statusendringen ble publisert på event systemet.
+ */
 sealed class KartleggingssporsmalKandidatStatusendring(
     open val uuid: UUID,
     open val createdAt: OffsetDateTime,
     open val publishedAt: OffsetDateTime?,
 ) {
-    abstract val status: KandidatStatus
+    abstract val kandidatStatus: KandidatStatus
 
     data class Kandidat internal constructor(
         override val uuid: UUID,
@@ -20,7 +33,7 @@ sealed class KartleggingssporsmalKandidatStatusendring(
         createdAt,
         publishedAt,
     ) {
-        override val status: KandidatStatus = KandidatStatus.KANDIDAT
+        override val kandidatStatus: KandidatStatus = KandidatStatus.KANDIDAT
 
         constructor() : this(
             uuid = UUID.randomUUID(),
@@ -39,7 +52,7 @@ sealed class KartleggingssporsmalKandidatStatusendring(
         createdAt,
         publishedAt,
     ) {
-        override val status: KandidatStatus = KandidatStatus.SVAR_MOTTATT
+        override val kandidatStatus: KandidatStatus = KandidatStatus.SVAR_MOTTATT
 
         constructor(
             svarAt: OffsetDateTime,
@@ -49,7 +62,6 @@ sealed class KartleggingssporsmalKandidatStatusendring(
             publishedAt = null,
             svarAt = svarAt,
         )
-
     }
 
     data class Ferdigbehandlet internal constructor(
@@ -58,11 +70,11 @@ sealed class KartleggingssporsmalKandidatStatusendring(
         override val publishedAt: OffsetDateTime?,
         val veilederident: String,
     ) : KartleggingssporsmalKandidatStatusendring(
-        uuid = UUID.randomUUID(),
-        createdAt = nowUTC(),
-        publishedAt = null,
+        uuid,
+        createdAt,
+        publishedAt,
     ) {
-        override val status: KandidatStatus = KandidatStatus.FERDIGBEHANDLET
+        override val kandidatStatus: KandidatStatus = KandidatStatus.FERDIGBEHANDLET
 
         constructor(veilederident: String) : this(
             uuid = UUID.randomUUID(),
@@ -70,39 +82,5 @@ sealed class KartleggingssporsmalKandidatStatusendring(
             publishedAt = null,
             veilederident = veilederident,
         )
-    }
-
-    companion object {
-        fun createFromDatabase(
-            uuid: UUID,
-            createdAt: OffsetDateTime,
-            status: String,
-            publishedAt: OffsetDateTime?,
-            svarAt: OffsetDateTime?,
-            veilederident: String?,
-        ) =
-            when (status) {
-                KandidatStatus.KANDIDAT.name ->
-                    Kandidat(
-                        uuid = uuid,
-                        createdAt = createdAt,
-                        publishedAt = publishedAt,
-                    )
-                KandidatStatus.SVAR_MOTTATT.name ->
-                    SvarMottatt(
-                        uuid = uuid,
-                        createdAt = createdAt,
-                        publishedAt = publishedAt,
-                        svarAt = svarAt!!,
-                    )
-                KandidatStatus.FERDIGBEHANDLET.name ->
-                    Ferdigbehandlet(
-                        uuid = uuid,
-                        createdAt = createdAt,
-                        publishedAt = publishedAt,
-                        veilederident = veilederident!!,
-                    )
-                else -> throw IllegalArgumentException("Ukjent statusendring: $status")
-            }
     }
 }

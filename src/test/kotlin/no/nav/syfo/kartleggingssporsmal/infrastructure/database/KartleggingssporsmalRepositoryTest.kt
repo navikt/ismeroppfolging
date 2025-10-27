@@ -203,6 +203,32 @@ class KartleggingssporsmalRepositoryTest {
     }
 
     @Test
+    fun `getKandidat by personident should retrieve the full domain object`() {
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+            tilfelleStart = LocalDate.now().minusDays(6 * 7),
+            antallSykedager = 6 * 7 + 1,
+        )
+        val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+        assertNotNull(kartleggingssporsmalStoppunkt)
+
+        runBlocking {
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
+            val createdStoppunkter = database.getKartleggingssporsmalStoppunkt()
+
+            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkter[0].id,
+            )
+
+            val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(ARBEIDSTAKER_PERSONIDENT)
+            assertNotNull(fetchedKandidat)
+            assertEquals(fetchedKandidat.uuid, kandidat.uuid)
+            assertTrue(fetchedKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
+        }
+    }
+
+    @Test
     fun `updateSvarForKandidat should update the svarAt field for the kandidat in the database`() {
         val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now().minusDays(6 * 7),

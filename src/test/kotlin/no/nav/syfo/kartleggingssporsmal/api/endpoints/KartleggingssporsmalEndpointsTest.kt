@@ -70,6 +70,7 @@ class KartleggingssporsmalEndpointsTest {
             val client = setupApiAndClient(kartleggingssporsmalServiceMock)
             val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
             coEvery { kartleggingssporsmalServiceMock.getKandidat(ARBEIDSTAKER_PERSONIDENT) } returns kandidat
+            coEvery { kartleggingssporsmalServiceMock.getKandidatStatus(kandidat.uuid) } returns listOf(kandidat.status)
 
             val response = client.get(kartleggingssporsmalUrl) {
                 bearerAuth(validToken)

@@ -5,14 +5,6 @@ import no.nav.syfo.shared.util.nowUTC
 import java.time.OffsetDateTime
 import java.util.*
 
-// Refaktorering av domenet
-//
-// status: KartleggingssporsmalKandidatStatusendring
-// - Får ikke en komplett representasjon av domenet uten.
-//
-// Når denne kobles på må også dette representeres i databasen.
-//
-
 /**
  * KartleggingssporsmalKandidat representerer en kandidat for kartleggingsspørsmål.
  *
@@ -31,20 +23,26 @@ data class KartleggingssporsmalKandidat(
     val journalpostId: JournalpostId? = null,
 ) {
 
-    fun registrerSvarMottatt(svarAt: OffsetDateTime) =
-        this.copy(
-            status = KartleggingssporsmalKandidatStatusendring.SvarMottatt(svarAt = svarAt),
-        )
+    fun registrerSvarMottatt(svarAt: OffsetDateTime): KartleggingssporsmalKandidat {
+        if (this.status is KartleggingssporsmalKandidatStatusendring.Kandidat ||
+            this.status is KartleggingssporsmalKandidatStatusendring.SvarMottatt
+        ) {
+            return this.copy(
+                status = KartleggingssporsmalKandidatStatusendring.SvarMottatt(svarAt = svarAt),
+            )
+        } else {
+            throw IllegalArgumentException("Kandidat må være Kandidat eller SvarMottatt for å registrere SvarMottatt")
+        }
+    }
 
     fun ferdigbehandleVurdering(veilederident: String): KartleggingssporsmalKandidat {
         if (this.status !is KartleggingssporsmalKandidatStatusendring.SvarMottatt) {
-            throw IllegalArgumentException("Kandidat er allerede ferdig behandlet, eller har ikke mottatt svar enda")
+            throw IllegalArgumentException("Kandidat må ha svart på kartleggingsspørsmål for at det skal være mulig å ferdigbehandle vurdering")
         }
         return this.copy(status = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet(veilederident = veilederident))
     }
 
     companion object {
-
         fun create(
             personident: Personident,
         ) = KartleggingssporsmalKandidat(
@@ -54,32 +52,6 @@ data class KartleggingssporsmalKandidat(
             status = KartleggingssporsmalKandidatStatusendring.Kandidat(),
             varsletAt = null,
             journalpostId = null,
-        )
-
-        fun createFromDatabase(
-            uuid: UUID,
-            createdAt: OffsetDateTime,
-            personident: Personident,
-            status: String,
-            varsletAt: OffsetDateTime?,
-            journalpostId: JournalpostId?,
-        ) = KartleggingssporsmalKandidat(
-            uuid = uuid,
-            createdAt = createdAt,
-            personident = personident,
-            status =
-                when (KandidatStatus.valueOf(status)) {
-                    KandidatStatus.KANDIDAT -> KartleggingssporsmalKandidatStatusendring.Kandidat()
-                    KandidatStatus.SVAR_MOTTATT -> KartleggingssporsmalKandidatStatusendring.SvarMottatt(
-                        svarAt = varsletAt
-                            ?: throw IllegalArgumentException("varsletAt kan ikke være null når status er SVAR_MOTTATT")
-                    )
-                    KandidatStatus.FERDIGBEHANDLET -> KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet(
-                        veilederident = "UNKNOWN",
-                    )
-                },
-            varsletAt = varsletAt,
-            journalpostId = journalpostId,
         )
     }
 }

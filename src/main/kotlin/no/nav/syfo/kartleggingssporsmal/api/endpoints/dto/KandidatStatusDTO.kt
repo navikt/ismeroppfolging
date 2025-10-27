@@ -14,10 +14,10 @@ data class KandidatStatusDTO(
     val svarAt: OffsetDateTime?,
     val status: KandidatStatus,
     val statusAt: OffsetDateTime,
-    val vurdering: KartleggingVurderingDTO?,
+    val vurdering: VurderingDTO?,
 )
 
-data class KartleggingVurderingDTO(
+data class VurderingDTO(
     val vurdertAt: OffsetDateTime,
     val vurdertBy: String,
 )
@@ -30,11 +30,11 @@ fun KartleggingssporsmalKandidat.toKandidatStatusDTO(
     varsletAt = this.varsletAt,
     svarAt = kandidatStatusListe.firstOrNull { it is KartleggingssporsmalKandidatStatusendring.SvarMottatt }
         ?.let { (it as KartleggingssporsmalKandidatStatusendring.SvarMottatt).svarAt },
-    status = this.status.status,
-    statusAt = this.createdAt,
+    status = this.status.kandidatStatus,
+    statusAt = kandidatStatusListe.maxBy { it.createdAt }.createdAt,
     vurdering = kandidatStatusListe.firstOrNull { it is KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet }
         ?.let {
-            KartleggingVurderingDTO(
+            VurderingDTO(
                 vurdertAt = it.createdAt,
                 vurdertBy = (it as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet).veilederident,
             )
