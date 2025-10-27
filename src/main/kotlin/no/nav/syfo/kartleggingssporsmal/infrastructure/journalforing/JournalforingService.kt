@@ -18,6 +18,7 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.dokarkiv.dto.Jour
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.dokarkiv.dto.VariantformatType
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.PdlClient
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 
 class JournalforingService(
     private val kartleggingssporsmalRepository: IKartleggingssporsmalRepository,
@@ -45,9 +46,8 @@ class JournalforingService(
         val navn = pdlClient.getPerson(kandidat.personident).getOrNull()?.fullName
             ?: throw IllegalStateException("Klarte ikke hente navn fra PDL for personident ${kandidat.personident}")
         val pdf = pdfClient.createKartleggingPdf(
-            payload = PdfModel.KartleggingPdfModel(
-                mottakerFodselsnummer = kandidat.personident,
-                mottakerNavn = navn,
+            payload = PdfModel(
+                datoSendt = LocalDate.now(),
             ),
             callId = kandidat.uuid.toString(),
         )
