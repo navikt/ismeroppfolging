@@ -9,6 +9,7 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
+import no.nav.syfo.infrastructure.clients.pdfgen.PdfModel
 import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
@@ -27,6 +28,7 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.mock.mockedJournalpostId
 import no.nav.syfo.shared.infrastructure.database.dropData
 import no.nav.syfo.shared.infrastructure.database.updateKandidatAsVarslet
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
+import no.nav.syfo.shared.util.toLocalDateOslo
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -90,12 +92,24 @@ class JournalforingServiceTest {
         assertEquals(KandidatStatus.KANDIDAT, firstKandidat!!.status)
         testDatabase.updateKandidatAsVarslet(firstKandidat)
 
+        val varsletKandidat = runBlocking {
+            kartleggingssporsmalRepository.getKandidat(firstKandidat.uuid)!!
+        }
+
         val journalpostId = runBlocking {
             journalforingService.journalforKandidater()
         }.first().getOrThrow()
 
         assertEquals(journalpostId, mockedJournalpostId)
 
+        coVerify(exactly = 1) {
+            pdfClientMock.createKartleggingPdf(
+                payload = PdfModel(
+                    createdAt = varsletKandidat.varsletAt!!.toLocalDateOslo().format(PdfModel.formatter)
+                ),
+                callId = any(),
+            )
+        }
         coVerify(exactly = 1) {
             dokarkivMock.journalfor(
                 journalpostRequest = generateJournalpostRequest(

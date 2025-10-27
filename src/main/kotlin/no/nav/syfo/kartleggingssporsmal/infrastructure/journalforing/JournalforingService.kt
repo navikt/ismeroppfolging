@@ -17,6 +17,7 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.dokarkiv.dto.Filt
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.dokarkiv.dto.JournalpostRequest
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.dokarkiv.dto.VariantformatType
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.PdlClient
+import no.nav.syfo.shared.util.toLocalDateOslo
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 
@@ -47,7 +48,7 @@ class JournalforingService(
             ?: throw IllegalStateException("Klarte ikke hente navn fra PDL for personident ${kandidat.personident}")
         val pdf = pdfClient.createKartleggingPdf(
             payload = PdfModel(
-                datoSendt = LocalDate.now(),
+                datoSendt = kandidat.varsletAt?.toLocalDateOslo() ?: LocalDate.now(),
             ),
             callId = kandidat.uuid.toString(),
         )

@@ -3,7 +3,7 @@ package no.nav.syfo.infrastructure.clients.pdfgen
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-class PdfModel(
+data class PdfModel(
     val createdAt: String,
 ) {
     constructor(
@@ -13,6 +13,6 @@ class PdfModel(
     )
 
     companion object {
-        private val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
     }
 }
