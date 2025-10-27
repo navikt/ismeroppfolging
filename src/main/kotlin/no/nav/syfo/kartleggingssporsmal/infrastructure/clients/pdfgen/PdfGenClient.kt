@@ -17,7 +17,7 @@ class PdfGenClient(
 ) {
 
     suspend fun createKartleggingPdf(
-        payload: PdfModel.KartleggingPdfModel,
+        payload: PdfModel,
         callId: String,
     ): ByteArray =
         getPdf(
