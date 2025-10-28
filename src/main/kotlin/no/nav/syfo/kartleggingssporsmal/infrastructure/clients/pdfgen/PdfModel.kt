@@ -4,15 +4,21 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 data class PdfModel(
-    val createdAt: String,
+    val brevdata: BrevData,
 ) {
     constructor(
         datoSendt: LocalDate
     ) : this(
-        createdAt = datoSendt.format(formatter),
+        brevdata = BrevData(
+            createdAt = datoSendt.format(formatter),
+        ),
     )
 
     companion object {
         val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
     }
 }
+
+data class BrevData(
+    val createdAt: String,
+)

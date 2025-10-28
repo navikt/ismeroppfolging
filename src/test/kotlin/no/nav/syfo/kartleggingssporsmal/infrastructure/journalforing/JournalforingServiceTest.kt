@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
+import no.nav.syfo.infrastructure.clients.pdfgen.BrevData
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfModel
 import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
@@ -105,7 +106,9 @@ class JournalforingServiceTest {
         coVerify(exactly = 1) {
             pdfClientMock.createKartleggingPdf(
                 payload = PdfModel(
-                    createdAt = varsletKandidat.varsletAt!!.toLocalDateOslo().format(PdfModel.formatter)
+                    brevdata = BrevData(
+                        createdAt = varsletKandidat.varsletAt!!.toLocalDateOslo().format(PdfModel.formatter)
+                    ),
                 ),
                 callId = any(),
             )
