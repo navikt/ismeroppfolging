@@ -334,7 +334,7 @@ class KartleggingssporsmalRepository(
             """
                  SELECT *
                  FROM KARTLEGGINGSSPORSMAL_KANDIDAT
-                 WHERE journalpost_id IS NULL AND status = 'KANDIDAT' AND varslet_at IS NOT NULL
+                 WHERE journalpost_id IS NULL AND varslet_at IS NOT NULL
                  ORDER BY created_at ASC
             """
 
