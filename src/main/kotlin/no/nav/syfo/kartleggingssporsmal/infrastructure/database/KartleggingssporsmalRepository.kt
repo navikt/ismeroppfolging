@@ -71,10 +71,12 @@ class KartleggingssporsmalRepository(
     }
 
     override suspend fun getKandidatStatusendringer(kandidatUuid: UUID): List<KartleggingssporsmalKandidatStatusendring> {
-        return database.connection.prepareStatement(GET_KANDIDAT_STATUSENDRINGER_BY_KANDIDAT_UUID).use {
-            it.setString(1, kandidatUuid.toString())
-            it.executeQuery()
-                .toList { toPKartleggingssporsmalKandidatStatusendring().toKartleggingssporsmalKandidatStatusendring() }
+        return database.connection.use { connection ->
+            connection.prepareStatement(GET_KANDIDAT_STATUSENDRINGER_BY_KANDIDAT_UUID).use {
+                it.setString(1, kandidatUuid.toString())
+                it.executeQuery()
+                    .toList { toPKartleggingssporsmalKandidatStatusendring().toKartleggingssporsmalKandidatStatusendring() }
+            }
         }
     }
 
