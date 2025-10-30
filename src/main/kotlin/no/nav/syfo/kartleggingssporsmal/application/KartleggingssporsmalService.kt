@@ -2,8 +2,11 @@ package no.nav.syfo.kartleggingssporsmal.application
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import no.nav.syfo.kartleggingssporsmal.domain.*
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
+import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.model.getAlder
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aResponseDTO
 import no.nav.syfo.shared.domain.Personident
@@ -93,26 +96,16 @@ class KartleggingssporsmalService(
                 }
 
                 if (isKandidat) {
-                    val kandidat = KartleggingssporsmalKandidat(
-                        personident = stoppunkt.personident,
-                        status = KandidatStatus.KANDIDAT
-                    )
+                    val kandidat = KartleggingssporsmalKandidat.create(personident = stoppunkt.personident)
                     val persistedKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                         kandidat = kandidat,
                         stoppunktId = stoppunktId,
                     )
                     if (isKandidatPublishingEnabled) {
-                        val statusEndring = kartleggingssporsmalRepository.getKandidatStatusendringer(
-                            persistedKandidat.uuid
-                        ).firstOrNull()
-                            ?: throw IllegalStateException("Klarte ikke finne statusendring for kandidat ${persistedKandidat.uuid}")
-                        if (
-                            kartleggingssporsmalKandidatProducer.send(
-                                kandidat = persistedKandidat,
-                                statusEndring = statusEndring,
-                            ).isSuccess
-                        ) {
-                            kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(statusEndring)
+                        kartleggingssporsmalKandidatProducer.send(
+                            kandidat = persistedKandidat,
+                        ).map {
+                            kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(persistedKandidat)
                             if (esyfoVarselProducer.sendKartleggingssporsmal(persistedKandidat).isSuccess) {
                                 kartleggingssporsmalRepository.updateVarsletAtForKandidat(persistedKandidat)
                             }
@@ -134,21 +127,14 @@ class KartleggingssporsmalService(
         if (existingKandidat == null) {
             log.error("Mottok svar på kandidat som ikke finnes, med uuid: $kandidatUuid og svarId: $svarId")
         } else {
-            val statusendring = KartleggingssporsmalKandidatStatusendring(
-                status = KandidatStatus.SVAR_MOTTATT,
-                svarAt = svarAt,
-            )
-            val kandidat = existingKandidat.registrerStatusEndring(statusendring)
-            val createdStatusendring = kartleggingssporsmalRepository.createKandidatStatusendring(
-                kandidat = kandidat,
-                kandidatStatusendring = statusendring,
-            )
-            kartleggingssporsmalKandidatProducer.send(kandidat, createdStatusendring)
+            val mottattSvarKandidat = existingKandidat.registrerSvarMottatt(svarAt)
+            kartleggingssporsmalRepository.createKandidatStatusendring(kandidat = mottattSvarKandidat)
+            kartleggingssporsmalKandidatProducer.send(mottattSvarKandidat)
                 .map { kandidat ->
-                    kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdStatusendring)
+                    kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(kandidat)
                 }
 
-            esyfoVarselProducer.ferdigstillKartleggingssporsmalVarsel(kandidat)
+            esyfoVarselProducer.ferdigstillKartleggingssporsmalVarsel(mottattSvarKandidat)
         }
     }
 
@@ -156,26 +142,16 @@ class KartleggingssporsmalService(
         uuid: UUID,
         veilederident: String,
     ): KartleggingssporsmalKandidat {
-        val existingKandidat = kartleggingssporsmalRepository.getKandidat(uuid)
+        val existingKandidat =
+            kartleggingssporsmalRepository.getKandidat(uuid) ?: throw IllegalArgumentException("Kandidat med uuid $uuid finnes ikke")
+        val ferdigbehandletKandidat = existingKandidat.ferdigbehandleVurdering(veilederident)
 
-        if (existingKandidat?.status != KandidatStatus.SVAR_MOTTATT) {
-            throw IllegalArgumentException("Kandidat finnes ikke, eller er allerede ferdig behandlet")
-        } else {
-            val statusendring = KartleggingssporsmalKandidatStatusendring(
-                status = KandidatStatus.FERDIGBEHANDLET,
-                veilederident = veilederident,
-            )
-            val updatedKandidat = existingKandidat.registrerStatusEndring(statusendring)
-            val createdStatusendring = kartleggingssporsmalRepository.createKandidatStatusendring(
-                kandidat = updatedKandidat,
-                kandidatStatusendring = statusendring,
-            )
-            kartleggingssporsmalKandidatProducer.send(updatedKandidat, createdStatusendring)
-                .map { kandidat ->
-                    kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdStatusendring)
-                }
-            return updatedKandidat
-        }
+        val updatedKandidat = kartleggingssporsmalRepository.createKandidatStatusendring(kandidat = ferdigbehandletKandidat)
+        kartleggingssporsmalKandidatProducer.send(updatedKandidat)
+            .map { kandidat ->
+                kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(kandidat)
+            }
+        return updatedKandidat
     }
 
     private suspend fun findPilotStoppunkter(

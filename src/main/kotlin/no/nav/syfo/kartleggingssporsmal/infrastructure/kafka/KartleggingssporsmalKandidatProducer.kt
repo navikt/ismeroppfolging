@@ -2,7 +2,6 @@ package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka
 
 import no.nav.syfo.kartleggingssporsmal.application.IKartleggingssporsmalKandidatProducer
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
-import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
 import no.nav.syfo.shared.util.configuredJacksonMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -14,19 +13,13 @@ import java.util.*
 class KartleggingssporsmalKandidatProducer(private val producer: KafkaProducer<String, KartleggingssporsmalKandidatStatusRecord>) :
     IKartleggingssporsmalKandidatProducer {
 
-    override fun send(
-        kandidat: KartleggingssporsmalKandidat,
-        statusEndring: KartleggingssporsmalKandidatStatusendring,
-    ): Result<KartleggingssporsmalKandidat> =
+    override fun send(kandidat: KartleggingssporsmalKandidat): Result<KartleggingssporsmalKandidat> =
         try {
             val personidentKey = UUID.nameUUIDFromBytes(kandidat.personident.toString().toByteArray()).toString()
             val record = ProducerRecord(
                 TOPIC,
                 personidentKey,
-                KartleggingssporsmalKandidatStatusRecord.from(
-                    kandidat = kandidat,
-                    statusEndring = statusEndring,
-                ),
+                KartleggingssporsmalKandidatStatusRecord.from(kandidat = kandidat),
             )
             producer.send(record).get()
             Result.success(kandidat)
@@ -48,15 +41,12 @@ data class KartleggingssporsmalKandidatStatusRecord(
     val status: String,
 ) {
     companion object {
-        fun from(
-            kandidat: KartleggingssporsmalKandidat,
-            statusEndring: KartleggingssporsmalKandidatStatusendring,
-        ): KartleggingssporsmalKandidatStatusRecord =
+        fun from(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidatStatusRecord =
             KartleggingssporsmalKandidatStatusRecord(
                 kandidatUuid = kandidat.uuid,
                 personident = kandidat.personident.value,
-                createdAt = statusEndring.createdAt,
-                status = statusEndring.status.name,
+                createdAt = kandidat.status.createdAt,
+                status = kandidat.status.kandidatStatus.name,
             )
     }
 }

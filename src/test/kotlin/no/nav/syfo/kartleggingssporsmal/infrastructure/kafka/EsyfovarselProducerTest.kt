@@ -2,18 +2,13 @@ package no.nav.syfo.kartleggingssporsmal.infrastructure.kafka
 
 import io.mockk.*
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
-import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNull
 import java.util.concurrent.Future
 
 class EsyfovarselProducerTest {
@@ -35,10 +30,7 @@ class EsyfovarselProducerTest {
 
         @Test
         fun `sendKartleggingssporsmal should send varsel`() {
-            val kandidat = KartleggingssporsmalKandidat(
-                personident = ARBEIDSTAKER_PERSONIDENT,
-                status = KandidatStatus.KANDIDAT,
-            )
+            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
 
             val result = esyfovarselProducer.sendKartleggingssporsmal(kandidat)
 
@@ -60,10 +52,7 @@ class EsyfovarselProducerTest {
                 kafkaProducer.send(any())
             } throws RuntimeException("Kafka error")
 
-            val kandidat = KartleggingssporsmalKandidat(
-                personident = ARBEIDSTAKER_PERSONIDENT,
-                status = KandidatStatus.KANDIDAT,
-            )
+            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
 
             val result = esyfovarselProducer.sendKartleggingssporsmal(kandidat)
 
@@ -82,10 +71,7 @@ class EsyfovarselProducerTest {
 
         @Test
         fun `ferdigstillKartleggingssporsmalVarsel should send varsel with ferdigstill flag true`() {
-            val kandidat = KartleggingssporsmalKandidat(
-                personident = ARBEIDSTAKER_PERSONIDENT,
-                status = KandidatStatus.KANDIDAT,
-            )
+            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
 
             val result = esyfovarselProducer.ferdigstillKartleggingssporsmalVarsel(kandidat)
 
@@ -107,11 +93,7 @@ class EsyfovarselProducerTest {
                 kafkaProducer.send(any())
             } throws RuntimeException("Kafka error")
 
-            val kandidat = KartleggingssporsmalKandidat(
-                personident = ARBEIDSTAKER_PERSONIDENT,
-                status = KandidatStatus.KANDIDAT,
-            )
-
+            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
             val result = esyfovarselProducer.ferdigstillKartleggingssporsmalVarsel(kandidat)
 
             assertTrue(result.isFailure)

@@ -37,48 +37,25 @@ class KartleggingssporsmalRepository(
     override suspend fun getKandidat(personident: Personident): KartleggingssporsmalKandidat? {
         return database.connection.use { connection ->
             connection.getKandidat(personident)
-                ?.let { kandidat ->
-                    KartleggingssporsmalKandidat.createFromDatabase(
-                        uuid = kandidat.uuid,
-                        createdAt = kandidat.createdAt,
-                        personident = kandidat.personident,
-                        status = kandidat.status,
-                        varsletAt = kandidat.varsletAt,
-                        journalpostId = kandidat.journalpostId,
-                    )
+                ?.let { (kandidat, statusendring) ->
+                    kandidat.toKartleggingssporsmalKandidat(statusendring)
                 }
         }
     }
 
-    override suspend fun getKandidat(uuid: UUID): KartleggingssporsmalKandidat? {
-        return database.connection.use { connection ->
-            connection.prepareStatement(GET_KANDIDAT_BY_UUID).use {
-                it.setString(1, uuid.toString())
-                it.executeQuery().toList { toPKartleggingssporsmalKandidat() }
-            }
-                .firstOrNull()
-                ?.let { kandidat ->
-                    KartleggingssporsmalKandidat.createFromDatabase(
-                        uuid = kandidat.uuid,
-                        createdAt = kandidat.createdAt,
-                        personident = kandidat.personident,
-                        status = kandidat.status,
-                        varsletAt = kandidat.varsletAt,
-                        journalpostId = kandidat.journalpostId,
-                    )
+    override suspend fun getKandidat(uuid: UUID): KartleggingssporsmalKandidat? =
+        database.connection.use { connection ->
+            connection.getKandidat(uuid)
+                ?.let { (kandidat, statusendring) ->
+                    kandidat.toKartleggingssporsmalKandidat(statusendring)
                 }
         }
-    }
 
-    override suspend fun getKandidatStatusendringer(kandidatUuid: UUID): List<KartleggingssporsmalKandidatStatusendring> {
-        return database.connection.use { connection ->
-            connection.prepareStatement(GET_KANDIDAT_STATUSENDRINGER_BY_KANDIDAT_UUID).use {
-                it.setString(1, kandidatUuid.toString())
-                it.executeQuery()
-                    .toList { toPKartleggingssporsmalKandidatStatusendring().toKartleggingssporsmalKandidatStatusendring() }
-            }
+    override suspend fun getKandidatStatusendringer(kandidatUuid: UUID): List<KartleggingssporsmalKandidatStatusendring> =
+        database.connection.use { connection ->
+            connection.getKandidatStatusendringer(kandidatUuid)
+                .map { it.toKartleggingssporsmalKandidatStatusendring() }
         }
-    }
 
     override suspend fun createKandidatAndMarkStoppunktAsProcessed(
         kandidat: KartleggingssporsmalKandidat,
@@ -86,15 +63,13 @@ class KartleggingssporsmalRepository(
     ): KartleggingssporsmalKandidat {
         return database.connection.use { connection ->
             val pKartleggingssporsmalKandidat = connection.createKandidat(kandidat, stoppunktId)
-            connection.createStatusendring(
-                kandidatStatusendring = KartleggingssporsmalKandidatStatusendring(
-                    status = kandidat.status,
-                ),
+            val statusendring = connection.createStatusendring(
+                statusendring = kandidat.status,
                 kandidatId = pKartleggingssporsmalKandidat.id,
             )
             connection.markStoppunktAsProcessed(stoppunktId)
             connection.commit()
-            pKartleggingssporsmalKandidat.toKartleggingssporsmalKandidat()
+            pKartleggingssporsmalKandidat.toKartleggingssporsmalKandidat(statusendring)
         }
     }
 
@@ -128,15 +103,17 @@ class KartleggingssporsmalRepository(
                 it.setString(1, kandidat.uuid.toString())
                 it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
             }
+            val status = connection.getKandidatStatusendringer(kandidat.uuid).firstOrNull()
+                ?: throw NoSuchElementException("KandidatStatusendring for kandidat med UUID ${kandidat.uuid} finnes ikke i databasen")
             connection.commit()
-            updatedKandidat.toKartleggingssporsmalKandidat()
+            updatedKandidat.toKartleggingssporsmalKandidat(status)
         }
     }
 
-    override suspend fun updatePublishedAtForKandidatStatusendring(kandidatStatus: KartleggingssporsmalKandidatStatusendring) {
+    override suspend fun updatePublishedAtForKandidatStatusendring(kandidat: KartleggingssporsmalKandidat) {
         database.connection.use { connection ->
             connection.prepareStatement(UPDATE_KANDIDATSTATUSENDRING_PUBLISHED_AT).use {
-                it.setString(1, kandidatStatus.uuid.toString())
+                it.setString(1, kandidat.status.uuid.toString())
                 val rowCount = it.executeUpdate()
                 if (rowCount != 1) {
                     throw SQLException("Expected a single row to be updated, got update count $rowCount")
@@ -149,9 +126,13 @@ class KartleggingssporsmalRepository(
     override fun getNotJournalforteKandidater(): List<KartleggingssporsmalKandidat> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_NOT_JOURNALFORTE).use {
-                it.executeQuery().toList { toPKartleggingssporsmalKandidat() }
-            }.map {
-                it.toKartleggingssporsmalKandidat()
+                it.executeQuery().toList {
+                    val pKandidat = toPKartleggingssporsmalKandidat()
+                    val pStatusendring = toPKartleggingssporsmalKandidatStatusendring(prefix = STATUS_PREFIX)
+                    Pair(pKandidat, pStatusendring)
+                }
+            }.map { (kandidat, statusendring) ->
+                kandidat.toKartleggingssporsmalKandidat(statusendring)
             }
         }
 
@@ -171,37 +152,24 @@ class KartleggingssporsmalRepository(
 
     override suspend fun createKandidatStatusendring(
         kandidat: KartleggingssporsmalKandidat,
-        kandidatStatusendring: KartleggingssporsmalKandidatStatusendring,
-    ): KartleggingssporsmalKandidatStatusendring =
+    ): KartleggingssporsmalKandidat =
         database.connection.use { connection ->
-            val pKandidat = connection.getKandidat(kandidat.personident)
+            val (pKandidat, _) = connection.getKandidat(kandidat.uuid)
                 ?: throw NoSuchElementException("Kandidat med UUID ${kandidat.uuid} finnes ikke i databasen")
-            val pStatusendring = connection.createStatusendring(kandidatStatusendring = kandidatStatusendring, kandidatId = pKandidat.id)
-                .toKartleggingssporsmalKandidatStatusendring()
-            connection.updateKandidatStatus(
+            val pStatusendring = connection.createStatusendring(statusendring = kandidat.status, kandidatId = pKandidat.id)
+            val pUpdatedKandidat = connection.updateKandidatStatus(
                 kandidatUuid = kandidat.uuid,
-                status = kandidatStatusendring.status,
+                status = kandidat.status.kandidatStatus,
             )
             connection.commit()
-            pStatusendring
+            pUpdatedKandidat.toKartleggingssporsmalKandidat(pStatusendring)
         }
 
-    private fun Connection.createKandidat(kandidat: KartleggingssporsmalKandidat, stoppunktId: Int): PKartleggingssporsmalKandidat =
-        this.prepareStatement(CREATE_KANDIDAT).use {
-            it.setString(1, kandidat.uuid.toString())
-            it.setObject(2, kandidat.createdAt)
-            it.setObject(3, kandidat.createdAt)
-            it.setString(4, kandidat.personident.value)
-            it.setInt(5, stoppunktId)
-            it.setString(6, kandidat.status.name)
-            it.setObject(7, kandidat.varsletAt)
-            it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
-        }
-
-    private fun Connection.getKandidat(personident: Personident): PKartleggingssporsmalKandidat? =
-        this.prepareStatement(GET_KANDIDAT).use {
-            it.setString(1, personident.value)
-            it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.firstOrNull()
+    private fun Connection.getKandidatStatusendringer(kandidatUuid: UUID): List<PKartleggingssporsmalKandidatStatusendring> =
+        this.prepareStatement(GET_KANDIDAT_STATUSENDRINGER_BY_KANDIDAT_UUID).use {
+            it.setString(1, kandidatUuid.toString())
+            it.executeQuery()
+                .toList { toPKartleggingssporsmalKandidatStatusendring() }
         }
 
     private fun Connection.markStoppunktAsProcessed(stoppunktId: Int) {
@@ -214,18 +182,53 @@ class KartleggingssporsmalRepository(
         }
     }
 
+    private fun Connection.createKandidat(kandidat: KartleggingssporsmalKandidat, stoppunktId: Int): PKartleggingssporsmalKandidat =
+        this.prepareStatement(CREATE_KANDIDAT).use {
+            it.setString(1, kandidat.uuid.toString())
+            it.setObject(2, kandidat.createdAt)
+            it.setObject(3, kandidat.createdAt)
+            it.setString(4, kandidat.personident.value)
+            it.setInt(5, stoppunktId)
+            it.setString(6, kandidat.status.kandidatStatus.name)
+            it.setObject(7, kandidat.varsletAt)
+            it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
+        }
+
+    private fun Connection.getKandidat(uuid: UUID): Pair<PKartleggingssporsmalKandidat, PKartleggingssporsmalKandidatStatusendring>? =
+        this.prepareStatement(GET_KANDIDAT_BY_UUID).use {
+            it.setString(1, uuid.toString())
+            it.executeQuery().toList {
+                val pKandidat = toPKartleggingssporsmalKandidat()
+                val pStatusendring = toPKartleggingssporsmalKandidatStatusendring(prefix = STATUS_PREFIX)
+                Pair(pKandidat, pStatusendring)
+            }.firstOrNull()
+        }
+
+    private fun Connection.getKandidat(personident: Personident): Pair<PKartleggingssporsmalKandidat, PKartleggingssporsmalKandidatStatusendring>? =
+        this.prepareStatement(GET_KANDIDAT).use {
+            it.setString(1, personident.value)
+            it.executeQuery().toList {
+                val pKandidat = toPKartleggingssporsmalKandidat()
+                val pStatusendring = toPKartleggingssporsmalKandidatStatusendring(prefix = STATUS_PREFIX)
+                Pair(pKandidat, pStatusendring)
+            }.firstOrNull()
+        }
+
     private fun Connection.createStatusendring(
-        kandidatStatusendring: KartleggingssporsmalKandidatStatusendring,
+        statusendring: KartleggingssporsmalKandidatStatusendring,
         kandidatId: Int,
     ): PKartleggingssporsmalKandidatStatusendring =
         this.prepareStatement(CREATE_KANDIDAT_STATUSENDRING).use {
-            it.setString(1, kandidatStatusendring.uuid.toString())
+            it.setString(1, statusendring.uuid.toString())
             it.setInt(2, kandidatId)
-            it.setObject(3, kandidatStatusendring.createdAt)
-            it.setString(4, kandidatStatusendring.status.name)
-            it.setObject(5, kandidatStatusendring.publishedAt)
-            it.setObject(6, kandidatStatusendring.svarAt)
-            it.setString(7, kandidatStatusendring.veilederident)
+            it.setObject(3, statusendring.createdAt)
+            it.setString(4, statusendring.kandidatStatus.name)
+            it.setObject(5, statusendring.publishedAt)
+            it.setObject(6, if (statusendring is KartleggingssporsmalKandidatStatusendring.SvarMottatt) statusendring.svarAt else null)
+            it.setString(
+                7,
+                if (statusendring is KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet) statusendring.veilederident else null
+            )
             it.executeQuery()
                 .toList { toPKartleggingssporsmalKandidatStatusendring() }
                 .single()
@@ -234,18 +237,36 @@ class KartleggingssporsmalRepository(
     private fun Connection.updateKandidatStatus(
         kandidatUuid: UUID,
         status: KandidatStatus,
-    ) {
+    ): PKartleggingssporsmalKandidat =
         this.prepareStatement(UPDATE_KANDIDAT_STATUS).use {
             it.setString(1, status.name)
             it.setString(2, kandidatUuid.toString())
-            val updated = it.executeUpdate()
-            if (updated != 1) {
-                throw SQLException("Expected a single row to be updated, got update count $updated")
-            }
+            it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
         }
-    }
 
     companion object {
+
+        private const val STATUS_PREFIX = "status_"
+
+        private const val STATUS_ALIAS = """
+            s.id as ${STATUS_PREFIX}id,
+            s.uuid as ${STATUS_PREFIX}uuid,
+            s.kandidat_id as ${STATUS_PREFIX}kandidat_id,
+            s.created_at as ${STATUS_PREFIX}created_at,
+            s.status as ${STATUS_PREFIX}status,
+            s.published_at as ${STATUS_PREFIX}published_at,
+            s.svar_at as ${STATUS_PREFIX}svar_at,
+            s.veilederident as ${STATUS_PREFIX}veilederident
+        """
+
+        private const val JOIN_SELECT_NEWEST_STATUS_FROM_STATUSENDRINGER = """
+            INNER JOIN KARTLEGGINGSSPORSMAL_KANDIDAT_STATUSENDRING s
+            ON k.id = s.kandidat_id AND s.created_at = (
+                SELECT MAX(created_at) FROM KARTLEGGINGSSPORSMAL_KANDIDAT_STATUSENDRING
+                WHERE kandidat_id = k.id
+            )
+        """
+
         private const val CREATE_STOPPUNKT = """
             INSERT INTO KARTLEGGINGSSPORSMAL_STOPPUNKT (
                 id,
@@ -260,14 +281,20 @@ class KartleggingssporsmalRepository(
         """
 
         private const val GET_KANDIDAT = """
-            SELECT * FROM KARTLEGGINGSSPORSMAL_KANDIDAT
-            WHERE personident = ?
-            ORDER BY created_at DESC
+            SELECT *,
+            $STATUS_ALIAS
+            FROM KARTLEGGINGSSPORSMAL_KANDIDAT k
+            $JOIN_SELECT_NEWEST_STATUS_FROM_STATUSENDRINGER
+            WHERE k.personident = ?
+            ORDER BY k.created_at DESC
         """
 
         private const val GET_KANDIDAT_BY_UUID = """
-            SELECT * FROM KARTLEGGINGSSPORSMAL_KANDIDAT
-            WHERE uuid = ?
+            SELECT *,
+            $STATUS_ALIAS
+            FROM KARTLEGGINGSSPORSMAL_KANDIDAT k
+            $JOIN_SELECT_NEWEST_STATUS_FROM_STATUSENDRINGER
+            WHERE k.uuid = ?
         """
 
         private const val GET_KANDIDAT_STATUSENDRINGER_BY_KANDIDAT_UUID = """
@@ -332,10 +359,12 @@ class KartleggingssporsmalRepository(
 
         private const val GET_NOT_JOURNALFORTE =
             """
-                 SELECT *
-                 FROM KARTLEGGINGSSPORSMAL_KANDIDAT
+                 SELECT *,
+                 $STATUS_ALIAS
+                 FROM KARTLEGGINGSSPORSMAL_KANDIDAT k
+                 $JOIN_SELECT_NEWEST_STATUS_FROM_STATUSENDRINGER
                  WHERE journalpost_id IS NULL AND varslet_at IS NOT NULL
-                 ORDER BY created_at ASC
+                 ORDER BY k.created_at ASC
             """
 
         private const val SET_JOURNALPOST_ID =
@@ -350,6 +379,7 @@ class KartleggingssporsmalRepository(
                 UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
                 SET status = ?, updated_at = now()
                 WHERE uuid = ?
+                RETURNING *
             """
     }
 }
@@ -379,15 +409,15 @@ internal fun ResultSet.toPKartleggingssporsmalKandidat(): PKartleggingssporsmalK
     )
 }
 
-internal fun ResultSet.toPKartleggingssporsmalKandidatStatusendring(): PKartleggingssporsmalKandidatStatusendring {
+internal fun ResultSet.toPKartleggingssporsmalKandidatStatusendring(prefix: String = ""): PKartleggingssporsmalKandidatStatusendring {
     return PKartleggingssporsmalKandidatStatusendring(
-        id = getInt("id"),
-        uuid = getString("uuid").let { UUID.fromString(it) },
-        createdAt = getObject("created_at", OffsetDateTime::class.java),
-        kandidatId = getInt("kandidat_id"),
-        status = getString("status"),
-        publishedAt = getObject("published_at", OffsetDateTime::class.java),
-        svarAt = getObject("svar_at", OffsetDateTime::class.java),
-        veilederident = getString("veilederident"),
+        id = getInt("${prefix}id"),
+        uuid = getString("${prefix}uuid").let { UUID.fromString(it) },
+        createdAt = getObject("${prefix}created_at", OffsetDateTime::class.java),
+        kandidatId = getInt("${prefix}kandidat_id"),
+        status = getString("${prefix}status"),
+        publishedAt = getObject("${prefix}published_at", OffsetDateTime::class.java),
+        svarAt = getObject("${prefix}svar_at", OffsetDateTime::class.java),
+        veilederident = getString("${prefix}veilederident"),
     )
 }

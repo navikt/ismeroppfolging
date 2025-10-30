@@ -3,7 +3,6 @@ package no.nav.syfo.kartleggingssporsmal.infrastructure.database
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
-import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
@@ -13,6 +12,7 @@ import no.nav.syfo.shared.infrastructure.database.markStoppunktAsProcessed
 import no.nav.syfo.shared.infrastructure.database.setStoppunktDate
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
@@ -146,24 +146,21 @@ class KartleggingssporsmalRepositoryTest {
             kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
             val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
 
-            val kandidat = KartleggingssporsmalKandidat(
-                personident = ARBEIDSTAKER_PERSONIDENT,
-                status = KandidatStatus.KANDIDAT,
-            )
+            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
                 stoppunktId = createdStoppunkt.id,
             )
 
             assertEquals(createdKandidat.personident, oppfolgingstilfelle.personident)
-            assertEquals(createdKandidat.status, KandidatStatus.KANDIDAT)
+            assertTrue(createdKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
             assertEquals(createdKandidat.uuid, kandidat.uuid)
             assertNull(createdKandidat.varsletAt)
 
             val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(ARBEIDSTAKER_PERSONIDENT)
             assertNotNull(fetchedKandidat)
             assertEquals(fetchedKandidat.personident, oppfolgingstilfelle.personident)
-            assertEquals(fetchedKandidat.status, KandidatStatus.KANDIDAT)
+            assertTrue(fetchedKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
             assertNull(fetchedKandidat.varsletAt)
 
             val processedStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
@@ -187,14 +184,9 @@ class KartleggingssporsmalRepositoryTest {
             kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt2)
             val createdStoppunkter = database.getKartleggingssporsmalStoppunkt()
 
-            val kandidat = KartleggingssporsmalKandidat(
-                personident = ARBEIDSTAKER_PERSONIDENT,
-                status = KandidatStatus.KANDIDAT,
-            )
-            val otherKandidat = kandidat.copy(
-                uuid = UUID.randomUUID(),
-                createdAt = OffsetDateTime.now().minusHours(1),
-            )
+            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            val otherKandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+                .copy(createdAt = OffsetDateTime.now().minusHours(1))
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
                 stoppunktId = createdStoppunkter[0].id,
@@ -211,6 +203,32 @@ class KartleggingssporsmalRepositoryTest {
     }
 
     @Test
+    fun `getKandidat by personident should retrieve the full domain object`() {
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+            tilfelleStart = LocalDate.now().minusDays(6 * 7),
+            antallSykedager = 6 * 7 + 1,
+        )
+        val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+        assertNotNull(kartleggingssporsmalStoppunkt)
+
+        runBlocking {
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
+            val createdStoppunkter = database.getKartleggingssporsmalStoppunkt()
+
+            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkter[0].id,
+            )
+
+            val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(ARBEIDSTAKER_PERSONIDENT)
+            assertNotNull(fetchedKandidat)
+            assertEquals(fetchedKandidat.uuid, kandidat.uuid)
+            assertTrue(fetchedKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
+        }
+    }
+
+    @Test
     fun `updateSvarForKandidat should update the svarAt field for the kandidat in the database`() {
         val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now().minusDays(6 * 7),
@@ -223,35 +241,28 @@ class KartleggingssporsmalRepositoryTest {
             kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
             val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
 
-            val kandidat = KartleggingssporsmalKandidat(
-                personident = ARBEIDSTAKER_PERSONIDENT,
-                status = KandidatStatus.KANDIDAT,
-            )
+            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+                .copy(varsletAt = OffsetDateTime.now())
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
                 stoppunktId = createdStoppunkt.id,
             )
 
-            val statusendring = KartleggingssporsmalKandidatStatusendring(KandidatStatus.SVAR_MOTTATT, OffsetDateTime.now())
-            kartleggingssporsmalRepository.createKandidatStatusendring(createdKandidat, statusendring)
+            val kandidatSvarMottatt = createdKandidat.registrerSvarMottatt(OffsetDateTime.now())
+            kartleggingssporsmalRepository.createKandidatStatusendring(kandidatSvarMottatt)
 
             val hentetKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
-            val hentetStatusendring = kartleggingssporsmalRepository.getKandidatStatusendringer(kandidat.uuid).first()
-            assertEquals(KandidatStatus.SVAR_MOTTATT, hentetKandidat?.status)
-            assertNotNull(hentetStatusendring.svarAt)
+            assertTrue(hentetKandidat?.status is KartleggingssporsmalKandidatStatusendring.SvarMottatt)
         }
     }
 
     @Test
     fun `updateSvarForKandidat should throw an exception when the kandidat does not exist`() {
-        val kandidat = KartleggingssporsmalKandidat(
-            personident = ARBEIDSTAKER_PERSONIDENT,
-            status = KandidatStatus.KANDIDAT,
-        )
-        val statusendring = KartleggingssporsmalKandidatStatusendring(KandidatStatus.SVAR_MOTTATT, OffsetDateTime.now())
+        val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+        val kandidatSvarMottatt = kandidat.registrerSvarMottatt(OffsetDateTime.now())
         runBlocking {
             assertThrows<NoSuchElementException> {
-                kartleggingssporsmalRepository.createKandidatStatusendring(kandidat, statusendring)
+                kartleggingssporsmalRepository.createKandidatStatusendring(kandidatSvarMottatt)
             }
         }
     }

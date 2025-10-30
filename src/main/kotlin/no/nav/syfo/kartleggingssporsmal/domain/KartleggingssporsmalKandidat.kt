@@ -14,43 +14,44 @@ import java.util.*
  * @property varsletAt tidspunktet kandidaten fikk tilsendt kartleggingsspørsmål
  * @property journalpostId er id'en fra journalposten som ble opprettet når kartleggingsspørsmål ble sendt
  */
-data class KartleggingssporsmalKandidat private constructor(
+data class KartleggingssporsmalKandidat(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val personident: Personident,
-    val status: KandidatStatus,
+    val status: KartleggingssporsmalKandidatStatusendring,
     val varsletAt: OffsetDateTime?,
     val journalpostId: JournalpostId? = null,
 ) {
-    constructor(
-        personident: Personident,
-        status: KandidatStatus,
-    ) : this(
-        uuid = UUID.randomUUID(),
-        createdAt = nowUTC(),
-        personident = personident,
-        status = status,
-        varsletAt = null,
-    )
 
-    fun registrerStatusEndring(statusEndring: KartleggingssporsmalKandidatStatusendring) =
-        this.copy(status = statusEndring.status)
+    fun registrerSvarMottatt(svarAt: OffsetDateTime): KartleggingssporsmalKandidat {
+        if (this.status is KartleggingssporsmalKandidatStatusendring.Kandidat ||
+            this.status is KartleggingssporsmalKandidatStatusendring.SvarMottatt
+        ) {
+            return this.copy(
+                status = KartleggingssporsmalKandidatStatusendring.SvarMottatt(svarAt = svarAt),
+            )
+        } else {
+            throw IllegalArgumentException("Kandidat må være Kandidat eller SvarMottatt for å registrere SvarMottatt")
+        }
+    }
+
+    fun ferdigbehandleVurdering(veilederident: String): KartleggingssporsmalKandidat {
+        if (this.status !is KartleggingssporsmalKandidatStatusendring.SvarMottatt) {
+            throw IllegalArgumentException("Kandidat må ha svart på kartleggingsspørsmål for at det skal være mulig å ferdigbehandle vurdering")
+        }
+        return this.copy(status = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet(veilederident = veilederident))
+    }
 
     companion object {
-        fun createFromDatabase(
-            uuid: UUID,
-            createdAt: OffsetDateTime,
+        fun create(
             personident: Personident,
-            status: String,
-            varsletAt: OffsetDateTime?,
-            journalpostId: JournalpostId?,
         ) = KartleggingssporsmalKandidat(
-            uuid = uuid,
-            createdAt = createdAt,
+            uuid = UUID.randomUUID(),
+            createdAt = nowUTC(),
             personident = personident,
-            status = KandidatStatus.valueOf(status),
-            varsletAt = varsletAt,
-            journalpostId = journalpostId,
+            status = KartleggingssporsmalKandidatStatusendring.Kandidat(),
+            varsletAt = null,
+            journalpostId = null,
         )
     }
 }
