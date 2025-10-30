@@ -113,4 +113,4 @@ spec:
     - name: IS_JOURNALFORING_RETRY_ENABLED
       value: "true"
     - name: IS_KANDIDAT_PUBLISHING_ENABLED
-      value: "false"
+      value: "true"
