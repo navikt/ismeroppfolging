@@ -101,7 +101,7 @@ class KartleggingssporsmalService(
                         kandidat = kandidat,
                         stoppunktId = stoppunktId,
                     )
-                    if (isKandidatPublishingEnabled) {
+                    if (isKandidatPublishingEnabled || stoppunkt.uuid.toString() in stoppunktTestUuids) {
                         kartleggingssporsmalKandidatProducer.send(
                             kandidat = persistedKandidat,
                         ).map {
@@ -226,5 +226,11 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_LIER = "0626"
         private const val KONTOR_NAV_ASKER = "0220"
         private val pilotkontorer = listOf(KONTOR_NAV_LIER, KONTOR_NAV_ASKER)
+        private val stoppunktTestUuids = listOf(
+            "2f8abbd7-9f52-4c46-9f2f-ab81d7a34f58",
+            "ceeb3ba9-cd27-47b5-bd69-bb113500d9cf",
+            "29c7709f-df63-4f7d-a3a9-e6f2aa060877",
+            "c28ab2b7-8eea-409f-836e-4dfaf3ca242d",
+        )
     }
 }
