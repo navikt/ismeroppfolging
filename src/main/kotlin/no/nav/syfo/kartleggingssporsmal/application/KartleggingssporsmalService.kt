@@ -127,14 +127,19 @@ class KartleggingssporsmalService(
         if (existingKandidat == null) {
             log.error("Mottok svar på kandidat som ikke finnes, med uuid: $kandidatUuid og svarId: $svarId")
         } else {
-            val mottattSvarKandidat = existingKandidat.registrerSvarMottatt(svarAt)
-            kartleggingssporsmalRepository.createKandidatStatusendring(kandidat = mottattSvarKandidat)
-            kartleggingssporsmalKandidatProducer.send(mottattSvarKandidat)
-                .map { kandidat ->
-                    kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(kandidat)
-                }
+            if (existingKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat) {
+                val mottattSvarKandidat = existingKandidat.registrerSvarMottatt(svarAt)
 
-            esyfoVarselProducer.ferdigstillKartleggingssporsmalVarsel(mottattSvarKandidat)
+                kartleggingssporsmalRepository.createKandidatStatusendring(kandidat = mottattSvarKandidat)
+                kartleggingssporsmalKandidatProducer.send(mottattSvarKandidat)
+                    .map { kandidat ->
+                        kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(kandidat)
+                    }
+
+                esyfoVarselProducer.ferdigstillKartleggingssporsmalVarsel(mottattSvarKandidat)
+            } else {
+                log.error("Mottok svar på kandidat med feil status ${existingKandidat.status}, med uuid: $kandidatUuid og svarId: $svarId")
+            }
         }
     }
 
