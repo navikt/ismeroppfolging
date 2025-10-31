@@ -9,7 +9,6 @@ import no.nav.syfo.shared.util.configuredJacksonMapper
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.OffsetResetStrategy
 import org.apache.kafka.common.serialization.Deserializer
-import kotlin.collections.set
 
 const val KARTLEGGINGSSPORSMAL_SVAR_TOPIC =
     "team-esyfo.kartleggingssporsmal-svar"
@@ -23,7 +22,7 @@ fun launchKartleggingssporsmalSvarConsumer(
         kafkaEnvironment = kafkaEnvironment,
         offsetResetStrategy = OffsetResetStrategy.EARLIEST,
     ).apply {
-        this[ConsumerConfig.GROUP_ID_CONFIG] = "ismeroppfolging-v2"
+        this[ConsumerConfig.GROUP_ID_CONFIG] = "ismeroppfolging-v0"
         this[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
     }
 
