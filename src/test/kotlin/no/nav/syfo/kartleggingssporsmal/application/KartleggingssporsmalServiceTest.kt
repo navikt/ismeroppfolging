@@ -613,7 +613,7 @@ class KartleggingssporsmalServiceTest {
         }
 
         @Test
-        fun `registrerSvar should store svar, publish on kafka and ferdigstille varsel twice when two svar on existing kandidat`() {
+        fun `registrerSvar should store svar, publish on kafka and ferdigstille varsel only once when two svar on existing kandidat`() {
             val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
                 tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
                 antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
@@ -633,9 +633,10 @@ class KartleggingssporsmalServiceTest {
                 )
                 assertTrue(createdKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
 
+                val firstSvarAt = OffsetDateTime.now().minusDays(1)
                 kartleggingssporsmalService.registrerSvar(
                     kandidatUuid = createdKandidat.uuid,
-                    svarAt = OffsetDateTime.now().minusDays(1),
+                    svarAt = firstSvarAt,
                     svarId = UUID.randomUUID(),
                 )
                 val secondSvarAt = OffsetDateTime.now()
@@ -647,15 +648,15 @@ class KartleggingssporsmalServiceTest {
 
                 val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
                 val statusendringer = kartleggingssporsmalRepository.getKandidatStatusendringer(createdKandidat.uuid)
-                assertEquals(2, statusendringer.filter { it.kandidatStatus == KandidatStatus.SVAR_MOTTATT }.size)
+                assertEquals(1, statusendringer.filter { it.kandidatStatus == KandidatStatus.SVAR_MOTTATT }.size)
 
                 assertTrue(fetchedKandidat?.status is KartleggingssporsmalKandidatStatusendring.SvarMottatt)
                 assertEquals(
-                    secondSvarAt.toLocalDateOslo(),
+                    firstSvarAt.toLocalDateOslo(),
                     (fetchedKandidat?.status as KartleggingssporsmalKandidatStatusendring.SvarMottatt).svarAt.toLocalDateOslo()
                 )
 
-                verify(exactly = 2) {
+                verify(exactly = 1) {
                     mockKandidatProducer.send(any())
                     mockEsyfoVarselProducer.send(any())
                 }
