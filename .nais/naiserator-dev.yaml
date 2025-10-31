@@ -110,8 +110,6 @@ spec:
       value: "dev-gcp.teamsykefravr.isoppfolgingstilfelle"
     - name: ISOPPFOLGINGSTILFELLE_URL
       value: "http://isoppfolgingstilfelle"
-    - name: IS_SVAR_TOPIC_ENABLED
-      value: "true"
     - name: IS_JOURNALFORING_RETRY_ENABLED
       value: "false"
     - name: IS_KANDIDAT_PUBLISHING_ENABLED

@@ -63,7 +63,6 @@ fun testEnvironment() = Environment(
         ),
     ),
     electorPath = "electorPath",
-    isSvarTopicEnabled = true,
     isJournalforingRetryEnabled = true,
     isKandidatPublishingEnabled = true,
 )
