@@ -194,13 +194,11 @@ fun main() {
                     kafkaEnvironment = environment.kafka,
                     kartleggingssporsmalService = kartleggingssporsmalService,
                 )
-                if (environment.isSvarTopicEnabled) {
-                    launchKartleggingssporsmalSvarConsumer(
-                        applicationState = applicationState,
-                        kafkaEnvironment = environment.kafka,
-                        kartleggingssporsmalService = kartleggingssporsmalService,
-                    )
-                }
+                launchKartleggingssporsmalSvarConsumer(
+                    applicationState = applicationState,
+                    kafkaEnvironment = environment.kafka,
+                    kartleggingssporsmalService = kartleggingssporsmalService,
+                )
             }
             monitor.subscribe(ApplicationStopping) {
                 applicationState.ready = false

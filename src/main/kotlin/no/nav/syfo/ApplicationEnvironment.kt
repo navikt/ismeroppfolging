@@ -66,7 +66,6 @@ data class Environment(
                 clientId = getEnvVar("ESYFO_PDFGEN_CLIENT_ID"),
             ),
         ),
-    val isSvarTopicEnabled: Boolean = getEnvVar("IS_SVAR_TOPIC_ENABLED").toBoolean(),
     val isJournalforingRetryEnabled: Boolean =
         getEnvVar("IS_JOURNALFORING_RETRY_ENABLED", "true").toBoolean(),
     val isKandidatPublishingEnabled: Boolean = getEnvVar("IS_KANDIDAT_PUBLISHING_ENABLED").toBoolean(),
