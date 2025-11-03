@@ -3,16 +3,16 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val confluent = "7.9.0"
+val confluent = "8.1.0"
 val flywayVersion = "11.15.0"
-val hikariVersion = "6.3.0"
+val hikariVersion = "7.0.2"
 val postgresVersion = "42.7.8"
 val postgresEmbeddedVersion = "2.1.1"
 val postgresRuntimeVersion = "17.6.0"
-val kafkaVersion = "3.9.0"
+val kafkaVersion = "4.1.0"
 val logbackVersion = "1.5.20"
-val logstashEncoderVersion = "8.1"
-val micrometerRegistryVersion = "1.15.5"
+val logstashEncoderVersion = "9.0"
+val micrometerRegistryVersion = "1.12.13"
 val jacksonDatatypeVersion = "2.20.0"
 val ktorVersion = "3.3.1"
 val mockkVersion = "1.14.6"
@@ -85,7 +85,7 @@ dependencies {
         implementation("org.apache.commons:commons-compress") {
             because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
             version {
-                require("1.27.1")
+                require("1.28.0")
             }
         }
     }
