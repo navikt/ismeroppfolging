@@ -5,6 +5,7 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.shared.domain.Personident
+import java.time.OffsetDateTime
 import java.util.*
 
 interface IKartleggingssporsmalRepository {
@@ -19,6 +20,7 @@ interface IKartleggingssporsmalRepository {
     ): KartleggingssporsmalKandidat
 
     suspend fun getKandidat(personident: Personident): KartleggingssporsmalKandidat?
+    suspend fun getLatestKandidatCreation(personident: Personident): OffsetDateTime?
     suspend fun getKandidat(uuid: UUID): KartleggingssporsmalKandidat?
     suspend fun getKandidatStatusendringer(kandidatUuid: UUID): List<KartleggingssporsmalKandidatStatusendring>
     suspend fun createKandidatStatusendring(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat

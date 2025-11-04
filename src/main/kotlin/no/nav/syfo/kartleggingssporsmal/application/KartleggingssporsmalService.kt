@@ -197,10 +197,10 @@ class KartleggingssporsmalService(
     }
 
     private suspend fun isAlreadyKandidatInTilfelle(oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromApi): Boolean {
-        val existingKandidat = kartleggingssporsmalRepository.getKandidat(oppfolgingstilfelle.personident)
-        return existingKandidat != null &&
+        val existingKandidatCreatedAt = kartleggingssporsmalRepository.getLatestKandidatCreation(oppfolgingstilfelle.personident)
+        return existingKandidatCreatedAt != null &&
             oppfolgingstilfelle.datoInsideTilfelle(
-                dato = existingKandidat.createdAt.toLocalDateOslo()
+                dato = existingKandidatCreatedAt.toLocalDateOslo()
             )
     }
 

@@ -43,6 +43,15 @@ class KartleggingssporsmalRepository(
         }
     }
 
+    override suspend fun getLatestKandidatCreation(personident: Personident): OffsetDateTime? {
+        return database.connection.use { connection ->
+            connection.getKandidatOnly(personident)
+                ?.let { pKandidat ->
+                    pKandidat.createdAt
+                }
+        }
+    }
+
     override suspend fun getKandidat(uuid: UUID): KartleggingssporsmalKandidat? =
         database.connection.use { connection ->
             connection.getKandidat(uuid)
@@ -214,6 +223,14 @@ class KartleggingssporsmalRepository(
             }.firstOrNull()
         }
 
+    private fun Connection.getKandidatOnly(personident: Personident): PKartleggingssporsmalKandidat? =
+        this.prepareStatement(GET_KANDIDAT_ONLY).use {
+            it.setString(1, personident.value)
+            it.executeQuery().toList {
+                toPKartleggingssporsmalKandidat()
+            }.firstOrNull()
+        }
+
     private fun Connection.createStatusendring(
         statusendring: KartleggingssporsmalKandidatStatusendring,
         kandidatId: Int,
@@ -289,6 +306,13 @@ class KartleggingssporsmalRepository(
             ORDER BY k.created_at DESC
         """
 
+        private const val GET_KANDIDAT_ONLY = """
+            SELECT *
+            FROM KARTLEGGINGSSPORSMAL_KANDIDAT k
+            WHERE k.personident = ?
+            ORDER BY k.created_at DESC
+        """
+
         private const val GET_KANDIDAT_BY_UUID = """
             SELECT *,
             $STATUS_ALIAS
@@ -305,7 +329,7 @@ class KartleggingssporsmalRepository(
             ORDER BY created_at DESC
         """
 
-        private const val CREATE_KANDIDAT = """
+        const val CREATE_KANDIDAT = """
             INSERT INTO KARTLEGGINGSSPORSMAL_KANDIDAT (
                 id,
                 uuid,

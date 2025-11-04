@@ -25,8 +25,10 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.database.Kartleggingsspor
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.*
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelse.HendelseType
 import no.nav.syfo.shared.domain.Personident
+import no.nav.syfo.shared.infrastructure.database.createKandidatWithNoStatus
 import no.nav.syfo.shared.infrastructure.database.getKandidatByStoppunktUUID
 import no.nav.syfo.shared.infrastructure.database.getKartleggingssporsmalStoppunkt
+import no.nav.syfo.shared.infrastructure.database.getStoppunktIdFromUuid
 import no.nav.syfo.shared.infrastructure.database.markStoppunktAsProcessed
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import no.nav.syfo.shared.util.toLocalDateOslo
@@ -487,6 +489,39 @@ class KartleggingssporsmalServiceTest {
                 val firstProcessedStoppunkt = firstResults.first().getOrThrow()
                 val firstKandidat = database.getKandidatByStoppunktUUID(firstProcessedStoppunkt.uuid)!!
                 assertEquals(KandidatStatus.KANDIDAT.name, firstKandidat.status)
+
+                // Genererer et nytt stoppunkt, som ikke skal føre til en kandidat fordi det allerede finnes en KANDIDAT i samme tilfelle
+                val secondStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+                assertNotNull(secondStoppunkt)
+                kartleggingssporsmalRepository.createStoppunkt(secondStoppunkt)
+                val secondResults = kartleggingssporsmalService.processStoppunkter()
+
+                assertEquals(1, secondResults.size)
+                assertTrue(secondResults.first().isSuccess)
+
+                val secondProcessedStoppunkt = secondResults.first().getOrThrow()
+                val secondKandidat = database.getKandidatByStoppunktUUID(secondProcessedStoppunkt.uuid)
+                assertNull(secondKandidat)
+            }
+        }
+
+        @Test
+        fun `processStoppunkter should process unprocessed stoppunkt and not create kandidat when already KANDIDAT in current tilfelle (even if missing status)`() {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val firstStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+            assertNotNull(firstStoppunkt)
+
+            runBlocking {
+                // Genererer først et stoppunkt som fører til en kandidat
+                val stoppunkt = kartleggingssporsmalRepository.createStoppunkt(firstStoppunkt)
+                val stoppunktId = database.getStoppunktIdFromUuid(stoppunkt.uuid)!!
+                val kandidat = KartleggingssporsmalKandidat.create(personident = stoppunkt.personident)
+                database.createKandidatWithNoStatus(kandidat, stoppunktId)
+                database.markStoppunktAsProcessed(stoppunkt)
 
                 // Genererer et nytt stoppunkt, som ikke skal føre til en kandidat fordi det allerede finnes en KANDIDAT i samme tilfelle
                 val secondStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)

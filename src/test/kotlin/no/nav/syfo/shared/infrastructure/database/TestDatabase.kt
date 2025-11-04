@@ -3,6 +3,7 @@ package no.nav.syfo.shared.infrastructure.database
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
+import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository.Companion.CREATE_KANDIDAT
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.PKartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.PKartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.toPKartleggingssporsmalKandidat
@@ -82,6 +83,30 @@ fun TestDatabase.dropData() {
             connection.prepareStatement(query).execute()
         }
         connection.commit()
+    }
+}
+
+fun TestDatabase.createKandidatWithNoStatus(
+    kandidat: KartleggingssporsmalKandidat,
+    stoppunktId: Int,
+) = this.connection.use { connection ->
+    connection.prepareStatement(CREATE_KANDIDAT).use {
+        it.setString(1, kandidat.uuid.toString())
+        it.setObject(2, kandidat.createdAt)
+        it.setObject(3, kandidat.createdAt)
+        it.setString(4, kandidat.personident.value)
+        it.setInt(5, stoppunktId)
+        it.setString(6, kandidat.status.kandidatStatus.name)
+        it.setObject(7, kandidat.varsletAt)
+        it.executeQuery()
+    }
+    connection.commit()
+}
+
+fun TestDatabase.getStoppunktIdFromUuid(uuid: UUID) = this.connection.use { connection ->
+    connection.prepareStatement("SELECT id FROM KARTLEGGINGSSPORSMAL_STOPPUNKT WHERE uuid = ?").use {
+        it.setString(1, uuid.toString())
+        it.executeQuery().toList { getInt("id") }.firstOrNull()
     }
 }
 
