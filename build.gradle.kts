@@ -59,7 +59,12 @@ dependencies {
     testImplementation(platform("io.zonky.test.postgres:embedded-postgres-binaries-bom:$postgresRuntimeVersion"))
 
     // Kafka
-    implementation("org.apache.kafka:kafka_2.13:$kafkaVersion")
+    val excludeLog4j = fun ExternalModuleDependency.() {
+        exclude(group = "log4j")
+        exclude(group = "org.apache.logging.log4j")
+    }
+
+    implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", excludeLog4j)
     constraints {
         implementation("org.bitbucket.b_c:jose4j") {
             because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://github.com/advisories/GHSA-6qvw-249j-h44c")
@@ -74,7 +79,7 @@ dependencies {
             }
         }
     }
-    implementation("io.confluent:kafka-avro-serializer:$confluent")
+    implementation("io.confluent:kafka-avro-serializer:$confluent", excludeLog4j)
     constraints {
         implementation("org.apache.avro:avro") {
             because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
