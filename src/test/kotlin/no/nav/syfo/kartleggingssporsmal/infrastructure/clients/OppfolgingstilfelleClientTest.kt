@@ -25,7 +25,7 @@ class OppfolgingstilfelleClientTest {
 
             assertNotNull(tilfelle)
             assertEquals(tilfelle.personident.value, ARBEIDSTAKER_PERSONIDENT.value)
-            assertEquals(tilfelle.antallSykedager, 42)
+            assertEquals(tilfelle.antallSykedager, 56)
         }
     }
 
