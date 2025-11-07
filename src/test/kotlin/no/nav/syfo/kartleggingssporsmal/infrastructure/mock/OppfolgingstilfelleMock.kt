@@ -8,6 +8,7 @@ import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_ERROR
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_NO_ARBEIDSGIVER
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfellePersonDTO
 import no.nav.syfo.shared.infrastructure.mock.respond
 import no.nav.syfo.shared.util.NAV_PERSONIDENT_HEADER
@@ -21,6 +22,13 @@ fun MockRequestHandleScope.oppfolgingstilfelleResponse(request: HttpRequestData)
                 personident = ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT.value,
                 tilfelleStart = LocalDate.now().minusWeeks(3),
                 antallSykedager = 10,
+            )
+        )
+        ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION.value -> respond(
+            createOppfolgingstilfellePersonDTO(
+                personident = ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION.value,
+                tilfelleStart = LocalDate.now().minusDays(6 * 7 + 1),
+                antallSykedager = 6 * 7 + 6,
             )
         )
         ARBEIDSTAKER_PERSONIDENT_NO_TILFELLE.value -> respond(
@@ -50,8 +58,8 @@ fun MockRequestHandleScope.oppfolgingstilfelleResponse(request: HttpRequestData)
         else -> respond(
             createOppfolgingstilfellePersonDTO(
                 personident = personident!!,
-                tilfelleStart = LocalDate.now().minusWeeks(3),
-                antallSykedager = 42,
+                tilfelleStart = LocalDate.now().minusDays(6 * 7 + 1),
+                antallSykedager = 6 * 7 + 14,
             )
         )
     }

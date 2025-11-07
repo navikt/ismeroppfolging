@@ -23,6 +23,7 @@ data class KartleggingssporsmalStoppunkt private constructor(
         internal const val KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS = 6L * DAYS_IN_WEEK
         internal const val KARTLEGGINGSSPORSMAL_STOPPUNKT_END_DAYS =
             KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS + KARTLEGGINGSSPORSMAL_STOPPUNKT_INTERVAL_DAYS
+        internal const val KARTLEGGINGSSPORSMAL_MINIMUM_NUMBER_OF_DAYS_LEFT_IN_OPPFOLGINGSTILFELLE = 7L
 
         fun create(
             oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromKafka,
