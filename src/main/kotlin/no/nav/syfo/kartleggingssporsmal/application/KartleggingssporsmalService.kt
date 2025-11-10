@@ -212,7 +212,7 @@ class KartleggingssporsmalService(
 
     private fun hasFewDaysLeftInOppfolgingstilfelle(oppfolgingstilfelle: Oppfolgingstilfelle): Boolean =
         oppfolgingstilfelle.durationInDays() <= KARTLEGGINGSSPORSMAL_STOPPUNKT_LIMIT_DAYS_EVEN_IF_FEW_DAYS_LEFT &&
-        oppfolgingstilfelle.tilfelleEnd <= LocalDate.now().plusDays(KARTLEGGINGSSPORSMAL_MINIMUM_NUMBER_OF_DAYS_LEFT_IN_OPPFOLGINGSTILFELLE)
+            oppfolgingstilfelle.tilfelleEnd <= LocalDate.now().plusDays(KARTLEGGINGSSPORSMAL_MINIMUM_NUMBER_OF_DAYS_LEFT_IN_OPPFOLGINGSTILFELLE)
 
     private fun hasGjeldende14aVedtak(vedtak14a: Vedtak14aResponseDTO?): Boolean = vedtak14a != null
 
