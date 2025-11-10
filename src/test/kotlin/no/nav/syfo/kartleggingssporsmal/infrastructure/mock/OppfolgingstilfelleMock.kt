@@ -8,7 +8,8 @@ import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_ERROR
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_NO_ARBEIDSGIVER
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT
-import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT_BUT_LONG
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfellePersonDTO
 import no.nav.syfo.shared.infrastructure.mock.respond
 import no.nav.syfo.shared.util.NAV_PERSONIDENT_HEADER
@@ -24,11 +25,18 @@ fun MockRequestHandleScope.oppfolgingstilfelleResponse(request: HttpRequestData)
                 antallSykedager = 10,
             )
         )
-        ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION.value -> respond(
+        ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT.value -> respond(
             createOppfolgingstilfellePersonDTO(
-                personident = ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION.value,
+                personident = ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT.value,
                 tilfelleStart = LocalDate.now().minusDays(6 * 7 + 1),
                 antallSykedager = 6 * 7 + 6,
+            )
+        )
+        ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT_BUT_LONG.value -> respond(
+            createOppfolgingstilfellePersonDTO(
+                personident = ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT.value,
+                tilfelleStart = LocalDate.now().minusDays(8 * 7 + 1),
+                antallSykedager = 8 * 7 + 6,
             )
         )
         ARBEIDSTAKER_PERSONIDENT_NO_TILFELLE.value -> respond(

@@ -15,7 +15,8 @@ import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_INACTIVE
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_NO_ARBEIDSGIVER
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT
-import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT_BUT_LONG
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TOO_OLD
 import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
@@ -439,6 +440,32 @@ class KartleggingssporsmalServiceTest {
             }
         }
 
+        fun `processStoppunkter should create kandidat when long tilfelle even if few days left`() {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                personident = ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT_BUT_LONG,
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+            assertNotNull(stoppunkt)
+
+            runBlocking {
+                kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+
+                val results = kartleggingssporsmalService.processStoppunkter()
+
+                assertEquals(1, results.size)
+                assertTrue(results.first().isSuccess)
+
+                val stoppunkt = results.first().getOrThrow()
+                val kandidat = database.getKandidatByStoppunktUUID(stoppunkt.uuid)
+                assertNotNull(kandidat)
+
+                val processedStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+                assertNotNull(processedStoppunkt.processedAt)
+            }
+        }
+
         @ParameterizedTest(name = "processStoppunkter should process unprocessed stoppunkt and not create kandidat for personident={0}, reason={1}")
         @MethodSource("no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalServiceTest#provideIkkeKandidatScenarios")
         fun `processStoppunkter should not create kandidat for various conditions`(
@@ -784,7 +811,7 @@ class KartleggingssporsmalServiceTest {
             Arguments.of(ARBEIDSTAKER_PERSONIDENT_HAS_14A.value, "has 14a vedtak"),
             Arguments.of(ARBEIDSTAKER_PERSONIDENT_TOO_OLD.value, "too old"),
             Arguments.of(ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT.value, "tilfelle is not longer than stoppunkt anymore"),
-            Arguments.of(ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION.value, "tilfelle is ends in a few days"),
+            Arguments.of(ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT.value, "tilfelle is ends in a few days"),
             Arguments.of(ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD.value, "person is dod"),
             Arguments.of(ARBEIDSTAKER_PERSONIDENT_NO_ARBEIDSGIVER.value, "person is not arbeidstaker"),
             Arguments.of(ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET.value, "person not in pilot"),
