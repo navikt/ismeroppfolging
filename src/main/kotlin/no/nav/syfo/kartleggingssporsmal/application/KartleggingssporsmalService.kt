@@ -7,6 +7,7 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatu
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_MINIMUM_NUMBER_OF_DAYS_LEFT_IN_OPPFOLGINGSTILFELLE
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_LIMIT_DAYS_EVEN_IF_FEW_DAYS_LEFT
 import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.model.getAlder
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aResponseDTO
@@ -193,8 +194,8 @@ class KartleggingssporsmalService(
             !oppfolgingstilfelle.isDod() &&
             oppfolgingstilfelle.isArbeidstakerAtTilfelleEnd &&
             oppfolgingstilfelle.durationInDays() >= KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS &&
-            oppfolgingstilfelle.tilfelleEnd >= LocalDate.now().plusDays(KARTLEGGINGSSPORSMAL_MINIMUM_NUMBER_OF_DAYS_LEFT_IN_OPPFOLGINGSTILFELLE) &&
             isYoungerThan67(alder) &&
+            !hasFewDaysLeftInOppfolgingstilfelle(oppfolgingstilfelle) &&
             !hasGjeldende14aVedtak(vedtak14a) &&
             !isAlreadyKandidatInTilfelle(oppfolgingstilfelle)
     }
@@ -208,6 +209,10 @@ class KartleggingssporsmalService(
     }
 
     private fun isYoungerThan67(alder: Int?): Boolean = alder != null && alder < 67
+
+    private fun hasFewDaysLeftInOppfolgingstilfelle(oppfolgingstilfelle: Oppfolgingstilfelle): Boolean =
+        oppfolgingstilfelle.durationInDays() <= KARTLEGGINGSSPORSMAL_STOPPUNKT_LIMIT_DAYS_EVEN_IF_FEW_DAYS_LEFT &&
+        oppfolgingstilfelle.tilfelleEnd <= LocalDate.now().plusDays(KARTLEGGINGSSPORSMAL_MINIMUM_NUMBER_OF_DAYS_LEFT_IN_OPPFOLGINGSTILFELLE)
 
     private fun hasGjeldende14aVedtak(vedtak14a: Vedtak14aResponseDTO?): Boolean = vedtak14a != null
 
