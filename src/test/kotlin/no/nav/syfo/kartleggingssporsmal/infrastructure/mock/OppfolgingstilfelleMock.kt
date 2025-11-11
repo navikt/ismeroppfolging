@@ -29,14 +29,14 @@ fun MockRequestHandleScope.oppfolgingstilfelleResponse(request: HttpRequestData)
             createOppfolgingstilfellePersonDTO(
                 personident = ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT.value,
                 tilfelleStart = LocalDate.now().minusDays(6 * 7 + 1),
-                antallSykedager = 6 * 7 + 6,
+                antallSykedager = 6 * 7 + 3,
             )
         )
         ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT_BUT_LONG.value -> respond(
             createOppfolgingstilfellePersonDTO(
                 personident = ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT.value,
                 tilfelleStart = LocalDate.now().minusDays(8 * 7 + 1),
-                antallSykedager = 8 * 7 + 6,
+                antallSykedager = 8 * 7 + 3,
             )
         )
         ARBEIDSTAKER_PERSONIDENT_NO_TILFELLE.value -> respond(
