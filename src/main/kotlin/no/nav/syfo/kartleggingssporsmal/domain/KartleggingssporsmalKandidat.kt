@@ -37,7 +37,7 @@ data class KartleggingssporsmalKandidat(
 
     fun ferdigbehandleVurdering(veilederident: String): KartleggingssporsmalKandidat {
         if (this.status !is KartleggingssporsmalKandidatStatusendring.SvarMottatt) {
-            throw IllegalArgumentException("Kandidat må ha svart på kartleggingsspørsmål for at det skal være mulig å ferdigbehandle vurdering")
+            throw IllegalArgumentException("Ferdigbehandling feilet: Kandidaten må ha status ${KartleggingssporsmalKandidatStatusendring.SvarMottatt::class.simpleName} for å ferdigbehandles, men var ${status.kandidatStatus} ")
         }
         return this.copy(status = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet(veilederident = veilederident))
     }

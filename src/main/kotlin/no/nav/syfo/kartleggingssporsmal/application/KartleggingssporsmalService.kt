@@ -53,8 +53,6 @@ class KartleggingssporsmalService(
             } else {
                 log.info("Oppfolgingstilfelle with uuid: ${oppfolgingstilfelle.uuid} is not relevant for kartleggingssporsmal")
             }
-        } else {
-            log.info("Oppfolgingstilfelle with uuid: ${oppfolgingstilfelle.uuid} is not in pilot")
         }
     }
 
