@@ -1,13 +1,13 @@
 package no.nav.syfo.kartleggingssporsmal.domain
 
 import no.nav.syfo.shared.domain.Personident
+import no.nav.syfo.shared.util.fullDaysBetween
 import no.nav.syfo.shared.util.isAfterOrEqual
 import no.nav.syfo.shared.util.isBeforeOrEqual
 import no.nav.syfo.shared.util.isMoreThanDaysAgo
 import no.nav.syfo.shared.util.tomorrow
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 sealed class Oppfolgingstilfelle(
@@ -70,12 +70,10 @@ sealed class Oppfolgingstilfelle(
 
     fun durationInDays(): Long {
         return antallSykedager?.toLong()
-            ?: (
-                ChronoUnit.DAYS.between(
-                    tilfelleStart,
-                    tilfelleEnd
-                ) + 1
-                )
+            ?: fullDaysBetween(
+                tilfelleStart,
+                tilfelleEnd,
+            )
     }
 
     companion object {

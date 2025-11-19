@@ -2,10 +2,10 @@ package no.nav.syfo.kartleggingssporsmal.domain
 
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
+import no.nav.syfo.shared.util.fullDaysBetween
 import no.nav.syfo.shared.util.nowUTC
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.math.min
 
@@ -82,7 +82,7 @@ data class KartleggingssporsmalStoppunkt private constructor(
             val durationDays = oppfolgingstilfelle.durationInDays()
             val durationInDaysUntilNow = min(
                 durationDays,
-                ChronoUnit.DAYS.between(oppfolgingstilfelle.tilfelleStart, LocalDate.now()) + 1
+                fullDaysBetween(oppfolgingstilfelle.tilfelleStart, LocalDate.now())
             )
             val hasDurationInsideInterval = durationDays in KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS..KARTLEGGINGSSPORSMAL_STOPPUNKT_END_DAYS
             val willHaveSykedagInIntervalDuringThisPeriod = durationInDaysUntilNow <= KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS && durationDays >= KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
