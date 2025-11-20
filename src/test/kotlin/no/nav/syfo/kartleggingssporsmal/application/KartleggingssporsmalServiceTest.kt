@@ -31,6 +31,7 @@ import no.nav.syfo.shared.infrastructure.database.getKandidatByStoppunktUUID
 import no.nav.syfo.shared.infrastructure.database.getKartleggingssporsmalStoppunkt
 import no.nav.syfo.shared.infrastructure.database.markStoppunktAsProcessed
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
+import no.nav.syfo.shared.util.fullDaysBetween
 import no.nav.syfo.shared.util.toLocalDateOslo
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -43,7 +44,6 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.Future
 import kotlin.test.assertNotNull
@@ -156,7 +156,7 @@ class KartleggingssporsmalServiceTest {
             val oppfolgingstilfelleExactly30DaysAgo = createOppfolgingstilfelleFromKafka(
                 tilfelleStart = start,
                 tilfelleEnd = end,
-                antallSykedager = ChronoUnit.DAYS.between(start, end).toInt() + 1,
+                antallSykedager = fullDaysBetween(start, end).toInt(),
             )
 
             kartleggingssporsmalService.processOppfolgingstilfelle(oppfolgingstilfelleExactly30DaysAgo)

@@ -25,3 +25,7 @@ fun tomorrow(): LocalDate = LocalDate.now().plusDays(1)
 infix fun LocalDate.isAfterOrEqual(other: LocalDate): Boolean = this.isAfter(other) || this == other
 
 infix fun LocalDate.isBeforeOrEqual(other: LocalDate): Boolean = this.isBefore(other) || this == other
+
+fun fullDaysBetween(startDate: LocalDate, endDate: LocalDate): Long {
+    return ChronoUnit.DAYS.between(startDate, endDate) + 1
+}
