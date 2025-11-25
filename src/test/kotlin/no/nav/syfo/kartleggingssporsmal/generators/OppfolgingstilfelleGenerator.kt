@@ -46,7 +46,11 @@ fun createOppfolgingstilfelleFromKafka(
     tilfelleStart: LocalDate = LocalDate.now(),
     antallSykedager: Int? = KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS.toInt() + 1,
     tilfelleEnd: LocalDate = tilfelleStart.plusDays(
-        antallSykedager?.toLong() ?: (KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS + 10)
+        if (antallSykedager != null) {
+            antallSykedager.toLong() - 1 // Antall sykedager inkluderer +1 i sin lengde, så man vil legge til én dag for mye hvis man kun legger til antallSykedager
+        } else {
+            KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS + 10
+        }
     ),
     isArbeidstakerAtTilfelleEnd: Boolean = true,
     virksomhetsnummerList: List<String> = listOf(VIRKSOMHETSNUMMER),
