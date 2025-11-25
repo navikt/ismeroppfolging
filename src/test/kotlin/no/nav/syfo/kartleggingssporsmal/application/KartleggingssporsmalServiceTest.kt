@@ -98,7 +98,7 @@ class KartleggingssporsmalServiceTest {
         @Test
         fun `processOppfolgingstilfelle should generate stoppunkt when oppfolgingstilfelle is relevant for stoppunkt`() = runTest {
             val oppfolgingstilfelleInsideStoppunktInterval = createOppfolgingstilfelleFromKafka(
-                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+                antallSykedager = stoppunktStartIntervalDays.toInt(),
             )
 
             kartleggingssporsmalService.processOppfolgingstilfelle(oppfolgingstilfelleInsideStoppunktInterval)
@@ -230,6 +230,54 @@ class KartleggingssporsmalServiceTest {
                 stoppunkter.first().tilfelleBitReferanseUuid
             )
             assertEquals(LocalDate.now(), stoppunkter.first().stoppunktAt)
+        }
+
+        @Test
+        fun `processOppfolgingstilfelle should generate correct stoppunkt when friske dager in fravar `() = runTest {
+            val tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays)
+            val tilfelleEnd = LocalDate.now().plusDays(20)
+            val numberOfFriskeDager = 21
+            val antallSykedager = fullDaysBetween(
+                tilfelleStart,
+                tilfelleEnd,
+            ).toInt() - numberOfFriskeDager
+            val oppfolgingstilfelleWithFriskeDagerInTilfelle = createOppfolgingstilfelleFromKafka(
+                antallSykedager = antallSykedager,
+                tilfelleStart = tilfelleStart,
+                tilfelleEnd = tilfelleEnd,
+            )
+
+            kartleggingssporsmalService.processOppfolgingstilfelle(oppfolgingstilfelleWithFriskeDagerInTilfelle)
+
+            val stoppunkter = database.getKartleggingssporsmalStoppunkt()
+            assertEquals(1, stoppunkter.size)
+            assertEquals(oppfolgingstilfelleWithFriskeDagerInTilfelle.personident, stoppunkter.first().personident)
+            assertEquals(
+                oppfolgingstilfelleWithFriskeDagerInTilfelle.tilfelleBitReferanseUuid,
+                stoppunkter.first().tilfelleBitReferanseUuid
+            )
+            assertEquals(tilfelleStart.plusDays(stoppunktStartIntervalDays + numberOfFriskeDager), stoppunkter.first().stoppunktAt)
+        }
+
+        @Test
+        fun `processOppfolgingstilfelle should not generate stoppunkt when periode between start and end long enough, but many friske dager in fravar`() = runTest {
+            val tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays + 10)
+            val tilfelleEnd = LocalDate.now().plusDays(2)
+            val numberOfFriskeDager = 15
+            val antallSykedager = fullDaysBetween(
+                tilfelleStart,
+                tilfelleEnd,
+            ).toInt() - numberOfFriskeDager
+            val oppfolgingstilfelleWithFriskeDagerInTilfelle = createOppfolgingstilfelleFromKafka(
+                antallSykedager = antallSykedager,
+                tilfelleStart = tilfelleStart,
+                tilfelleEnd = tilfelleEnd,
+            )
+
+            kartleggingssporsmalService.processOppfolgingstilfelle(oppfolgingstilfelleWithFriskeDagerInTilfelle)
+
+            val stoppunkter = database.getKartleggingssporsmalStoppunkt()
+            assertEquals(0, stoppunkter.size)
         }
 
         @Test

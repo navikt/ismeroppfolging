@@ -67,7 +67,7 @@ class JournalforingServiceTest {
         vedtak14aClient = externalMockEnvironment.vedtak14aClient,
         isKandidatPublishingEnabled = false,
     )
-    val stoppunktStartIntervalDays = 7L * DAYS_IN_WEEK
+    val stoppunktStartIntervalDays = 6L * DAYS_IN_WEEK
 
     @BeforeEach
     fun setUp() {
@@ -83,7 +83,7 @@ class JournalforingServiceTest {
         val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             personident = ARBEIDSTAKER_PERSONIDENT,
             tilfelleStart = tilfelleStart,
-            tilfelleEnd = LocalDate.now().plusDays(1),
+            tilfelleEnd = LocalDate.now(),
         )
         val firstKandidat = runBlocking {
             kartleggingssporsmalRepository.createStoppunkt(KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)!!)

@@ -38,6 +38,7 @@ data class KartleggingssporsmalStoppunkt private constructor(
                     stoppunktAt = calculateStoppunktDato(
                         tilfelleStart = oppfolgingstilfelle.tilfelleStart,
                         tilfelleEnd = oppfolgingstilfelle.tilfelleEnd,
+                        antallSykedager = oppfolgingstilfelle.antallSykedager,
                     ),
                     processedAt = null,
                 )
@@ -94,13 +95,34 @@ data class KartleggingssporsmalStoppunkt private constructor(
         private fun calculateStoppunktDato(
             tilfelleStart: LocalDate,
             tilfelleEnd: LocalDate,
+            antallSykedager: Int?,
         ): LocalDate {
             val today = LocalDate.now()
-            val stoppunkt = tilfelleStart.plusDays(KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS)
+            val friskeDagerInPeriod = calculateFriskeDagerInPeriod(
+                tilfelleStart,
+                tilfelleEnd,
+                antallSykedager,
+            )
+            val stoppunkt = tilfelleStart.plusDays(KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS + friskeDagerInPeriod)
             return if (stoppunkt.isBefore(today) && today.isBefore(tilfelleEnd)) {
                 today
             } else {
                 stoppunkt
+            }
+        }
+
+        private fun calculateFriskeDagerInPeriod(
+            tilfelleStart: LocalDate,
+            tilfelleEnd: LocalDate,
+            antallSykedager: Int?,
+        ): Int {
+            return when (antallSykedager) {
+                null -> 0
+                else -> {
+                    val totalVarighetPeriodeDays = fullDaysBetween(tilfelleStart, tilfelleEnd)
+                    val friskeDager = totalVarighetPeriodeDays - antallSykedager
+                    friskeDager.toInt()
+                }
             }
         }
     }
