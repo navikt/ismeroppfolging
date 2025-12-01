@@ -6,7 +6,7 @@ import no.nav.syfo.shared.util.fullDaysBetween
 import no.nav.syfo.shared.util.nowUTC
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 import kotlin.math.min
 
 data class KartleggingssporsmalStoppunkt private constructor(
@@ -98,12 +98,20 @@ data class KartleggingssporsmalStoppunkt private constructor(
             antallSykedager: Int?,
         ): LocalDate {
             val today = LocalDate.now()
-            val friskeDagerInPeriod = calculateFriskeDagerInPeriod(
-                tilfelleStart,
-                tilfelleEnd,
-                antallSykedager,
-            )
-            val stoppunkt = tilfelleStart.plusDays(KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS + friskeDagerInPeriod)
+            val friskeDagerInPeriod = antallSykedager?.let {
+                calculateFriskeDagerInPeriod(
+                    tilfelleStart,
+                    tilfelleEnd,
+                    antallSykedager,
+                )
+            }
+
+            val stoppunkt = if (friskeDagerInPeriod != null) {
+                tilfelleStart.plusDays(KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS + friskeDagerInPeriod)
+            } else {
+                tilfelleStart.plusDays(KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS)
+            }
+
             return if (stoppunkt.isBefore(today) && today.isBefore(tilfelleEnd)) {
                 today
             } else {
@@ -114,16 +122,11 @@ data class KartleggingssporsmalStoppunkt private constructor(
         private fun calculateFriskeDagerInPeriod(
             tilfelleStart: LocalDate,
             tilfelleEnd: LocalDate,
-            antallSykedager: Int?,
+            antallSykedager: Int,
         ): Int {
-            return when (antallSykedager) {
-                null -> 0
-                else -> {
-                    val totalVarighetPeriodeDays = fullDaysBetween(tilfelleStart, tilfelleEnd)
-                    val friskeDager = totalVarighetPeriodeDays - antallSykedager
-                    friskeDager.toInt()
-                }
-            }
+            val totalVarighetPeriodeDays = fullDaysBetween(tilfelleStart, tilfelleEnd)
+            val friskeDager = totalVarighetPeriodeDays - antallSykedager
+            return friskeDager.toInt()
         }
     }
 }

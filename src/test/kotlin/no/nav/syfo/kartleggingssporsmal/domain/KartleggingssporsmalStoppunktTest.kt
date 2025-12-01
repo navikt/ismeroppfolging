@@ -64,6 +64,21 @@ class KartleggingssporsmalStoppunktTest {
     }
 
     @Test
+    fun `should not postpone stoppunkt based on friske dager when antallSykedager is null`() {
+        val tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays)
+        val tilfelleEnd = LocalDate.now().plusDays(20)
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+            tilfelleStart = tilfelleStart,
+            tilfelleEnd = tilfelleEnd,
+            antallSykedager = null,
+        )
+        val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+
+        assertNotNull(kartleggingssporsmalStoppunkt)
+        assertEquals(tilfelleStart.plusDays(stoppunktStartIntervalDays), kartleggingssporsmalStoppunkt.stoppunktAt)
+    }
+
+    @Test
     fun `initialization should return null when oppfolgingstilfelle does not generate a stoppunkt`() {
         val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now(),
