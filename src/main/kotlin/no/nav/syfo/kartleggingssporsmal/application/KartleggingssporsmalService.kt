@@ -11,12 +11,13 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Com
 import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.model.getAlder
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aResponseDTO
+import no.nav.syfo.senoppfolging.application.SenOppfolgingService
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.util.toLocalDateOslo
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 
 class KartleggingssporsmalService(
     private val behandlendeEnhetClient: IBehandlendeEnhetClient,
@@ -26,6 +27,7 @@ class KartleggingssporsmalService(
     private val kartleggingssporsmalKandidatProducer: IKartleggingssporsmalKandidatProducer,
     private val pdlClient: IPdlClient,
     private val vedtak14aClient: IVedtak14aClient,
+    private val senOppfolgingService: SenOppfolgingService,
     private val isKandidatPublishingEnabled: Boolean,
 ) {
 
@@ -195,7 +197,8 @@ class KartleggingssporsmalService(
             isYoungerThan67(alder) &&
             !hasFewDaysLeftInOppfolgingstilfelle(oppfolgingstilfelle) &&
             !hasGjeldende14aVedtak(vedtak14a) &&
-            !isAlreadyKandidatInTilfelle(oppfolgingstilfelle)
+            !isAlreadyKandidatInTilfelle(oppfolgingstilfelle) &&
+            !hasReceivedSenOppfolgingVarselRecently(oppfolgingstilfelle.personident)
     }
 
     private suspend fun isAlreadyKandidatInTilfelle(oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromApi): Boolean {
@@ -213,6 +216,16 @@ class KartleggingssporsmalService(
             oppfolgingstilfelle.tilfelleEnd <= LocalDate.now().plusDays(KARTLEGGINGSSPORSMAL_MINIMUM_NUMBER_OF_DAYS_LEFT_IN_OPPFOLGINGSTILFELLE)
 
     private fun hasGjeldende14aVedtak(vedtak14a: Vedtak14aResponseDTO?): Boolean = vedtak14a != null
+
+    private fun hasReceivedSenOppfolgingVarselRecently(personident: Personident): Boolean {
+        val senOppfolgingKandidat = senOppfolgingService.getKandidater(personident).firstOrNull()
+        return if (senOppfolgingKandidat?.varselAt != null) {
+            val thresholdDateTime = OffsetDateTime.now().minusWeeks(26)
+            senOppfolgingKandidat.varselAt.isAfter(thresholdDateTime)
+        } else {
+            false
+        }
+    }
 
     private fun isInPilot(enhetId: String?) = enhetId in pilotkontorer
 

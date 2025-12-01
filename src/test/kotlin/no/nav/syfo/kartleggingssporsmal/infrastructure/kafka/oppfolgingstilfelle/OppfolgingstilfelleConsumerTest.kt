@@ -18,7 +18,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.util.*
+import java.util.UUID
 
 class OppfolgingstilfelleConsumerTest {
 
@@ -40,6 +40,7 @@ class OppfolgingstilfelleConsumerTest {
         kartleggingssporsmalKandidatProducer = kartleggingssporsmalKandidatProducer,
         pdlClient = externalMockEnvironment.pdlClient,
         vedtak14aClient = externalMockEnvironment.vedtak14aClient,
+        senOppfolgingService = externalMockEnvironment.senOppfolgingService,
         isKandidatPublishingEnabled = true,
     )
     private val oppfolgingstilfelleConsumer = OppfolgingstilfelleConsumer(kartleggingssporsmalService)

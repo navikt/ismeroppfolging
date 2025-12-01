@@ -42,6 +42,7 @@ fun Application.testApiModule(
         kartleggingssporsmalKandidatProducer = kartleggingssporsmalKandidatProducer,
         pdlClient = externalMockEnvironment.pdlClient,
         vedtak14aClient = externalMockEnvironment.vedtak14aClient,
+        senOppfolgingService = senOppfolgingService,
         isKandidatPublishingEnabled = true,
     )
 

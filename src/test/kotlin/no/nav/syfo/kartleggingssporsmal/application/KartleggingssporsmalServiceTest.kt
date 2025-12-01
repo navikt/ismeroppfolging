@@ -59,6 +59,8 @@ class KartleggingssporsmalServiceTest {
     private val mockKandidatProducer = mockk<KafkaProducer<String, KartleggingssporsmalKandidatStatusRecord>>(relaxed = true)
     private val kartleggingssporsmalKandidatProducer = KartleggingssporsmalKandidatProducer(mockKandidatProducer)
 
+    private val senOppfolgingService = ExternalMockEnvironment.instance.senOppfolgingService
+
     private val kartleggingssporsmalService = KartleggingssporsmalService(
         behandlendeEnhetClient = ExternalMockEnvironment.instance.behandlendeEnhetClient,
         kartleggingssporsmalRepository = kartleggingssporsmalRepository,
@@ -67,6 +69,7 @@ class KartleggingssporsmalServiceTest {
         kartleggingssporsmalKandidatProducer = kartleggingssporsmalKandidatProducer,
         pdlClient = ExternalMockEnvironment.instance.pdlClient,
         vedtak14aClient = ExternalMockEnvironment.instance.vedtak14aClient,
+        senOppfolgingService = senOppfolgingService,
         isKandidatPublishingEnabled = false,
     )
 
@@ -78,6 +81,7 @@ class KartleggingssporsmalServiceTest {
         kartleggingssporsmalKandidatProducer = kartleggingssporsmalKandidatProducer,
         pdlClient = ExternalMockEnvironment.instance.pdlClient,
         vedtak14aClient = ExternalMockEnvironment.instance.vedtak14aClient,
+        senOppfolgingService = senOppfolgingService,
         isKandidatPublishingEnabled = true,
     )
 
@@ -587,6 +591,77 @@ class KartleggingssporsmalServiceTest {
             val results = kartleggingssporsmalService.processStoppunkter()
 
             assertEquals(0, results.size)
+        }
+
+        @Test
+        fun `processStoppunkter should process unprocessed stoppunkt and create kandidat when kandidat for sen oppfolging 26 weeks ago`() = runTest {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+            assertNotNull(stoppunkt)
+
+            kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+
+            senOppfolgingService.createKandidat(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                varselAt = OffsetDateTime.now().minusWeeks(26),
+                varselId = UUID.randomUUID(),
+            )
+
+            val results = kartleggingssporsmalServiceWithKandidatPublishingEnabled.processStoppunkter()
+
+            assertEquals(1, results.size)
+            assertTrue(results.first().isSuccess)
+
+            val stoppunktProcessed = results.first().getOrThrow()
+            val kandidat = database.getKandidatByStoppunktUUID(stoppunktProcessed.uuid)
+            assertNotNull(kandidat)
+            assertEquals(KandidatStatus.KANDIDAT.name, kandidat.status)
+            assertEquals(oppfolgingstilfelle.personident, kandidat.personident)
+            assertNotNull(kandidat.varsletAt)
+
+            val dbStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+            assertNotNull(dbStoppunkt.processedAt)
+
+            verify(exactly = 1) { mockKandidatProducer.send(any()) }
+            verify(exactly = 1) { mockEsyfoVarselProducer.send(any()) }
+        }
+
+        @Test
+        fun `processStoppunkter should process unprocessed stoppunkt and not create kandidat when already kandidat for sen oppfolging`() = runTest {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+            assertNotNull(stoppunkt)
+
+            kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+
+            senOppfolgingService.createKandidat(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                varselAt = OffsetDateTime.now().minusWeeks(25),
+                varselId = UUID.randomUUID(),
+            )
+
+            val results = kartleggingssporsmalServiceWithKandidatPublishingEnabled.processStoppunkter()
+
+            assertEquals(1, results.size)
+            assertTrue(results.first().isSuccess)
+
+            val stoppunktProcessed = results.first().getOrThrow()
+            val kandidat = database.getKandidatByStoppunktUUID(stoppunktProcessed.uuid)
+            assertNull(kandidat)
+
+            val dbStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+            assertNotNull(dbStoppunkt.processedAt)
+
+            verify(exactly = 0) { mockKandidatProducer.send(any()) }
+            verify(exactly = 0) { mockEsyfoVarselProducer.send(any()) }
         }
     }
 
