@@ -1,14 +1,20 @@
 package no.nav.syfo
 
+import io.mockk.mockk
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.shared.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
+import no.nav.syfo.senoppfolging.application.SenOppfolgingService
+import no.nav.syfo.senoppfolging.infrastructure.database.repository.SenOppfolgingRepository
+import no.nav.syfo.senoppfolging.infrastructure.kafka.producer.KandidatStatusProducer
+import no.nav.syfo.senoppfolging.infrastructure.kafka.producer.KandidatStatusRecord
 import no.nav.syfo.shared.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.shared.infrastructure.database.TestDatabase
 import no.nav.syfo.shared.infrastructure.mock.mockHttpClient
+import org.apache.kafka.clients.producer.KafkaProducer
 import java.nio.file.Paths
 
 fun wellKnownInternalAzureAD(): WellKnown {
@@ -54,6 +60,18 @@ class ExternalMockEnvironment private constructor() {
 
     val kartleggingssporsmalRepository = KartleggingssporsmalRepository(
         database = database
+    )
+
+    private val senOppfolgingRepository = SenOppfolgingRepository(database = database)
+
+    private val mockSenOppfolgingKandidatStatusProducer = mockk<KafkaProducer<String, KandidatStatusRecord>>(relaxed = true)
+    private val senOppfolgingKandidatStatusProducer = KandidatStatusProducer(
+        producer = mockSenOppfolgingKandidatStatusProducer,
+    )
+
+    val senOppfolgingService = SenOppfolgingService(
+        senOppfolgingRepository = senOppfolgingRepository,
+        kandidatStatusProducer = senOppfolgingKandidatStatusProducer,
     )
 
     companion object {

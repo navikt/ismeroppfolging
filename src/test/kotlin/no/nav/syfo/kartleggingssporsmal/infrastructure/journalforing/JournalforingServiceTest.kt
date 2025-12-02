@@ -65,6 +65,7 @@ class JournalforingServiceTest {
         kartleggingssporsmalKandidatProducer = kartleggingssporsmalKandidatProducer,
         pdlClient = externalMockEnvironment.pdlClient,
         vedtak14aClient = externalMockEnvironment.vedtak14aClient,
+        senOppfolgingService = externalMockEnvironment.senOppfolgingService,
         isKandidatPublishingEnabled = false,
     )
     val stoppunktStartIntervalDays = 6L * DAYS_IN_WEEK

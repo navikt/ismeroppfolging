@@ -139,6 +139,7 @@ fun main() {
                 kartleggingssporsmalKandidatProducer = kartleggingssporsmalKandidatProducer,
                 pdlClient = pdlClient,
                 vedtak14aClient = vedtak14aClient,
+                senOppfolgingService = senOppfolgingService,
                 isKandidatPublishingEnabled = environment.isKandidatPublishingEnabled,
             )
             journalforingService = JournalforingService(
