@@ -10,6 +10,21 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
+/**
+ * Represents an oppfolgingstilfelle for a person.
+ * Can be created from data received from Kafka or from an API.
+ *
+ * @param isArbeidstakerAtTilfelleEnd Indicates if the person was an arbeidstaker at the end of the oppfolgingstilfelle.
+ * @param tilfelleStart The start date of the oppfolgingstilfelle.
+ * @param tilfelleEnd The end date of the oppfolgingstilfelle.
+ * @param personident The personal identifier of the person.
+ * @param antallSykedager The number of sykedager in oppfolgingstilfellet.
+ * Will be shorter or equal to the number of days between tilfelleStart and tilfelleEnd due to feriedager or friske dager in interval.
+ * Can be null for old oppfolgingstilfeller.
+ * @param dodsdato The date of death, null if still alive.
+ * @param virksomhetsnummerList List of virksomhetsnummer the person is sykmeldt from in oppfolgingstilfellet.
+ *
+ */
 sealed class Oppfolgingstilfelle(
     open val isArbeidstakerAtTilfelleEnd: Boolean,
     open val tilfelleStart: LocalDate,
