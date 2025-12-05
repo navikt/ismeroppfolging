@@ -220,7 +220,7 @@ class KartleggingssporsmalService(
     private fun hasReceivedSenOppfolgingVarselRecently(personident: Personident): Boolean {
         val senOppfolgingKandidat = senOppfolgingService.getKandidater(personident).firstOrNull()
         return if (senOppfolgingKandidat?.varselAt != null) {
-            val thresholdDateTime = OffsetDateTime.now().minusWeeks(26)
+            val thresholdDateTime = OffsetDateTime.now().minusWeeks(OPPARBEIDE_NY_SYKEPENGERETT_WEEKS)
             senOppfolgingKandidat.varselAt.isAfter(thresholdDateTime)
         } else {
             false
@@ -245,5 +245,6 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_LIER = "0626"
         private const val KONTOR_NAV_ASKER = "0220"
         private val pilotkontorer = listOf(KONTOR_NAV_LIER, KONTOR_NAV_ASKER)
+        private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
 }
