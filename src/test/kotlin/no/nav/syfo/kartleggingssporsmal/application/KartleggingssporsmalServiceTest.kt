@@ -13,6 +13,7 @@ import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_ERROR
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_HAS_14A
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_INACTIVE
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_NO_ARBEIDSGIVER
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_PILOT_UTEN_UTSENDING
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT
@@ -454,6 +455,41 @@ class KartleggingssporsmalServiceTest {
             val recordEsyfoVarsel = producerEsyfoRecordSlot.captured.value()
             assertEquals(kandidat.personident.value, (recordEsyfoVarsel as ArbeidstakerHendelse).arbeidstakerFnr)
             assertEquals(HendelseType.SM_KARTLEGGINGSSPORSMAL, recordEsyfoVarsel.type)
+
+            val dbStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+            assertEquals(kandidat.personident, dbStoppunkt.personident)
+            assertNotNull(dbStoppunkt.processedAt)
+        }
+
+        @Test
+        fun `processStoppunkter should process unprocessed stoppunkt and create KANDIDAT but not publish when pilotkontor not enabled for varsel`() = runTest {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                personident = ARBEIDSTAKER_PERSONIDENT_PILOT_UTEN_UTSENDING,
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+            assertNotNull(stoppunkt)
+
+            kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+
+            val results = kartleggingssporsmalServiceWithKandidatPublishingEnabled.processStoppunkter()
+
+            assertEquals(1, results.size)
+            assertTrue(results.first().isSuccess)
+
+            val stoppunktProcesed = results.first().getOrThrow()
+            val kandidat = database.getKandidatByStoppunktUUID(stoppunktProcesed.uuid)!!
+            val kandidatStatusList = kartleggingssporsmalRepository.getKandidatStatusendringer(kandidat.uuid)
+            assertEquals(1, kandidatStatusList.size)
+            val kandidatStatus = kandidatStatusList.first()
+
+            assertEquals(oppfolgingstilfelle.personident, kandidat.personident)
+            assertEquals(KandidatStatus.KANDIDAT.name, kandidat.status)
+            assertNull(kandidat.varsletAt)
+            assertNull(kandidatStatus.publishedAt)
+            verify(exactly = 0) { mockKandidatProducer.send(any()) }
+            verify(exactly = 0) { mockEsyfoVarselProducer.send(any()) }
 
             val dbStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
             assertEquals(kandidat.personident, dbStoppunkt.personident)

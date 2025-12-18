@@ -9,6 +9,7 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Com
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_MINIMUM_NUMBER_OF_DAYS_LEFT_IN_OPPFOLGINGSTILFELLE
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_LIMIT_DAYS_EVEN_IF_FEW_DAYS_LEFT
 import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
+import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet.Enhet
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.model.getAlder
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aResponseDTO
 import no.nav.syfo.senoppfolging.application.SenOppfolgingService
@@ -63,11 +64,11 @@ class KartleggingssporsmalService(
         val callId = UUID.randomUUID().toString()
 
         // De kan ha flyttet i tiden mellom stoppunktet ble laget og nå, og da skal de ikke bli kandidat
-        val pilotStoppunkter = findPilotStoppunkter(unprocessedStoppunkter, callId)
+        val pilotStoppunkter = findEnhetForStoppunkter(unprocessedStoppunkter, callId)
 
-        return pilotStoppunkter.map { (stoppunktId, stoppunkt, isInPilot) ->
+        return pilotStoppunkter.map { (stoppunktId, stoppunkt, enhet) ->
             runCatching {
-                val isKandidat = if (isInPilot) {
+                val isKandidat = if (isInPilot(enhet?.enhetId)) {
                     coroutineScope {
                         val oppfolgingstilfelleRequest = async {
                             oppfolgingstilfelleClient.getOppfolgingstilfelle(
@@ -95,6 +96,7 @@ class KartleggingssporsmalService(
                         )
                     }
                 } else {
+                    log.warn("Stoppunkt with uuid ${stoppunkt.uuid} is not longer valid for pilot")
                     false
                 }
 
@@ -104,7 +106,7 @@ class KartleggingssporsmalService(
                         kandidat = kandidat,
                         stoppunktId = stoppunktId,
                     )
-                    if (isKandidatPublishingEnabled) {
+                    if (isKandidatPublishingEnabled && shouldSendVarsel(enhet?.enhetId)) {
                         kartleggingssporsmalKandidatProducer.send(
                             kandidat = persistedKandidat,
                         ).map {
@@ -157,10 +159,10 @@ class KartleggingssporsmalService(
         return updatedKandidat
     }
 
-    private suspend fun findPilotStoppunkter(
+    private suspend fun findEnhetForStoppunkter(
         unprocessedStoppunkter: List<Pair<Int, KartleggingssporsmalStoppunkt>>,
         callId: String,
-    ): List<Triple<Int, KartleggingssporsmalStoppunkt, Boolean>> {
+    ): List<Triple<Int, KartleggingssporsmalStoppunkt, Enhet?>> {
         return unprocessedStoppunkter.map { (stoppunktId, stoppunkt) ->
             val behandlendeEnhet = behandlendeEnhetClient.getEnhet(
                 callId = callId,
@@ -175,12 +177,7 @@ class KartleggingssporsmalService(
                 }
             }
 
-            val isInPilot = isInPilot(behandlendeEnhet?.enhetId)
-            if (!isInPilot) {
-                log.warn("Stoppunkt with uuid ${stoppunkt.uuid} is not longer valid for pilot")
-            }
-
-            Triple(stoppunktId, stoppunkt, isInPilot)
+            Triple(stoppunktId, stoppunkt, behandlendeEnhet)
         }
     }
 
@@ -229,6 +226,8 @@ class KartleggingssporsmalService(
 
     private fun isInPilot(enhetId: String?) = enhetId in pilotkontorer
 
+    private fun shouldSendVarsel(enhetId: String?) = enhetId in pilotkontorerMedVarsel
+
     suspend fun getKandidat(personident: Personident): KartleggingssporsmalKandidat? {
         return kartleggingssporsmalRepository.getKandidat(personident)
     }
@@ -244,7 +243,15 @@ class KartleggingssporsmalService(
         private val log = LoggerFactory.getLogger(KartleggingssporsmalService::class.java)
         private const val KONTOR_NAV_LIER = "0626"
         private const val KONTOR_NAV_ASKER = "0220"
-        private val pilotkontorer = listOf(KONTOR_NAV_LIER, KONTOR_NAV_ASKER)
+        private const val KONTOR_NAV_GRORUD = "0328"
+        private const val KONTOR_NAV_NORDSTRAND = "0318"
+        private const val KONTOR_NAV_SONDRE_NORDSTRAND = "0319"
+        private val pilotkontorerMedVarsel = listOf(KONTOR_NAV_LIER, KONTOR_NAV_ASKER)
+        private val pilotkontorer = listOf(
+            KONTOR_NAV_GRORUD,
+            KONTOR_NAV_NORDSTRAND,
+            KONTOR_NAV_SONDRE_NORDSTRAND,
+        ) + pilotkontorerMedVarsel
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
 }
