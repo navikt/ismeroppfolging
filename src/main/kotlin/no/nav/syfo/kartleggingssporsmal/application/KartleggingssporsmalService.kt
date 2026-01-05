@@ -248,6 +248,9 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_SONDRE_NORDSTRAND = "0319"
         private const val KONTOR_NAV_MADLA = "1165"
         private const val KONTOR_NAV_GJESDAL = "1122"
+        private const val KONTOR_NAV_SANDEFJORD = "0710"
+        private const val KONTOR_NAV_HOLMESTRAND = "5301"
+        private const val KONTOR_NAV_PORSGRUNN = "0805"
         private val pilotkontorerMedVarsel = listOf(KONTOR_NAV_LIER, KONTOR_NAV_ASKER)
         private val pilotkontorer = listOf(
             KONTOR_NAV_GRORUD,
@@ -255,6 +258,9 @@ class KartleggingssporsmalService(
             KONTOR_NAV_SONDRE_NORDSTRAND,
             KONTOR_NAV_MADLA,
             KONTOR_NAV_GJESDAL,
+            KONTOR_NAV_SANDEFJORD,
+            KONTOR_NAV_HOLMESTRAND,
+            KONTOR_NAV_PORSGRUNN,
         ) + pilotkontorerMedVarsel
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
