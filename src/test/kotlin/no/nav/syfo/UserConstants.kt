@@ -28,7 +28,7 @@ object UserConstants {
     const val VEILEDER_IDENT = "Z999999"
     const val VIRKSOMHETSNUMMER = "123456789"
     const val VALID_PILOTKONTOR = "0220"
-    const val VALID_PILOTKONTOR_UTEN_VARSEL = "0318"
+    const val VALID_PILOTKONTOR_UTEN_VARSEL = "0710"
     const val PERSON_FORNAVN = "Fornavn"
     const val PERSON_MELLOMNAVN = "Mellomnavn"
     const val PERSON_ETTERNAVN = "Etternavnesen"
