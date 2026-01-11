@@ -251,11 +251,14 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_SANDEFJORD = "0710"
         private const val KONTOR_NAV_HOLMESTRAND = "5301"
         private const val KONTOR_NAV_PORSGRUNN = "0805"
-        private val pilotkontorerMedVarsel = listOf(KONTOR_NAV_LIER, KONTOR_NAV_ASKER)
-        private val pilotkontorer = listOf(
+        private val pilotkontorerMedVarsel = listOf(
+            KONTOR_NAV_LIER,
+            KONTOR_NAV_ASKER,
             KONTOR_NAV_GRORUD,
             KONTOR_NAV_NORDSTRAND,
             KONTOR_NAV_SONDRE_NORDSTRAND,
+        )
+        private val pilotkontorer = listOf(
             KONTOR_NAV_MADLA,
             KONTOR_NAV_GJESDAL,
             KONTOR_NAV_SANDEFJORD,
