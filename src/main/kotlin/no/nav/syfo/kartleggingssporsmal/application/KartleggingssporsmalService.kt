@@ -236,6 +236,10 @@ class KartleggingssporsmalService(
         return kartleggingssporsmalRepository.getKandidat(uuid)
     }
 
+    suspend fun getKandidater(personident: Personident): List<KartleggingssporsmalKandidat> {
+        return kartleggingssporsmalRepository.getKandidater(personident)
+    }
+
     suspend fun getKandidatStatus(kandidatUuid: UUID): List<KartleggingssporsmalKandidatStatusendring> =
         kartleggingssporsmalRepository.getKandidatStatusendringer(kandidatUuid)
 
