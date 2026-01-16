@@ -15,6 +15,7 @@ data class KandidatStatusDTO(
     val status: KandidatStatus,
     val statusAt: OffsetDateTime,
     val vurdering: VurderingDTO?,
+    val createdAt: OffsetDateTime,
 )
 
 data class VurderingDTO(
@@ -39,4 +40,5 @@ fun KartleggingssporsmalKandidat.toKandidatStatusDTO(
                 vurdertBy = (it as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet).veilederident,
             )
         },
+    createdAt = this.createdAt
 )
