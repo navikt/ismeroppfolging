@@ -51,7 +51,7 @@ class KartleggingssporsmalRepository(
                 }
         }
 
-    override suspend fun getKandidater(personident: Personident): List<KartleggingssporsmalKandidat> {
+    override suspend fun getKandidatur(personident: Personident): List<KartleggingssporsmalKandidat> {
         return database.connection.use { connection ->
             connection.getKandidater(personident)
                 .map { (kandidat, statusendring) ->

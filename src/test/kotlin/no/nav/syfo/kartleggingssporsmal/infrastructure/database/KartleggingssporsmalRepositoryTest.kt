@@ -229,7 +229,7 @@ class KartleggingssporsmalRepositoryTest {
     }
 
     @Test
-    fun `getKandidater should retrieve a list of kandidater with the newest kandidate first`() {
+    fun `getKandidatur should retrieve a list of kandidater with the newest kandidate first`() {
         val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now().minusDays(6 * 7),
             antallSykedager = 6 * 7 + 1,
@@ -256,7 +256,7 @@ class KartleggingssporsmalRepositoryTest {
                 stoppunktId = createdStoppunkter[1].id,
             )
 
-            val fetchedKandidat = kartleggingssporsmalRepository.getKandidater(ARBEIDSTAKER_PERSONIDENT)
+            val fetchedKandidat = kartleggingssporsmalRepository.getKandidatur(ARBEIDSTAKER_PERSONIDENT)
             assertEquals(fetchedKandidat.size, 2)
             assertEquals(fetchedKandidat[0].uuid, kandidat.uuid)
             assertEquals(fetchedKandidat[1].uuid, otherKandidat.uuid)

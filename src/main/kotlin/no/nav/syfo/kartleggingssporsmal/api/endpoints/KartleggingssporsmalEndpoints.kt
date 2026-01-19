@@ -28,7 +28,7 @@ fun Route.registerKartleggingssporsmalEndpoints(
                 personident = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
-                val kandidater = kartleggingssporsmalService.getKandidater(personident)
+                val kandidater = kartleggingssporsmalService.getKandidatur(personident)
                 if (kandidater.isNotEmpty()) {
                     val responseList = kandidater.map {
                         val kandidatStatusListe = kartleggingssporsmalService.getKandidatStatus(it.uuid)

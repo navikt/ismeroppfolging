@@ -69,7 +69,7 @@ class KartleggingssporsmalEndpointsTest {
         fun `Returns status OK if valid token is supplied and kandidat exists`() = testApplication {
             val client = setupApiAndClient(kartleggingssporsmalServiceMock)
             val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
-            coEvery { kartleggingssporsmalServiceMock.getKandidater(ARBEIDSTAKER_PERSONIDENT) } returns listOf(kandidat)
+            coEvery { kartleggingssporsmalServiceMock.getKandidatur(ARBEIDSTAKER_PERSONIDENT) } returns listOf(kandidat)
             coEvery { kartleggingssporsmalServiceMock.getKandidatStatus(kandidat.uuid) } returns listOf(kandidat.status)
 
             val response = client.get(kartleggingssporsmalUrl) {
