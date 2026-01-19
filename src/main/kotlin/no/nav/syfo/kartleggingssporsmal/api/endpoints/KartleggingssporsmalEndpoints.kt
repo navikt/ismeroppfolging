@@ -28,12 +28,15 @@ fun Route.registerKartleggingssporsmalEndpoints(
                 personident = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
-                val kandidat = kartleggingssporsmalService.getKandidat(personident)
-                if (kandidat != null) {
-                    val kandidatStatusListe = kartleggingssporsmalService.getKandidatStatus(kandidat.uuid)
-                    call.respond<KandidatStatusDTO>(
+                val kandidater = kartleggingssporsmalService.getKandidatur(personident)
+                if (kandidater.isNotEmpty()) {
+                    val responseList = kandidater.map {
+                        val kandidatStatusListe = kartleggingssporsmalService.getKandidatStatus(it.uuid)
+                        it.toKandidatStatusDTO(kandidatStatusListe)
+                    }
+                    call.respond<List<KandidatStatusDTO>>(
                         status = HttpStatusCode.OK,
-                        message = kandidat.toKandidatStatusDTO(kandidatStatusListe)
+                        message = responseList
                     )
                 } else {
                     call.respond(HttpStatusCode.NotFound)

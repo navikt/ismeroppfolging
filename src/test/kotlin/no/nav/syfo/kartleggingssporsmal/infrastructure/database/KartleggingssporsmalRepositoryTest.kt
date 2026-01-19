@@ -229,6 +229,41 @@ class KartleggingssporsmalRepositoryTest {
     }
 
     @Test
+    fun `getKandidatur should retrieve a list of kandidater with the newest kandidate first`() {
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+            tilfelleStart = LocalDate.now().minusDays(6 * 7),
+            antallSykedager = 6 * 7 + 1,
+        )
+        val kartleggingssporsmalStoppunkt1 = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+        val kartleggingssporsmalStoppunkt2 = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+        assertNotNull(kartleggingssporsmalStoppunkt1)
+        assertNotNull(kartleggingssporsmalStoppunkt2)
+
+        runBlocking {
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt1)
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt2)
+            val createdStoppunkter = database.getKartleggingssporsmalStoppunkt()
+
+            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            val otherKandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+                .copy(createdAt = OffsetDateTime.now().minusHours(1))
+            kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkter[0].id,
+            )
+            kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = otherKandidat,
+                stoppunktId = createdStoppunkter[1].id,
+            )
+
+            val fetchedKandidat = kartleggingssporsmalRepository.getKandidatur(ARBEIDSTAKER_PERSONIDENT)
+            assertEquals(fetchedKandidat.size, 2)
+            assertEquals(fetchedKandidat[0].uuid, kandidat.uuid)
+            assertEquals(fetchedKandidat[1].uuid, otherKandidat.uuid)
+        }
+    }
+
+    @Test
     fun `updateSvarForKandidat should update the svarAt field for the kandidat in the database`() {
         val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now().minusDays(6 * 7),

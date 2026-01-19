@@ -20,6 +20,7 @@ interface IKartleggingssporsmalRepository {
 
     suspend fun getKandidat(personident: Personident): KartleggingssporsmalKandidat?
     suspend fun getKandidat(uuid: UUID): KartleggingssporsmalKandidat?
+    suspend fun getKandidatur(personident: Personident): List<KartleggingssporsmalKandidat>
     suspend fun getKandidatStatusendringer(kandidatUuid: UUID): List<KartleggingssporsmalKandidatStatusendring>
     suspend fun createKandidatStatusendring(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat
 
