@@ -261,13 +261,13 @@ class KartleggingssporsmalService(
             KONTOR_NAV_GRORUD,
             KONTOR_NAV_NORDSTRAND,
             KONTOR_NAV_SONDRE_NORDSTRAND,
+            KONTOR_NAV_SANDEFJORD,
+            KONTOR_NAV_HOLMESTRAND,
+            KONTOR_NAV_PORSGRUNN,
         )
         private val pilotkontorer = listOf(
             KONTOR_NAV_MADLA,
             KONTOR_NAV_GJESDAL,
-            KONTOR_NAV_SANDEFJORD,
-            KONTOR_NAV_HOLMESTRAND,
-            KONTOR_NAV_PORSGRUNN,
         ) + pilotkontorerMedVarsel
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
