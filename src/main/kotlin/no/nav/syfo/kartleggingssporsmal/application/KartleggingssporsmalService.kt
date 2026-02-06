@@ -111,7 +111,8 @@ class KartleggingssporsmalService(
                             kandidat = persistedKandidat,
                         ).map {
                             kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(persistedKandidat)
-                            if (esyfoVarselProducer.sendKartleggingssporsmal(persistedKandidat).isSuccess) {
+                            val resultVarsling = esyfoVarselProducer.sendKartleggingssporsmal(persistedKandidat)
+                            if (resultVarsling.isSuccess) {
                                 kartleggingssporsmalRepository.updateVarsletAtForKandidat(persistedKandidat)
                             }
                         }
@@ -199,7 +200,7 @@ class KartleggingssporsmalService(
     }
 
     private suspend fun isAlreadyKandidatInTilfelle(oppfolgingstilfelle: Oppfolgingstilfelle.OppfolgingstilfelleFromApi): Boolean {
-        val existingKandidat = kartleggingssporsmalRepository.getKandidat(oppfolgingstilfelle.personident)
+        val existingKandidat = getLatestKandidat(oppfolgingstilfelle.personident)
         return existingKandidat != null &&
             oppfolgingstilfelle.datoInsideTilfelle(
                 dato = existingKandidat.createdAt.toLocalDateOslo()
@@ -228,8 +229,8 @@ class KartleggingssporsmalService(
 
     private fun shouldSendVarsel(enhetId: String?) = enhetId in pilotkontorerMedVarsel
 
-    suspend fun getKandidat(personident: Personident): KartleggingssporsmalKandidat? {
-        return kartleggingssporsmalRepository.getKandidat(personident)
+    suspend fun getLatestKandidat(personident: Personident): KartleggingssporsmalKandidat? {
+        return kartleggingssporsmalRepository.getLatestKandidat(personident)
     }
 
     suspend fun getKandidat(uuid: UUID): KartleggingssporsmalKandidat? {

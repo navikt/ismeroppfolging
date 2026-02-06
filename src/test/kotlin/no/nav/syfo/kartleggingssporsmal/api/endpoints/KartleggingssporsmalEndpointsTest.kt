@@ -83,7 +83,7 @@ class KartleggingssporsmalEndpointsTest {
         @Test
         fun `Returns status NotFound if valid token is supplied, but kandidat doesn't exist`() = testApplication {
             val client = setupApiAndClient(kartleggingssporsmalServiceMock)
-            coEvery { kartleggingssporsmalServiceMock.getKandidat(ARBEIDSTAKER_PERSONIDENT) } returns null
+            coEvery { kartleggingssporsmalServiceMock.getKandidatur(ARBEIDSTAKER_PERSONIDENT) } returns emptyList()
 
             val response = client.get(kartleggingssporsmalUrl) {
                 bearerAuth(validToken)

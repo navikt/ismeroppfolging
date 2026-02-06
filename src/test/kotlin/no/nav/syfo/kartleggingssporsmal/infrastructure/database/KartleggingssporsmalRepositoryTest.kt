@@ -157,7 +157,7 @@ class KartleggingssporsmalRepositoryTest {
             assertEquals(createdKandidat.uuid, kandidat.uuid)
             assertNull(createdKandidat.varsletAt)
 
-            val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(ARBEIDSTAKER_PERSONIDENT)
+            val fetchedKandidat = kartleggingssporsmalRepository.getLatestKandidat(ARBEIDSTAKER_PERSONIDENT)
             assertNotNull(fetchedKandidat)
             assertEquals(fetchedKandidat.personident, oppfolgingstilfelle.personident)
             assertTrue(fetchedKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
@@ -169,7 +169,7 @@ class KartleggingssporsmalRepositoryTest {
     }
 
     @Test
-    fun `getKandidat should retrieve the newest kandidate when several exists`() {
+    fun `getLatestKandidat should retrieve the newest kandidate when several exists`() {
         val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now().minusDays(6 * 7),
             antallSykedager = 6 * 7 + 1,
@@ -196,7 +196,7 @@ class KartleggingssporsmalRepositoryTest {
                 stoppunktId = createdStoppunkter[1].id,
             )
 
-            val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(ARBEIDSTAKER_PERSONIDENT)
+            val fetchedKandidat = kartleggingssporsmalRepository.getLatestKandidat(ARBEIDSTAKER_PERSONIDENT)
             assertNotNull(fetchedKandidat)
             assertEquals(fetchedKandidat.uuid, kandidat.uuid)
         }
@@ -221,7 +221,7 @@ class KartleggingssporsmalRepositoryTest {
                 stoppunktId = createdStoppunkter[0].id,
             )
 
-            val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(ARBEIDSTAKER_PERSONIDENT)
+            val fetchedKandidat = kartleggingssporsmalRepository.getLatestKandidat(ARBEIDSTAKER_PERSONIDENT)
             assertNotNull(fetchedKandidat)
             assertEquals(fetchedKandidat.uuid, kandidat.uuid)
             assertTrue(fetchedKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)

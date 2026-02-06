@@ -89,7 +89,7 @@ class JournalforingServiceTest {
         val firstKandidat = runBlocking {
             kartleggingssporsmalRepository.createStoppunkt(KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)!!)
             kartleggingssporsmalService.processStoppunkter()
-            kartleggingssporsmalRepository.getKandidat(ARBEIDSTAKER_PERSONIDENT)
+            kartleggingssporsmalRepository.getLatestKandidat(ARBEIDSTAKER_PERSONIDENT)
         }
 
         assertTrue(firstKandidat?.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
@@ -129,7 +129,7 @@ class JournalforingServiceTest {
             )
         }
         val updatedKandidat = runBlocking {
-            kartleggingssporsmalRepository.getKandidat(ARBEIDSTAKER_PERSONIDENT)
+            kartleggingssporsmalRepository.getLatestKandidat(ARBEIDSTAKER_PERSONIDENT)
         }
         assertEquals(journalpostId, updatedKandidat!!.journalpostId)
     }

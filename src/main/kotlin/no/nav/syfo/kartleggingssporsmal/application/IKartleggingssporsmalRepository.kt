@@ -18,7 +18,7 @@ interface IKartleggingssporsmalRepository {
         stoppunktId: Int,
     ): KartleggingssporsmalKandidat
 
-    suspend fun getKandidat(personident: Personident): KartleggingssporsmalKandidat?
+    suspend fun getLatestKandidat(personident: Personident): KartleggingssporsmalKandidat?
     suspend fun getKandidat(uuid: UUID): KartleggingssporsmalKandidat?
     suspend fun getKandidatur(personident: Personident): List<KartleggingssporsmalKandidat>
     suspend fun getKandidatStatusendringer(kandidatUuid: UUID): List<KartleggingssporsmalKandidatStatusendring>
