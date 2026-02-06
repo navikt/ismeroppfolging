@@ -259,6 +259,9 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_RINGERIKE = "0605"
         private const val KONTOR_NAV_ARENDAL = "0906"
         private const val KONTOR_NAV_MIDT_AGDER = "1014"
+        private const val KONTOR_NAV_RANA = "1833"
+        private const val KONTOR_NAV_NARVIK = "1805"
+        private const val KONTOR_NAV_BODO = "1804"
         private val pilotkontorerMedVarsel = listOf(
             KONTOR_NAV_LIER,
             KONTOR_NAV_ASKER,
@@ -276,6 +279,9 @@ class KartleggingssporsmalService(
             KONTOR_NAV_RINGERIKE,
             KONTOR_NAV_ARENDAL,
             KONTOR_NAV_MIDT_AGDER,
+            KONTOR_NAV_RANA,
+            KONTOR_NAV_NARVIK,
+            KONTOR_NAV_BODO,
         ) + pilotkontorerMedVarsel
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
