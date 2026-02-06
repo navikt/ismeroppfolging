@@ -273,10 +273,10 @@ class KartleggingssporsmalService(
             KONTOR_NAV_PORSGRUNN,
             KONTOR_NAV_MADLA,
             KONTOR_NAV_GJESDAL,
-        )
-        private val pilotkontorer = listOf(
             KONTOR_NAV_OVRE_EIKER,
             KONTOR_NAV_RINGERIKE,
+        )
+        private val pilotkontorer = listOf(
             KONTOR_NAV_ARENDAL,
             KONTOR_NAV_MIDT_AGDER,
             KONTOR_NAV_RANA,
