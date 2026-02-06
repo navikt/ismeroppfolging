@@ -3,6 +3,7 @@ package no.nav.syfo.kartleggingssporsmal.infrastructure.journalforing
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
@@ -31,10 +32,13 @@ import no.nav.syfo.shared.infrastructure.database.updateKandidatAsVarslet
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import no.nav.syfo.shared.util.toLocalDateOslo
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
 import java.time.LocalDate
+import java.util.concurrent.Future
 import kotlin.test.assertEquals
 
 class JournalforingServiceTest {
@@ -66,7 +70,7 @@ class JournalforingServiceTest {
         pdlClient = externalMockEnvironment.pdlClient,
         vedtak14aClient = externalMockEnvironment.vedtak14aClient,
         senOppfolgingService = externalMockEnvironment.senOppfolgingService,
-        isKandidatPublishingEnabled = false,
+        isKandidatPublishingEnabled = externalMockEnvironment.environment.isKandidatPublishingEnabled,
     )
     val stoppunktStartIntervalDays = 6L * DAYS_IN_WEEK
 
@@ -75,6 +79,8 @@ class JournalforingServiceTest {
         clearAllMocks()
         coEvery { dokarkivMock.journalfor(any()) } returns dokarkivResponse
         coEvery { pdfClientMock.createKartleggingPdf(any(), any()) } returns UserConstants.PDF_DOKUMENT
+        every { mockKandidatProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
+        every { mockEsyfoVarselProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
         testDatabase.dropData()
     }
 
@@ -92,8 +98,9 @@ class JournalforingServiceTest {
             kartleggingssporsmalRepository.getLatestKandidat(ARBEIDSTAKER_PERSONIDENT)
         }
 
-        assertTrue(firstKandidat?.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
-        testDatabase.updateKandidatAsVarslet(firstKandidat!!)
+        assertNotNull(firstKandidat)
+        assertTrue(firstKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
+        testDatabase.updateKandidatAsVarslet(firstKandidat)
 
         val varsletKandidat = runBlocking {
             kartleggingssporsmalRepository.getKandidat(firstKandidat.uuid)!!
