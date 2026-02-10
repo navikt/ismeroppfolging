@@ -34,9 +34,10 @@ class KartleggingssporsmalRepository(
             pKartleggingssporsmalStoppunkt.toKartleggingssporsmalStoppunkt()
         }
 
-    override suspend fun getKandidat(personident: Personident): KartleggingssporsmalKandidat? {
+    override suspend fun getLatestKandidat(personident: Personident): KartleggingssporsmalKandidat? {
         return database.connection.use { connection ->
-            connection.getKandidat(personident)
+            connection.getKandidater(personident)
+                .firstOrNull()
                 ?.let { (kandidat, statusendring) ->
                     kandidat.toKartleggingssporsmalKandidat(statusendring)
                 }
@@ -206,16 +207,6 @@ class KartleggingssporsmalRepository(
     private fun Connection.getKandidat(uuid: UUID): Pair<PKartleggingssporsmalKandidat, PKartleggingssporsmalKandidatStatusendring>? =
         this.prepareStatement(GET_KANDIDAT_BY_UUID).use {
             it.setString(1, uuid.toString())
-            it.executeQuery().toList {
-                val pKandidat = toPKartleggingssporsmalKandidat()
-                val pStatusendring = toPKartleggingssporsmalKandidatStatusendring(prefix = STATUS_PREFIX)
-                Pair(pKandidat, pStatusendring)
-            }.firstOrNull()
-        }
-
-    private fun Connection.getKandidat(personident: Personident): Pair<PKartleggingssporsmalKandidat, PKartleggingssporsmalKandidatStatusendring>? =
-        this.prepareStatement(GET_KANDIDAT).use {
-            it.setString(1, personident.value)
             it.executeQuery().toList {
                 val pKandidat = toPKartleggingssporsmalKandidat()
                 val pStatusendring = toPKartleggingssporsmalKandidatStatusendring(prefix = STATUS_PREFIX)
