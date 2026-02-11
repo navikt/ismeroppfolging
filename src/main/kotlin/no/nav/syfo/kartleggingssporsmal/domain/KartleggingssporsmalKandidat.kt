@@ -42,6 +42,8 @@ data class KartleggingssporsmalKandidat(
         return this.copy(status = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet(veilederident = veilederident))
     }
 
+    fun varsle() = this.copy(varsletAt = nowUTC())
+
     companion object {
         fun create(
             personident: Personident,

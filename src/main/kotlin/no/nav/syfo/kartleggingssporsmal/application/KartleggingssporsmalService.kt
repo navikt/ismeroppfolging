@@ -111,10 +111,7 @@ class KartleggingssporsmalService(
                             kandidat = persistedKandidat,
                         ).map {
                             kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(persistedKandidat)
-                            val resultVarsling = esyfoVarselProducer.sendKartleggingssporsmal(persistedKandidat)
-                            if (resultVarsling.isSuccess) {
-                                kartleggingssporsmalRepository.updateVarsletAtForKandidat(persistedKandidat)
-                            }
+                            sendVarsel(persistedKandidat)
                         }
                     } else {
                         log.info("Kandidat publishing is disabled, not sending kandidat with uuid ${kandidat.uuid} to kafka topic")
@@ -158,6 +155,13 @@ class KartleggingssporsmalService(
                 kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(kandidat)
             }
         return updatedKandidat
+    }
+
+    private suspend fun sendVarsel(kandidat: KartleggingssporsmalKandidat) {
+        val varsletKandidat = kandidat.varsle()
+        esyfoVarselProducer.sendKartleggingssporsmal(varsletKandidat).map {
+            kartleggingssporsmalRepository.updateVarsletAtForKandidat(it)
+        }
     }
 
     private suspend fun findEnhetForStoppunkter(

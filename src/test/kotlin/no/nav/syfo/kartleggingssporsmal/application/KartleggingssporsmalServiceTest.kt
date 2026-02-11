@@ -562,7 +562,7 @@ class KartleggingssporsmalServiceTest {
 
             // Genererer først et stoppunkt som fører til en kandidat
             kartleggingssporsmalRepository.createStoppunkt(firstStoppunkt)
-            val firstResults = kartleggingssporsmalService.processStoppunkter()
+            val firstResults = kartleggingssporsmalServiceWithKandidatPublishingEnabled.processStoppunkter()
             assertTrue(firstResults.first().isSuccess)
             val firstProcessedStoppunkt = firstResults.first().getOrThrow()
             val firstKandidat = database.getKandidatByStoppunktUUID(firstProcessedStoppunkt.uuid)!!
@@ -572,7 +572,7 @@ class KartleggingssporsmalServiceTest {
             val secondStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
             assertNotNull(secondStoppunkt)
             kartleggingssporsmalRepository.createStoppunkt(secondStoppunkt)
-            val secondResults = kartleggingssporsmalService.processStoppunkter()
+            val secondResults = kartleggingssporsmalServiceWithKandidatPublishingEnabled.processStoppunkter()
 
             assertEquals(1, secondResults.size)
             assertTrue(secondResults.first().isSuccess)

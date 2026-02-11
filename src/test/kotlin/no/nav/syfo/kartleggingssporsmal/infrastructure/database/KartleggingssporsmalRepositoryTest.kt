@@ -157,7 +157,7 @@ class KartleggingssporsmalRepositoryTest {
             assertEquals(createdKandidat.uuid, kandidat.uuid)
             assertNull(createdKandidat.varsletAt)
 
-            val fetchedKandidat = kartleggingssporsmalRepository.getLatestKandidat(ARBEIDSTAKER_PERSONIDENT)
+            val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
             assertNotNull(fetchedKandidat)
             assertEquals(fetchedKandidat.personident, oppfolgingstilfelle.personident)
             assertTrue(fetchedKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
@@ -169,7 +169,7 @@ class KartleggingssporsmalRepositoryTest {
     }
 
     @Test
-    fun `getLatestKandidat should retrieve the newest kandidate when several exists`() {
+    fun `getLatestKandidat should retrieve the latest varslede kandidat when several exists`() {
         val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now().minusDays(6 * 7),
             antallSykedager = 6 * 7 + 1,
@@ -191,10 +191,12 @@ class KartleggingssporsmalRepositoryTest {
                 kandidat = kandidat,
                 stoppunktId = createdStoppunkter[0].id,
             )
+            kartleggingssporsmalRepository.updateVarsletAtForKandidat(kandidat.varsle())
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = otherKandidat,
                 stoppunktId = createdStoppunkter[1].id,
             )
+            kartleggingssporsmalRepository.updateVarsletAtForKandidat(otherKandidat.varsle())
 
             val fetchedKandidat = kartleggingssporsmalRepository.getLatestKandidat(ARBEIDSTAKER_PERSONIDENT)
             assertNotNull(fetchedKandidat)
@@ -203,7 +205,7 @@ class KartleggingssporsmalRepositoryTest {
     }
 
     @Test
-    fun `getKandidat by personident should retrieve the full domain object`() {
+    fun `getLatestKandidat should not retrieve kandidat when not varslet`() {
         val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now().minusDays(6 * 7),
             antallSykedager = 6 * 7 + 1,
@@ -222,6 +224,30 @@ class KartleggingssporsmalRepositoryTest {
             )
 
             val fetchedKandidat = kartleggingssporsmalRepository.getLatestKandidat(ARBEIDSTAKER_PERSONIDENT)
+            assertNull(fetchedKandidat)
+        }
+    }
+
+    @Test
+    fun `getKandidat by uuid should retrieve the full domain object`() {
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+            tilfelleStart = LocalDate.now().minusDays(6 * 7),
+            antallSykedager = 6 * 7 + 1,
+        )
+        val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+        assertNotNull(kartleggingssporsmalStoppunkt)
+
+        runBlocking {
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
+            val createdStoppunkter = database.getKartleggingssporsmalStoppunkt()
+
+            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkter[0].id,
+            )
+
+            val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(kandidat.uuid)
             assertNotNull(fetchedKandidat)
             assertEquals(fetchedKandidat.uuid, kandidat.uuid)
             assertTrue(fetchedKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
@@ -229,7 +255,7 @@ class KartleggingssporsmalRepositoryTest {
     }
 
     @Test
-    fun `getKandidatur should retrieve a list of kandidater with the newest kandidate first`() {
+    fun `getKandidatur should retrieve a list of varslede kandidater with the newest kandidat first`() {
         val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
             tilfelleStart = LocalDate.now().minusDays(6 * 7),
             antallSykedager = 6 * 7 + 1,
@@ -251,10 +277,12 @@ class KartleggingssporsmalRepositoryTest {
                 kandidat = kandidat,
                 stoppunktId = createdStoppunkter[0].id,
             )
+            kartleggingssporsmalRepository.updateVarsletAtForKandidat(kandidat.varsle())
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = otherKandidat,
                 stoppunktId = createdStoppunkter[1].id,
             )
+            kartleggingssporsmalRepository.updateVarsletAtForKandidat(otherKandidat.varsle())
 
             val fetchedKandidat = kartleggingssporsmalRepository.getKandidatur(ARBEIDSTAKER_PERSONIDENT)
             assertEquals(fetchedKandidat.size, 2)

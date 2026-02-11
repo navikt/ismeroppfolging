@@ -110,7 +110,8 @@ class KartleggingssporsmalRepository(
     override suspend fun updateVarsletAtForKandidat(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat {
         return database.connection.use { connection ->
             val updatedKandidat = connection.prepareStatement(UPDATE_KANDIDAT_VARSLET_AT).use {
-                it.setString(1, kandidat.uuid.toString())
+                it.setObject(1, kandidat.varsletAt)
+                it.setString(2, kandidat.uuid.toString())
                 it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
             }
             val status = connection.getKandidatStatusendringer(kandidat.uuid).firstOrNull()
@@ -295,7 +296,7 @@ class KartleggingssporsmalRepository(
             $STATUS_ALIAS
             FROM KARTLEGGINGSSPORSMAL_KANDIDAT k
             $JOIN_SELECT_NEWEST_STATUS_FROM_STATUSENDRINGER
-            WHERE k.personident = ?
+            WHERE k.personident = ? AND k.varslet_at IS NOT NULL
             ORDER BY k.created_at DESC
         """
 
@@ -362,7 +363,7 @@ class KartleggingssporsmalRepository(
 
         private const val UPDATE_KANDIDAT_VARSLET_AT = """
             UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
-            SET varslet_at = now(), updated_at = now()
+            SET varslet_at = ?, updated_at = now()
             WHERE uuid = ?
             RETURNING *
         """
