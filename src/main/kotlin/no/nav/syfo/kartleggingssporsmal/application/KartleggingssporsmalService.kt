@@ -265,6 +265,7 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_ARENDAL = "0906"
         private const val KONTOR_NAV_MIDT_AGDER = "1014"
         private const val KONTOR_NAV_RANA = "1833"
+        private const val KONTOR_NAV_LUROY = "1834"
         private const val KONTOR_NAV_NARVIK = "1805"
         private const val KONTOR_NAV_BODO = "1804"
         private const val KONTOR_NAV_SOR_TROMS = "1903"
@@ -288,6 +289,7 @@ class KartleggingssporsmalService(
             KONTOR_NAV_ARENDAL,
             KONTOR_NAV_MIDT_AGDER,
             KONTOR_NAV_RANA,
+            KONTOR_NAV_LUROY,
             KONTOR_NAV_NARVIK,
             KONTOR_NAV_BODO,
             KONTOR_NAV_SOR_TROMS,
