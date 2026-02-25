@@ -271,6 +271,9 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_SOR_TROMS = "1903"
         private const val KONTOR_NAV_SOR_VARANGER = "2030"
         private const val KONTOR_NAV_SENJA_SORREISA = "1931"
+        private const val KONTOR_NAV_ALESUND = "1504"
+        private const val KONTOR_NAV_MOLDE = "1502"
+        private const val KONTOR_NAV_KRISTIANSUND = "1505"
         private val pilotkontorerMedVarsel = listOf(
             KONTOR_NAV_LIER,
             KONTOR_NAV_ASKER,
@@ -295,6 +298,9 @@ class KartleggingssporsmalService(
             KONTOR_NAV_SOR_TROMS,
             KONTOR_NAV_SOR_VARANGER,
             KONTOR_NAV_SENJA_SORREISA,
+            KONTOR_NAV_ALESUND,
+            KONTOR_NAV_MOLDE,
+            KONTOR_NAV_KRISTIANSUND,
         ) + pilotkontorerMedVarsel
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
