@@ -289,8 +289,6 @@ class KartleggingssporsmalService(
             KONTOR_NAV_RINGERIKE,
             KONTOR_NAV_ARENDAL,
             KONTOR_NAV_MIDT_AGDER,
-        )
-        private val pilotkontorer = listOf(
             KONTOR_NAV_RANA,
             KONTOR_NAV_LUROY,
             KONTOR_NAV_NARVIK,
@@ -298,6 +296,8 @@ class KartleggingssporsmalService(
             KONTOR_NAV_SOR_TROMS,
             KONTOR_NAV_SOR_VARANGER,
             KONTOR_NAV_SENJA_SORREISA,
+        )
+        private val pilotkontorer = listOf(
             KONTOR_NAV_ALESUND,
             KONTOR_NAV_MOLDE,
             KONTOR_NAV_KRISTIANSUND,
