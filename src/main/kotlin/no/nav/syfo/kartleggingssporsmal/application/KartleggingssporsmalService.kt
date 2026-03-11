@@ -299,15 +299,14 @@ class KartleggingssporsmalService(
             KONTOR_NAV_SOR_TROMS,
             KONTOR_NAV_SOR_VARANGER,
             KONTOR_NAV_SENJA_SORREISA,
-        )
-        private val pilotkontorer = listOf(
             KONTOR_NAV_ALESUND,
             KONTOR_NAV_MOLDE,
             KONTOR_NAV_KRISTIANSUND,
             KONTOR_NAV_GJOVIK,
             KONTOR_NAV_ELVERUM,
             KONTOR_NAV_SYKEFRAVARSENTER_INNLANDET,
-        ) + pilotkontorerMedVarsel
+        )
+        private val pilotkontorer = pilotkontorerMedVarsel
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
 }
