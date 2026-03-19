@@ -34,9 +34,9 @@ import no.nav.syfo.shared.util.toLocalDateOslo
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
 import java.time.LocalDate
 import java.util.concurrent.Future
 import kotlin.test.assertEquals
@@ -99,7 +99,7 @@ class JournalforingServiceTest {
         }
 
         assertNotNull(firstKandidat)
-        assertTrue(firstKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
+        assertTrue(firstKandidat!!.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
         testDatabase.updateKandidatAsVarslet(firstKandidat)
 
         val varsletKandidat = runBlocking {

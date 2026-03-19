@@ -13,6 +13,8 @@ import no.nav.syfo.shared.infrastructure.database.setStoppunktDate
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
@@ -37,7 +39,7 @@ class KartleggingssporsmalRepositoryTest {
         assertNotNull(kartleggingssporsmalStoppunkt)
 
         runBlocking {
-            val createdStoppunkt = kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
+            val createdStoppunkt = kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
 
             assertEquals(kartleggingssporsmalStoppunkt.personident, createdStoppunkt.personident)
             assertEquals(kartleggingssporsmalStoppunkt.tilfelleBitReferanseUuid, createdStoppunkt.tilfelleBitReferanseUuid)
@@ -56,7 +58,7 @@ class KartleggingssporsmalRepositoryTest {
         assertNotNull(kartleggingssporsmalStoppunkt)
 
         runBlocking {
-            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
             val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
             assertEquals(unprocessed.size, 1)
             assertEquals(unprocessed[0].second.personident, kartleggingssporsmalStoppunkt.personident)
@@ -73,7 +75,7 @@ class KartleggingssporsmalRepositoryTest {
         assertNotNull(kartleggingssporsmalStoppunkt)
 
         runBlocking {
-            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
             database.setStoppunktDate(kartleggingssporsmalStoppunkt.uuid, LocalDate.now().minusDays(1))
 
             val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
@@ -92,7 +94,7 @@ class KartleggingssporsmalRepositoryTest {
         assertNotNull(kartleggingssporsmalStoppunkt)
 
         runBlocking {
-            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
             database.setStoppunktDate(kartleggingssporsmalStoppunkt.uuid, LocalDate.now().minusDays(2))
 
             val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
@@ -110,7 +112,7 @@ class KartleggingssporsmalRepositoryTest {
         assertNotNull(kartleggingssporsmalStoppunkt)
 
         runBlocking {
-            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
             val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
             assertEquals(unprocessed.size, 0)
         }
@@ -126,7 +128,7 @@ class KartleggingssporsmalRepositoryTest {
         assertNotNull(kartleggingssporsmalStoppunkt)
 
         runBlocking {
-            val createdStoppunkt = kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
+            val createdStoppunkt = kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
             database.markStoppunktAsProcessed(createdStoppunkt)
             val unprocessed = kartleggingssporsmalRepository.getUnprocessedStoppunkter()
             assertEquals(unprocessed.size, 0)
@@ -143,7 +145,7 @@ class KartleggingssporsmalRepositoryTest {
         assertNotNull(kartleggingssporsmalStoppunkt)
 
         runBlocking {
-            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
             val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
 
             val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
@@ -159,7 +161,7 @@ class KartleggingssporsmalRepositoryTest {
 
             val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
             assertNotNull(fetchedKandidat)
-            assertEquals(fetchedKandidat.personident, oppfolgingstilfelle.personident)
+            assertEquals(fetchedKandidat!!.personident, oppfolgingstilfelle.personident)
             assertTrue(fetchedKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
             assertNull(fetchedKandidat.varsletAt)
 
@@ -180,8 +182,8 @@ class KartleggingssporsmalRepositoryTest {
         assertNotNull(kartleggingssporsmalStoppunkt2)
 
         runBlocking {
-            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt1)
-            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt2)
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt1!!)
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt2!!)
             val createdStoppunkter = database.getKartleggingssporsmalStoppunkt()
 
             val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
@@ -200,7 +202,7 @@ class KartleggingssporsmalRepositoryTest {
 
             val fetchedKandidat = kartleggingssporsmalRepository.getLatestKandidat(ARBEIDSTAKER_PERSONIDENT)
             assertNotNull(fetchedKandidat)
-            assertEquals(fetchedKandidat.uuid, kandidat.uuid)
+            assertEquals(fetchedKandidat!!.uuid, kandidat.uuid)
         }
     }
 
@@ -214,7 +216,7 @@ class KartleggingssporsmalRepositoryTest {
         assertNotNull(kartleggingssporsmalStoppunkt)
 
         runBlocking {
-            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
             val createdStoppunkter = database.getKartleggingssporsmalStoppunkt()
 
             val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
@@ -238,7 +240,7 @@ class KartleggingssporsmalRepositoryTest {
         assertNotNull(kartleggingssporsmalStoppunkt)
 
         runBlocking {
-            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
             val createdStoppunkter = database.getKartleggingssporsmalStoppunkt()
 
             val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
@@ -249,8 +251,8 @@ class KartleggingssporsmalRepositoryTest {
 
             val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(kandidat.uuid)
             assertNotNull(fetchedKandidat)
-            assertEquals(fetchedKandidat.uuid, kandidat.uuid)
-            assertTrue(fetchedKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
+            assertEquals(fetchedKandidat!!.uuid, kandidat.uuid)
+            assertTrue(fetchedKandidat!!.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
         }
     }
 
@@ -266,8 +268,8 @@ class KartleggingssporsmalRepositoryTest {
         assertNotNull(kartleggingssporsmalStoppunkt2)
 
         runBlocking {
-            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt1)
-            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt2)
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt1!!)
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt2!!)
             val createdStoppunkter = database.getKartleggingssporsmalStoppunkt()
 
             val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
@@ -301,7 +303,7 @@ class KartleggingssporsmalRepositoryTest {
         assertNotNull(kartleggingssporsmalStoppunkt)
 
         runBlocking {
-            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt)
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
             val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
 
             val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)

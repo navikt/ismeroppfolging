@@ -9,9 +9,9 @@ import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_NO_TILFELLE
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertNull
 import org.junit.jupiter.api.assertThrows
 
 class OppfolgingstilfelleClientTest {
@@ -24,7 +24,7 @@ class OppfolgingstilfelleClientTest {
             val tilfelle = oppfolgingstilfelleClient.getOppfolgingstilfelle(ARBEIDSTAKER_PERSONIDENT).getOrThrow()
 
             assertNotNull(tilfelle)
-            assertEquals(tilfelle.personident.value, ARBEIDSTAKER_PERSONIDENT.value)
+            assertEquals(tilfelle!!.personident.value, ARBEIDSTAKER_PERSONIDENT.value)
             assertEquals(tilfelle.antallSykedager, 56)
         }
     }
@@ -35,7 +35,7 @@ class OppfolgingstilfelleClientTest {
             val tilfelle = oppfolgingstilfelleClient.getOppfolgingstilfelle(ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD).getOrThrow()
 
             assertNotNull(tilfelle)
-            assertEquals(tilfelle.personident.value, ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD.value)
+            assertEquals(tilfelle!!.personident.value, ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD.value)
             assertNotNull(tilfelle.dodsdato)
         }
     }
@@ -46,7 +46,7 @@ class OppfolgingstilfelleClientTest {
             val tilfelle = oppfolgingstilfelleClient.getOppfolgingstilfelle(ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT).getOrThrow()
 
             assertNotNull(tilfelle)
-            assertEquals(tilfelle.personident.value, ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT.value)
+            assertEquals(tilfelle!!.personident.value, ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT.value)
             assertEquals(tilfelle.antallSykedager, 10)
         }
     }

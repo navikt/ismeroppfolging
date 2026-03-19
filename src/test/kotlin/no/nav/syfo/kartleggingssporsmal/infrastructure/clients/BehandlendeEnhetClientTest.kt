@@ -5,8 +5,8 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_INACTIVE
 import no.nav.syfo.UserConstants.VALID_PILOTKONTOR
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNull
 import kotlin.test.assertEquals
 
 class BehandlendeEnhetClientTest {
