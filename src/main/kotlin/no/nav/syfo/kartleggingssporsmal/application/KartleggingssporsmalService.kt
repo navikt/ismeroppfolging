@@ -277,6 +277,10 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_GJOVIK = "0502"
         private const val KONTOR_NAV_ELVERUM = "0427"
         private const val KONTOR_NAV_SYKEFRAVARSENTER_INNLANDET = "0491"
+        private const val KONTOR_NAV_LERKENDAL = "5702"
+        private const val KONTOR_NAV_FALKENBORG = "5701"
+        private const val KONTOR_NAV_VARNES = "1783"
+        private const val KONTOR_NAV_FOSEN = "1630"
         private val pilotkontorerMedVarsel = listOf(
             KONTOR_NAV_LIER,
             KONTOR_NAV_ASKER,
@@ -306,7 +310,12 @@ class KartleggingssporsmalService(
             KONTOR_NAV_ELVERUM,
             KONTOR_NAV_SYKEFRAVARSENTER_INNLANDET,
         )
-        private val pilotkontorer = pilotkontorerMedVarsel
+        private val pilotkontorer = listOf(
+            KONTOR_NAV_LERKENDAL,
+            KONTOR_NAV_FALKENBORG,
+            KONTOR_NAV_VARNES,
+            KONTOR_NAV_FOSEN,
+        ) + pilotkontorerMedVarsel
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
 }
