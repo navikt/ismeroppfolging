@@ -7,6 +7,8 @@ import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFrom
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
@@ -40,7 +42,7 @@ class OppfolgingstilfelleTest {
             )
 
             assertNotNull(tilfelle)
-            assertEquals(LocalDate.now(), tilfelle.tilfelleStart)
+            assertEquals(LocalDate.now(), tilfelle!!.tilfelleStart)
             assertEquals(LocalDate.now().plusDays(10), tilfelle.tilfelleEnd)
         }
 
@@ -92,7 +94,7 @@ class OppfolgingstilfelleTest {
             )
 
             assertNotNull(tilfelle)
-            assertEquals(LocalDate.now(), tilfelle.tilfelleStart)
+            assertEquals(LocalDate.now(), tilfelle!!.tilfelleStart)
             assertEquals(LocalDate.now().plusDays(10), tilfelle.tilfelleEnd)
         }
     }

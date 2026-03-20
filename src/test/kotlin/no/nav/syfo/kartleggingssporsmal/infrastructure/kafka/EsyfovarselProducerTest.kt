@@ -9,6 +9,7 @@ import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertNull
 import java.util.concurrent.Future
 
 class EsyfovarselProducerTest {

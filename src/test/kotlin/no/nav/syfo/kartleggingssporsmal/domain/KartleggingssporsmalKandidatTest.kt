@@ -2,7 +2,7 @@ package no.nav.syfo.kartleggingssporsmal.domain
 
 import no.nav.syfo.UserConstants
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.assertThrows
 import java.time.OffsetDateTime
 import kotlin.test.assertTrue

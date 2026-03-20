@@ -4,8 +4,8 @@ import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFrom
 import no.nav.syfo.shared.util.DAYS_IN_WEEK
 import no.nav.syfo.shared.util.fullDaysBetween
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertNull
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import java.time.LocalDate
 import kotlin.test.assertEquals
 
@@ -25,7 +25,7 @@ class KartleggingssporsmalStoppunktTest {
         val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
 
         assertNotNull(kartleggingssporsmalStoppunkt)
-        assertEquals(tilfelleStart.plusDays(stoppunktStartIntervalDays), kartleggingssporsmalStoppunkt.stoppunktAt)
+        assertEquals(tilfelleStart.plusDays(stoppunktStartIntervalDays), kartleggingssporsmalStoppunkt!!.stoppunktAt)
     }
 
     @Test
@@ -40,7 +40,7 @@ class KartleggingssporsmalStoppunktTest {
         val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
 
         assertNotNull(kartleggingssporsmalStoppunkt)
-        assertEquals(LocalDate.now(), kartleggingssporsmalStoppunkt.stoppunktAt)
+        assertEquals(LocalDate.now(), kartleggingssporsmalStoppunkt!!.stoppunktAt)
     }
 
     @Test
@@ -60,7 +60,7 @@ class KartleggingssporsmalStoppunktTest {
         val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
 
         assertNotNull(kartleggingssporsmalStoppunkt)
-        assertEquals(tilfelleStart.plusDays(stoppunktStartIntervalDays + numberOfFriskeDager), kartleggingssporsmalStoppunkt.stoppunktAt)
+        assertEquals(tilfelleStart.plusDays(stoppunktStartIntervalDays + numberOfFriskeDager), kartleggingssporsmalStoppunkt!!.stoppunktAt)
     }
 
     @Test
@@ -75,7 +75,7 @@ class KartleggingssporsmalStoppunktTest {
         val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
 
         assertNotNull(kartleggingssporsmalStoppunkt)
-        assertEquals(tilfelleStart.plusDays(stoppunktStartIntervalDays), kartleggingssporsmalStoppunkt.stoppunktAt)
+        assertEquals(tilfelleStart.plusDays(stoppunktStartIntervalDays), kartleggingssporsmalStoppunkt!!.stoppunktAt)
     }
 
     @Test
