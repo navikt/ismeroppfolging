@@ -309,13 +309,12 @@ class KartleggingssporsmalService(
             KONTOR_NAV_GJOVIK,
             KONTOR_NAV_ELVERUM,
             KONTOR_NAV_SYKEFRAVARSENTER_INNLANDET,
-        )
-        private val pilotkontorer = listOf(
             KONTOR_NAV_LERKENDAL,
             KONTOR_NAV_FALKENBORG,
             KONTOR_NAV_VARNES,
             KONTOR_NAV_FOSEN,
-        ) + pilotkontorerMedVarsel
+        )
+        private val pilotkontorer = pilotkontorerMedVarsel
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
 }
