@@ -84,3 +84,7 @@ sealed class KartleggingssporsmalKandidatStatusendring(
         )
     }
 }
+
+enum class KandidatStatus {
+    KANDIDAT, SVAR_MOTTATT, FERDIGBEHANDLET,
+}

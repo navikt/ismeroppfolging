@@ -20,6 +20,7 @@ data class KartleggingssporsmalKandidat(
     val personident: Personident,
     val status: KartleggingssporsmalKandidatStatusendring,
     val varsletAt: OffsetDateTime?,
+//    val skjemavariant: Skjemavariant,
     val journalpostId: JournalpostId? = null,
 ) {
 
@@ -58,6 +59,7 @@ data class KartleggingssporsmalKandidat(
     }
 }
 
-enum class KandidatStatus {
-    KANDIDAT, SVAR_MOTTATT, FERDIGBEHANDLET,
+enum class Skjemavariant {
+    FLERVALG_V1,
+    FLERVALG_FRITEKST_V1,
 }
