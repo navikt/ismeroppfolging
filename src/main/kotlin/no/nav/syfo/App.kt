@@ -14,6 +14,7 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.oppfolgingstilfel
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aClient
 import no.nav.syfo.kartleggingssporsmal.infrastructure.cronjob.JournalforKartleggingssporsmalCronjob
+import no.nav.syfo.kartleggingssporsmal.infrastructure.cronjob.FerdigstillKartleggingssporsmalVarselCronjob
 import no.nav.syfo.kartleggingssporsmal.infrastructure.cronjob.KandidatStoppunktCronjob
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelseSerializer
@@ -166,7 +167,8 @@ fun main() {
                 val cronjobs = listOf(
                     PublishKandidatStatusCronjob(senOppfolgingService),
                     KandidatStoppunktCronjob(kartleggingssporsmalService),
-                    JournalforKartleggingssporsmalCronjob(journalforingService)
+                    JournalforKartleggingssporsmalCronjob(journalforingService),
+                    FerdigstillKartleggingssporsmalVarselCronjob(kartleggingssporsmalRepository, esyfovarselProducer),
                 )
 
                 launchCronjobs(
