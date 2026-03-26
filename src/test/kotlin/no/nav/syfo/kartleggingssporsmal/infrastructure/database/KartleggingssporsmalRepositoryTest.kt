@@ -6,6 +6,7 @@ import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
+import no.nav.syfo.kartleggingssporsmal.domain.Skjemavariant
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFromKafka
 import no.nav.syfo.shared.infrastructure.database.getKartleggingssporsmalStoppunkt
 import no.nav.syfo.shared.infrastructure.database.markStoppunktAsProcessed
@@ -158,12 +159,52 @@ class KartleggingssporsmalRepositoryTest {
             assertTrue(createdKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
             assertEquals(createdKandidat.uuid, kandidat.uuid)
             assertNull(createdKandidat.varsletAt)
+            assertEquals(kandidat.skjemavariant, createdKandidat.skjemavariant)
 
             val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
             assertNotNull(fetchedKandidat)
             assertEquals(fetchedKandidat!!.personident, oppfolgingstilfelle.personident)
             assertTrue(fetchedKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
             assertNull(fetchedKandidat.varsletAt)
+            assertEquals(kandidat.skjemavariant, fetchedKandidat.skjemavariant)
+
+            val processedStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+            assertNotNull(processedStoppunkt.processedAt)
+        }
+    }
+
+    @Test
+    fun `createKandidatAndMarkStoppunktAsProcessed with skjemavariant FRITEKST should create a kandidat in the database and mark stoppunkt as processed`() {
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+            tilfelleStart = LocalDate.now().minusDays(6 * 7),
+            antallSykedager = 6 * 7 + 1,
+        )
+        val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+        assertNotNull(kartleggingssporsmalStoppunkt)
+
+        runBlocking {
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
+            val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+                .copy(skjemavariant = Skjemavariant.FLERVALG_FRITEKST_V1)
+            val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkt.id,
+            )
+
+            assertEquals(createdKandidat.personident, oppfolgingstilfelle.personident)
+            assertTrue(createdKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
+            assertEquals(createdKandidat.uuid, kandidat.uuid)
+            assertNull(createdKandidat.varsletAt)
+            assertEquals(Skjemavariant.FLERVALG_FRITEKST_V1.name, createdKandidat.skjemavariant.name)
+
+            val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
+            assertNotNull(fetchedKandidat)
+            assertEquals(fetchedKandidat!!.personident, oppfolgingstilfelle.personident)
+            assertTrue(fetchedKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
+            assertNull(fetchedKandidat.varsletAt)
+            assertEquals(kandidat.skjemavariant, fetchedKandidat.skjemavariant)
 
             val processedStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
             assertNotNull(processedStoppunkt.processedAt)
@@ -252,7 +293,8 @@ class KartleggingssporsmalRepositoryTest {
             val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(kandidat.uuid)
             assertNotNull(fetchedKandidat)
             assertEquals(fetchedKandidat!!.uuid, kandidat.uuid)
-            assertTrue(fetchedKandidat!!.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
+            assertTrue(fetchedKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
+            assertEquals(kandidat.skjemavariant, fetchedKandidat.skjemavariant)
         }
     }
 

@@ -39,6 +39,7 @@ data class KartleggingssporsmalKandidatStatusRecord(
     val personident: String,
     val createdAt: OffsetDateTime,
     val status: String,
+    val skjemavariant: String,
 ) {
     companion object {
         fun from(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidatStatusRecord =
@@ -47,6 +48,7 @@ data class KartleggingssporsmalKandidatStatusRecord(
                 personident = kandidat.personident.value,
                 createdAt = kandidat.status.createdAt,
                 status = kandidat.status.kandidatStatus.name,
+                skjemavariant = kandidat.skjemavariant.name,
             )
     }
 }

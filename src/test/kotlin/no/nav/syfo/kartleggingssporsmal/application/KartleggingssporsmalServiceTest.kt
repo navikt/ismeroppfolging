@@ -19,10 +19,7 @@ import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT_BUT_LONG
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TOO_OLD
-import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
-import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
-import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
-import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
+import no.nav.syfo.kartleggingssporsmal.domain.*
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFromKafka
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.*
@@ -449,6 +446,7 @@ class KartleggingssporsmalServiceTest {
             assertEquals(kandidat.uuid, record.kandidatUuid)
             assertEquals(kandidat.personident.value, record.personident)
             assertEquals(KandidatStatus.KANDIDAT.name, record.status)
+            assertEquals(kandidat.skjemavariant.name, record.skjemavariant)
 
             val producerEsyfoRecordSlot = slot<ProducerRecord<String, EsyfovarselHendelse>>()
             verify(exactly = 1) { mockEsyfoVarselProducer.send(capture(producerEsyfoRecordSlot)) }
@@ -739,6 +737,7 @@ class KartleggingssporsmalServiceTest {
                 (fetchedKandidat?.status as KartleggingssporsmalKandidatStatusendring.SvarMottatt).svarAt.toLocalDateOslo(),
                 svarAt.toLocalDateOslo()
             )
+            assertEquals(kandidat.skjemavariant.name, fetchedKandidat.skjemavariant.name)
 
             val producerRecordSlotKandidat = slot<ProducerRecord<String, KartleggingssporsmalKandidatStatusRecord>>()
             val producerRecordSlotVarsel = slot<ProducerRecord<String, EsyfovarselHendelse>>()
@@ -749,6 +748,7 @@ class KartleggingssporsmalServiceTest {
 
             val kandidatHendelse = producerRecordSlotKandidat.captured.value()
             assertEquals(kandidatHendelse.status, KandidatStatus.SVAR_MOTTATT.name)
+            assertEquals(Skjemavariant.FLERVALG_V1.name, kandidatHendelse.skjemavariant)
 
             val esyfovarselHendelse = producerRecordSlotVarsel.captured.value()
             assertEquals(esyfovarselHendelse.type, HendelseType.SM_KARTLEGGINGSSPORSMAL)
@@ -868,12 +868,15 @@ class KartleggingssporsmalServiceTest {
                 (fetchedKandidat?.status as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet).veilederident
             )
             assertNotNull(fetchedKandidat.status.publishedAt)
+
             val producerRecordSlot = mutableListOf<ProducerRecord<String, KartleggingssporsmalKandidatStatusRecord>>()
             verify(exactly = 2) { mockKandidatProducer.send(capture(producerRecordSlot)) }
+
             val lastRecord = producerRecordSlot.last().value()
             assertEquals(createdKandidat.uuid, lastRecord.kandidatUuid)
             assertEquals(ARBEIDSTAKER_PERSONIDENT.value, lastRecord.personident)
             assertEquals(KandidatStatus.FERDIGBEHANDLET.name, lastRecord.status)
+            assertEquals(Skjemavariant.FLERVALG_V1.name, lastRecord.skjemavariant)
         }
 
         @Test

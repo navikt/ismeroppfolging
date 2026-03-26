@@ -5,6 +5,7 @@ import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring.*
+import no.nav.syfo.kartleggingssporsmal.domain.Skjemavariant
 import no.nav.syfo.shared.domain.Personident
 import java.time.OffsetDateTime
 import java.util.*
@@ -18,6 +19,7 @@ data class PKartleggingssporsmalKandidat(
     val status: String,
     val varsletAt: OffsetDateTime?,
     val journalpostId: JournalpostId?,
+    val skjemavariant: Skjemavariant,
 ) {
     fun toKartleggingssporsmalKandidat(
         pKartleggingssporsmalKandidatStatusendringer: PKartleggingssporsmalKandidatStatusendring,
@@ -29,6 +31,7 @@ data class PKartleggingssporsmalKandidat(
             status = pKartleggingssporsmalKandidatStatusendringer.toKartleggingssporsmalKandidatStatusendring(),
             varsletAt = this.varsletAt,
             journalpostId = this.journalpostId,
+            skjemavariant = skjemavariant,
         )
 }
 

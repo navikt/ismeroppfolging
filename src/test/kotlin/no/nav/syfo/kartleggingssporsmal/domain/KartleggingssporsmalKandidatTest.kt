@@ -19,6 +19,7 @@ class KartleggingssporsmalKandidatTest {
         assertTrue(newKandidat.personident == UserConstants.ARBEIDSTAKER_PERSONIDENT)
         assertNull(newKandidat.varsletAt)
         assertNull(newKandidat.journalpostId)
+        assertTrue(newKandidat.skjemavariant == Skjemavariant.FLERVALG_V1)
     }
 
     @Test
