@@ -24,6 +24,6 @@ class FerdigstillKartleggingssporsmalVarselCronjob(
     }
 
     companion object {
-        private val KANDIDAT_UUIDS: List<String> = listOf("78114ced-de49-463b-a87d-08f3a0734a08")
+        private val KANDIDAT_UUIDS: List<String> = emptyList()
     }
 }
