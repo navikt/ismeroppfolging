@@ -281,6 +281,16 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_FALKENBORG = "5701"
         private const val KONTOR_NAV_VARNES = "1783"
         private const val KONTOR_NAV_FOSEN = "1630"
+        private const val KONTOR_NAV_BERGEN_SENTRUM = "1208"
+        private const val KONTOR_NAV_AURLAND_LARDAL = "1422"
+        private const val KONTOR_NAV_SOGNDAL = "1420"
+        private const val KONTOR_NAV_ARDAL = "1424"
+        private const val KONTOR_NAV_LUSTER = "1426"
+        private const val KONTOR_NAV_VIK = "1417"
+        private const val KONTOR_NAV_ALVER = "1263"
+        private const val KONTOR_NAV_OSTEROY = "1253"
+        private const val KONTOR_NAV_MASFJORDEN = "1266"
+        private const val KONTOR_NAV_SOLUND = "1412"
         private val pilotkontorerMedVarsel = listOf(
             KONTOR_NAV_LIER,
             KONTOR_NAV_ASKER,
@@ -314,7 +324,18 @@ class KartleggingssporsmalService(
             KONTOR_NAV_VARNES,
             KONTOR_NAV_FOSEN,
         )
-        private val pilotkontorer = pilotkontorerMedVarsel
+        private val pilotkontorer = listOf(
+            KONTOR_NAV_BERGEN_SENTRUM,
+            KONTOR_NAV_AURLAND_LARDAL,
+            KONTOR_NAV_SOGNDAL,
+            KONTOR_NAV_ARDAL,
+            KONTOR_NAV_LUSTER,
+            KONTOR_NAV_VIK,
+            KONTOR_NAV_ALVER,
+            KONTOR_NAV_OSTEROY,
+            KONTOR_NAV_MASFJORDEN,
+            KONTOR_NAV_SOLUND,
+        ) + pilotkontorerMedVarsel
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
 }

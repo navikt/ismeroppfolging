@@ -461,7 +461,7 @@ class KartleggingssporsmalServiceTest {
             assertNotNull(dbStoppunkt.processedAt)
         }
 
-        @Disabled("Diabled frem til vi har kontorer som er i pilot for prosessering av stoppunkt, uten å faktisk sende varselet")
+//        @Disabled("Diabled frem til vi har kontorer som er i pilot for prosessering av stoppunkt, uten å faktisk sende varselet")
         @Test
         fun `processStoppunkter should process unprocessed stoppunkt and create KANDIDAT but not publish when pilotkontor not enabled for varsel`() = runTest {
             val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
