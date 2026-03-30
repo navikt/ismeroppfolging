@@ -202,6 +202,7 @@ class KartleggingssporsmalRepository(
             it.setInt(5, stoppunktId)
             it.setString(6, kandidat.status.kandidatStatus.name)
             it.setObject(7, kandidat.varsletAt)
+            it.setString(8, kandidat.skjemavariant.name)
             it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
         }
 
@@ -325,8 +326,9 @@ class KartleggingssporsmalRepository(
                 personident,
                 generated_by_stoppunkt_id,
                 status,
-                varslet_at
-            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?)
+                varslet_at,
+                skjemavariant
+            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?)
             RETURNING *
         """
 
@@ -417,6 +419,7 @@ internal fun ResultSet.toPKartleggingssporsmalKandidat(): PKartleggingssporsmalK
         status = getString("status"),
         varsletAt = getObject("varslet_at", OffsetDateTime::class.java),
         journalpostId = getString("journalpost_id")?.let { JournalpostId(it) },
+        skjemavariant = Skjemavariant.valueOf(getString("skjemavariant")),
     )
 }
 

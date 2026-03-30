@@ -13,6 +13,7 @@ import java.util.*
  * @property status forteller om nåværende status for kandidaten
  * @property varsletAt tidspunktet kandidaten fikk tilsendt kartleggingsspørsmål
  * @property journalpostId er id'en fra journalposten som ble opprettet når kartleggingsspørsmål ble sendt
+ * @property skjemavariant forteller hvilket spørsmålskjema den sykmeldte får tilsendt og skal svare på
  */
 data class KartleggingssporsmalKandidat(
     val uuid: UUID,
@@ -21,6 +22,7 @@ data class KartleggingssporsmalKandidat(
     val status: KartleggingssporsmalKandidatStatusendring,
     val varsletAt: OffsetDateTime?,
     val journalpostId: JournalpostId? = null,
+    val skjemavariant: Skjemavariant,
 ) {
 
     fun registrerSvarMottatt(svarAt: OffsetDateTime): KartleggingssporsmalKandidat {
@@ -53,11 +55,13 @@ data class KartleggingssporsmalKandidat(
             personident = personident,
             status = KartleggingssporsmalKandidatStatusendring.Kandidat(),
             varsletAt = null,
+            skjemavariant = Skjemavariant.FLERVALG_V1, // TODO: Må oppdateres basert på hvem som skal ha hvilke skjemaer i fremtiden
             journalpostId = null,
         )
     }
 }
 
-enum class KandidatStatus {
-    KANDIDAT, SVAR_MOTTATT, FERDIGBEHANDLET,
+enum class Skjemavariant {
+    FLERVALG_V1,
+    FLERVALG_FRITEKST_V1,
 }
