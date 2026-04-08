@@ -49,13 +49,14 @@ data class KartleggingssporsmalKandidat(
     companion object {
         fun create(
             personident: Personident,
+            skjemavariant: Skjemavariant,
         ) = KartleggingssporsmalKandidat(
             uuid = UUID.randomUUID(),
             createdAt = nowUTC(),
             personident = personident,
             status = KartleggingssporsmalKandidatStatusendring.Kandidat(),
             varsletAt = null,
-            skjemavariant = Skjemavariant.FLERVALG_V1, // TODO: Må oppdateres basert på hvem som skal ha hvilke skjemaer i fremtiden
+            skjemavariant = skjemavariant,
             journalpostId = null,
         )
     }

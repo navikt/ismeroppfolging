@@ -21,6 +21,7 @@ object UserConstants {
     val ARBEIDSTAKER_PERSONIDENT_NO_FODSELSDATO = Personident("12311111111")
     val ARBEIDSTAKER_PERSONIDENT_ONLY_FODSELSAAR = Personident("12311111199")
     val ARBEIDSTAKER_PERSONIDENT_PDL_FAILS = Personident("11111111666")
+    val ARBEIDSTAKER_PERSONIDENT_FRITEKST_SKJEMA = Personident("55667788990")
     val EXISTING_EKSTERN_REFERANSE_UUID: UUID = UUID.fromString("e7e8e9e0-e1e2-e3e4-e5e6-e7e8e9e0e1e2")
     val FAILING_EKSTERN_REFERANSE_UUID: UUID = UUID.randomUUID()
     val PDF_DOKUMENT = byteArrayOf(0x2E, 0x28)
@@ -29,6 +30,7 @@ object UserConstants {
     const val VIRKSOMHETSNUMMER = "123456789"
     const val VALID_PILOTKONTOR = "0220"
     const val VALID_PILOTKONTOR_UTEN_VARSEL = "1208"
+    const val KONTOR_NAV_SANDEFJORD = "0710"
     const val PERSON_FORNAVN = "Fornavn"
     const val PERSON_MELLOMNAVN = "Mellomnavn"
     const val PERSON_ETTERNAVN = "Etternavnesen"
