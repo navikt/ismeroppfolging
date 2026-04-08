@@ -9,6 +9,7 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Com
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_MINIMUM_NUMBER_OF_DAYS_LEFT_IN_OPPFOLGINGSTILFELLE
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_LIMIT_DAYS_EVEN_IF_FEW_DAYS_LEFT
 import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
+import no.nav.syfo.kartleggingssporsmal.domain.Skjemavariant
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet.Enhet
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.model.getAlder
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aResponseDTO
@@ -101,7 +102,15 @@ class KartleggingssporsmalService(
                 }
 
                 if (isKandidat) {
-                    val kandidat = KartleggingssporsmalKandidat.create(personident = stoppunkt.personident)
+                    val skjemavariant = if (enhet?.enhetId in pilotkontorerWithFritekstSkjema) {
+                        Skjemavariant.FLERVALG_FRITEKST_V1
+                    } else {
+                        Skjemavariant.FLERVALG_V1
+                    }
+                    val kandidat = KartleggingssporsmalKandidat.create(
+                        personident = stoppunkt.personident,
+                        skjemavariant = skjemavariant,
+                    )
                     val persistedKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                         kandidat = kandidat,
                         stoppunktId = stoppunktId,
@@ -336,6 +345,7 @@ class KartleggingssporsmalService(
             KONTOR_NAV_MASFJORDEN,
             KONTOR_NAV_SOLUND,
         ) + pilotkontorerMedVarsel
+        private val pilotkontorerWithFritekstSkjema = listOf(KONTOR_NAV_SANDEFJORD)
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
 }

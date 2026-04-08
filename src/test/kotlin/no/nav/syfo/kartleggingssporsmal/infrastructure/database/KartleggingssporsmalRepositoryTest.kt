@@ -149,7 +149,10 @@ class KartleggingssporsmalRepositoryTest {
             kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
             val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
 
-            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
                 stoppunktId = createdStoppunkt.id,
@@ -186,8 +189,10 @@ class KartleggingssporsmalRepositoryTest {
             kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
             val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
 
-            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
-                .copy(skjemavariant = Skjemavariant.FLERVALG_FRITEKST_V1)
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_FRITEKST_V1,
+            )
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
                 stoppunktId = createdStoppunkt.id,
@@ -227,8 +232,14 @@ class KartleggingssporsmalRepositoryTest {
             kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt2!!)
             val createdStoppunkter = database.getKartleggingssporsmalStoppunkt()
 
-            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
-            val otherKandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
+            val otherKandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
                 .copy(createdAt = OffsetDateTime.now().minusHours(1))
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -260,7 +271,10 @@ class KartleggingssporsmalRepositoryTest {
             kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
             val createdStoppunkter = database.getKartleggingssporsmalStoppunkt()
 
-            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
                 stoppunktId = createdStoppunkter[0].id,
@@ -284,7 +298,10 @@ class KartleggingssporsmalRepositoryTest {
             kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
             val createdStoppunkter = database.getKartleggingssporsmalStoppunkt()
 
-            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
                 stoppunktId = createdStoppunkter[0].id,
@@ -314,8 +331,14 @@ class KartleggingssporsmalRepositoryTest {
             kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt2!!)
             val createdStoppunkter = database.getKartleggingssporsmalStoppunkt()
 
-            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
-            val otherKandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
+            val otherKandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
                 .copy(createdAt = OffsetDateTime.now().minusHours(1))
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -348,7 +371,10 @@ class KartleggingssporsmalRepositoryTest {
             kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
             val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
 
-            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
                 .copy(varsletAt = OffsetDateTime.now())
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -365,7 +391,10 @@ class KartleggingssporsmalRepositoryTest {
 
     @Test
     fun `updateSvarForKandidat should throw an exception when the kandidat does not exist`() {
-        val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+        val kandidat = KartleggingssporsmalKandidat.create(
+            personident = ARBEIDSTAKER_PERSONIDENT,
+            skjemavariant = Skjemavariant.FLERVALG_V1,
+        )
         val kandidatSvarMottatt = kandidat.registrerSvarMottatt(OffsetDateTime.now())
         runBlocking {
             assertThrows<NoSuchElementException> {

@@ -6,6 +6,8 @@ import io.ktor.http.HttpStatusCode
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_INACTIVE
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_PILOT_UTEN_UTSENDING
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_FRITEKST_SKJEMA
+import no.nav.syfo.UserConstants.KONTOR_NAV_SANDEFJORD
 import no.nav.syfo.UserConstants.VALID_PILOTKONTOR_UTEN_VARSEL
 import no.nav.syfo.kartleggingssporsmal.generators.getBehandlendeEnhetDTO
 import no.nav.syfo.shared.infrastructure.mock.respond
@@ -22,6 +24,9 @@ fun MockRequestHandleScope.behandlendeenhetResponse(request: HttpRequestData): H
         )
         ARBEIDSTAKER_PERSONIDENT_PILOT_UTEN_UTSENDING.value -> respond(
             getBehandlendeEnhetDTO(geografiskEnhetId = VALID_PILOTKONTOR_UTEN_VARSEL)
+        )
+        ARBEIDSTAKER_PERSONIDENT_FRITEKST_SKJEMA.value -> respond(
+            getBehandlendeEnhetDTO(geografiskEnhetId = KONTOR_NAV_SANDEFJORD)
         )
         else -> respond(getBehandlendeEnhetDTO())
     }

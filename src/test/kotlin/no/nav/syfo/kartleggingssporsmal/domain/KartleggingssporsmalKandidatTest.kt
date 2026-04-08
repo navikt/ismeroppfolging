@@ -13,6 +13,7 @@ class KartleggingssporsmalKandidatTest {
     fun `new kandidat has correct status and values`() {
         val newKandidat = KartleggingssporsmalKandidat.create(
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+            skjemavariant = Skjemavariant.FLERVALG_V1,
         )
 
         assert(newKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
@@ -26,6 +27,7 @@ class KartleggingssporsmalKandidatTest {
     fun `registrereSvarMottatt only works when status is Kandidat or SvarMottatt`() {
         val newKandidat = KartleggingssporsmalKandidat.create(
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+            skjemavariant = Skjemavariant.FLERVALG_V1,
         )
 
         val svarMottattKandidat = newKandidat.registrerSvarMottatt(
@@ -49,6 +51,7 @@ class KartleggingssporsmalKandidatTest {
     fun `ferdigbehandleKandidat only works when status is SvarMottatt`() {
         val newKandidat = KartleggingssporsmalKandidat.create(
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+            skjemavariant = Skjemavariant.FLERVALG_V1,
         )
         assertThrows<IllegalArgumentException> {
             newKandidat.ferdigbehandleVurdering(UserConstants.VEILEDER_IDENT)
@@ -62,5 +65,15 @@ class KartleggingssporsmalKandidatTest {
         assertThrows<IllegalArgumentException> {
             ferdigbehandletKandidat.ferdigbehandleVurdering(UserConstants.VEILEDER_IDENT)
         }
+    }
+
+    @Test
+    fun `new kandidat with FLERVALG_FRITEKST_V1 has correct skjemavariant`() {
+        val newKandidat = KartleggingssporsmalKandidat.create(
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+            skjemavariant = Skjemavariant.FLERVALG_FRITEKST_V1,
+        )
+
+        assertTrue(newKandidat.skjemavariant == Skjemavariant.FLERVALG_FRITEKST_V1)
     }
 }
