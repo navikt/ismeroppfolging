@@ -10,6 +10,7 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Com
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_MINIMUM_NUMBER_OF_DAYS_LEFT_IN_OPPFOLGINGSTILFELLE
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_LIMIT_DAYS_EVEN_IF_FEW_DAYS_LEFT
 import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
+import no.nav.syfo.kartleggingssporsmal.domain.Skjemavariant
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet.Enhet
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.model.getAlder
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aResponseDTO
@@ -102,7 +103,15 @@ class KartleggingssporsmalService(
                 }
 
                 if (isKandidat) {
-                    val kandidat = KartleggingssporsmalKandidat.create(personident = stoppunkt.personident)
+                    val skjemavariant = if (enhet?.enhetId in pilotkontorerWithFritekstSkjema) {
+                        Skjemavariant.FLERVALG_FRITEKST_V1
+                    } else {
+                        Skjemavariant.FLERVALG_V1
+                    }
+                    val kandidat = KartleggingssporsmalKandidat.create(
+                        personident = stoppunkt.personident,
+                        skjemavariant = skjemavariant,
+                    )
                     val persistedKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                         kandidat = kandidat,
                         stoppunktId = stoppunktId,
@@ -296,7 +305,7 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_OSTEROY = "1253"
         private const val KONTOR_NAV_MASFJORDEN = "1266"
         private const val KONTOR_NAV_SOLUND = "1412"
-        private val pilotkontorerMedVarsel = listOf(
+        val pilotkontorerMedVarsel = listOf(
             KONTOR_NAV_LIER,
             KONTOR_NAV_ASKER,
             KONTOR_NAV_GRORUD,
@@ -329,7 +338,7 @@ class KartleggingssporsmalService(
             KONTOR_NAV_VARNES,
             KONTOR_NAV_FOSEN,
         )
-        private val pilotkontorer = listOf(
+        val pilotkontorer = listOf(
             KONTOR_NAV_BERGEN_SENTRUM,
             KONTOR_NAV_AURLAND_LARDAL,
             KONTOR_NAV_SOGNDAL,
@@ -341,6 +350,7 @@ class KartleggingssporsmalService(
             KONTOR_NAV_MASFJORDEN,
             KONTOR_NAV_SOLUND,
         ) + pilotkontorerMedVarsel
+        val pilotkontorerWithFritekstSkjema = listOf(KONTOR_NAV_SANDEFJORD)
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
 }

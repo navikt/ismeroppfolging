@@ -16,6 +16,7 @@ import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
+import no.nav.syfo.kartleggingssporsmal.domain.Skjemavariant
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFromKafka
 import no.nav.syfo.kartleggingssporsmal.generators.generateJournalpostRequest
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.dokarkiv.DokarkivClient
@@ -143,7 +144,10 @@ class JournalforingServiceTest {
 
     @Test
     fun `feiler når kall til pdl feiler`() {
-        val kandidat = KartleggingssporsmalKandidat.create(personident = UserConstants.ARBEIDSTAKER_PERSONIDENT_PDL_FAILS)
+        val kandidat = KartleggingssporsmalKandidat.create(
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENT_PDL_FAILS,
+            skjemavariant = Skjemavariant.FLERVALG_V1,
+        )
 
         val result = runBlocking {
             journalforingService.journalfor(

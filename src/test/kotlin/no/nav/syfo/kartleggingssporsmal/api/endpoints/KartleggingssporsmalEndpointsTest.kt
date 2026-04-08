@@ -18,6 +18,7 @@ import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalService
 import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
+import no.nav.syfo.kartleggingssporsmal.domain.Skjemavariant
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ
 import no.nav.syfo.shared.api.generateJWT
 import no.nav.syfo.shared.api.testApiModule
@@ -69,7 +70,10 @@ class KartleggingssporsmalEndpointsTest {
         @Test
         fun `Returns status OK if valid token is supplied and kandidat exists`() = testApplication {
             val client = setupApiAndClient(kartleggingssporsmalServiceMock)
-            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
             coEvery { kartleggingssporsmalServiceMock.getKandidatur(ARBEIDSTAKER_PERSONIDENT) } returns listOf(kandidat)
             coEvery { kartleggingssporsmalServiceMock.getKandidatStatus(kandidat.uuid) } returns listOf(kandidat.status)
 
@@ -152,7 +156,10 @@ class KartleggingssporsmalEndpointsTest {
                     veilederident = UserConstants.VEILEDER_IDENT,
                     vurderingAlternativ = null,
                 )
-            val kandidatFerdigbehandlet = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            val kandidatFerdigbehandlet = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
                 .copy(status = ferdigBehandletStatus)
             val svarAt = nowUTC().minusDays(1)
             val svarMottatt =
@@ -197,7 +204,10 @@ class KartleggingssporsmalEndpointsTest {
                     veilederident = UserConstants.VEILEDER_IDENT,
                     vurderingAlternativ = VurderingAlternativ.IKKE_RISIKO_FOR_LANGTIDSFRAVAR,
                 )
-            val kandidatFerdigbehandlet = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            val kandidatFerdigbehandlet = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
                 .copy(status = ferdigBehandletStatus)
             val svarAt = nowUTC().minusDays(1)
             val svarMottatt =
