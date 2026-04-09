@@ -147,7 +147,10 @@ class KartleggingssporsmalEndpointsTest {
         @Test
         fun `Returns status OK if valid token is supplied and kandidat exists`() = testApplication {
             val ferdigBehandletStatus =
-                KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet(veilederident = UserConstants.VEILEDER_IDENT)
+                KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet(
+                    veilederident = UserConstants.VEILEDER_IDENT,
+                    vurderingAlternativ = null,
+                )
             val kandidatFerdigbehandlet = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
                 .copy(status = ferdigBehandletStatus)
             val svarAt = nowUTC().minusDays(1)
