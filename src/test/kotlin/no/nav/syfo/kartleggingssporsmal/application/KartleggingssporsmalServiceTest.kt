@@ -20,6 +20,7 @@ import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATIO
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT_BUT_LONG
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TOO_OLD
 import no.nav.syfo.kartleggingssporsmal.domain.*
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ
 import no.nav.syfo.kartleggingssporsmal.generators.createOppfolgingstilfelleFromKafka
 import no.nav.syfo.kartleggingssporsmal.infrastructure.database.KartleggingssporsmalRepository
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.*
@@ -867,6 +868,62 @@ class KartleggingssporsmalServiceTest {
                 UserConstants.VEILEDER_IDENT,
                 (fetchedKandidat?.status as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet).veilederident
             )
+            assertNull(fetchedKandidat.status.vurderingAlternativ)
+            assertNotNull(fetchedKandidat.status.publishedAt)
+
+            val producerRecordSlot = mutableListOf<ProducerRecord<String, KartleggingssporsmalKandidatStatusRecord>>()
+            verify(exactly = 2) { mockKandidatProducer.send(capture(producerRecordSlot)) }
+
+            val lastRecord = producerRecordSlot.last().value()
+            assertEquals(createdKandidat.uuid, lastRecord.kandidatUuid)
+            assertEquals(ARBEIDSTAKER_PERSONIDENT.value, lastRecord.personident)
+            assertEquals(KandidatStatus.FERDIGBEHANDLET.name, lastRecord.status)
+            assertEquals(Skjemavariant.FLERVALG_V1.name, lastRecord.skjemavariant)
+        }
+
+        @Test
+        fun `registrer ferdig behandlet with vurderingAlternativ should store status, veilederident and vurderingAlternativ`() = runTest {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)!!
+            kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+            val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+                .copy(varsletAt = OffsetDateTime.now())
+            val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkt.id,
+            )
+
+            kartleggingssporsmalService.registrerSvar(
+                kandidatUuid = createdKandidat.uuid,
+                svarAt = OffsetDateTime.now(),
+                svarId = UUID.randomUUID(),
+            )
+            val ferdigbehandletBy = UserConstants.VEILEDER_IDENT
+            val returnedKandidat = kartleggingssporsmalService.registrerFerdigbehandlet(
+                uuid = createdKandidat.uuid,
+                veilederident = ferdigbehandletBy,
+                vurderingAlternativ = VurderingAlternativ.RISIKO_FOR_LANGTIDSFRAVAR,
+            )
+            assertEquals(createdKandidat.uuid, returnedKandidat.uuid)
+            assertEquals(ARBEIDSTAKER_PERSONIDENT, returnedKandidat.personident)
+            assertTrue(returnedKandidat.status is KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet)
+            assertEquals(
+                ferdigbehandletBy,
+                (returnedKandidat.status as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet).veilederident
+            )
+
+            val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
+            assertTrue(fetchedKandidat?.status is KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet)
+            assertEquals(
+                UserConstants.VEILEDER_IDENT,
+                (fetchedKandidat?.status as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet).veilederident
+            )
+            assertEquals(VurderingAlternativ.RISIKO_FOR_LANGTIDSFRAVAR, fetchedKandidat.status.vurderingAlternativ)
             assertNotNull(fetchedKandidat.status.publishedAt)
 
             val producerRecordSlot = mutableListOf<ProducerRecord<String, KartleggingssporsmalKandidatStatusRecord>>()

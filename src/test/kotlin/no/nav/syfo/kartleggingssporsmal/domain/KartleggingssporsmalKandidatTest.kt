@@ -38,7 +38,10 @@ class KartleggingssporsmalKandidatTest {
         )
         assert(svarMottattKandidatAgain.status is KartleggingssporsmalKandidatStatusendring.SvarMottatt)
 
-        val ferdigbehandletKandidat = svarMottattKandidat.ferdigbehandleVurdering(UserConstants.VEILEDER_IDENT)
+        val ferdigbehandletKandidat = svarMottattKandidat.ferdigbehandleVurdering(
+            veilederident = UserConstants.VEILEDER_IDENT,
+            vurderingAlternativ = null,
+        )
 
         assertThrows<IllegalArgumentException> {
             ferdigbehandletKandidat.registrerSvarMottatt(svarAt = OffsetDateTime.now())
@@ -51,16 +54,25 @@ class KartleggingssporsmalKandidatTest {
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
         )
         assertThrows<IllegalArgumentException> {
-            newKandidat.ferdigbehandleVurdering(UserConstants.VEILEDER_IDENT)
+            newKandidat.ferdigbehandleVurdering(
+                veilederident = UserConstants.VEILEDER_IDENT,
+                vurderingAlternativ = null,
+            )
         }
         val svarMottattKandidat = newKandidat.registrerSvarMottatt(
             svarAt = OffsetDateTime.now(),
         )
-        val ferdigbehandletKandidat = svarMottattKandidat.ferdigbehandleVurdering(UserConstants.VEILEDER_IDENT)
+        val ferdigbehandletKandidat = svarMottattKandidat.ferdigbehandleVurdering(
+            veilederident = UserConstants.VEILEDER_IDENT,
+            vurderingAlternativ = null,
+        )
         assert(ferdigbehandletKandidat.status is KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet)
 
         assertThrows<IllegalArgumentException> {
-            ferdigbehandletKandidat.ferdigbehandleVurdering(UserConstants.VEILEDER_IDENT)
+            ferdigbehandletKandidat.ferdigbehandleVurdering(
+                veilederident = UserConstants.VEILEDER_IDENT,
+                vurderingAlternativ = null,
+            )
         }
     }
 }

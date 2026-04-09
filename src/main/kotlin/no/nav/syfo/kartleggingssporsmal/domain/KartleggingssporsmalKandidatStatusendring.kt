@@ -69,6 +69,7 @@ sealed class KartleggingssporsmalKandidatStatusendring(
         override val createdAt: OffsetDateTime,
         override val publishedAt: OffsetDateTime?,
         val veilederident: String,
+        val vurderingAlternativ: VurderingAlternativ?,
     ) : KartleggingssporsmalKandidatStatusendring(
         uuid,
         createdAt,
@@ -76,12 +77,18 @@ sealed class KartleggingssporsmalKandidatStatusendring(
     ) {
         override val kandidatStatus: KandidatStatus = KandidatStatus.FERDIGBEHANDLET
 
-        constructor(veilederident: String) : this(
+        constructor(veilederident: String, vurderingAlternativ: VurderingAlternativ?) : this(
             uuid = UUID.randomUUID(),
             createdAt = nowUTC(),
             publishedAt = null,
             veilederident = veilederident,
+            vurderingAlternativ = vurderingAlternativ,
         )
+
+        enum class VurderingAlternativ {
+            RISIKO_FOR_LANGTIDSFRAVAR,
+            IKKE_RISIKO_FOR_LANGTIDSFRAVAR,
+        }
     }
 }
 

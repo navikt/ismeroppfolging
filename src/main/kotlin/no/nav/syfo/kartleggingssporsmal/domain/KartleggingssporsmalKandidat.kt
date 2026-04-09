@@ -1,5 +1,6 @@
 package no.nav.syfo.kartleggingssporsmal.domain
 
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ
 import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.shared.util.nowUTC
 import java.time.OffsetDateTime
@@ -37,11 +38,19 @@ data class KartleggingssporsmalKandidat(
         }
     }
 
-    fun ferdigbehandleVurdering(veilederident: String): KartleggingssporsmalKandidat {
+    fun ferdigbehandleVurdering(
+        veilederident: String,
+        vurderingAlternativ: VurderingAlternativ?,
+    ): KartleggingssporsmalKandidat {
         if (this.status !is KartleggingssporsmalKandidatStatusendring.SvarMottatt) {
             throw IllegalArgumentException("Ferdigbehandling feilet: Kandidaten må ha status ${KartleggingssporsmalKandidatStatusendring.SvarMottatt::class.simpleName} for å ferdigbehandles, men var ${status.kandidatStatus} ")
         }
-        return this.copy(status = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet(veilederident = veilederident))
+        return this.copy(
+            status = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet(
+                veilederident = veilederident,
+                vurderingAlternativ = vurderingAlternativ,
+            )
+        )
     }
 
     fun varsle() = this.copy(varsletAt = nowUTC())

@@ -4,6 +4,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_MINIMUM_NUMBER_OF_DAYS_LEFT_IN_OPPFOLGINGSTILFELLE
@@ -144,10 +145,14 @@ class KartleggingssporsmalService(
     suspend fun registrerFerdigbehandlet(
         uuid: UUID,
         veilederident: String,
+        vurderingAlternativ: VurderingAlternativ? = null, // TODO: Hent fra APIet i stedet
     ): KartleggingssporsmalKandidat {
         val existingKandidat =
             kartleggingssporsmalRepository.getKandidat(uuid) ?: throw IllegalArgumentException("Kandidat med uuid $uuid finnes ikke")
-        val ferdigbehandletKandidat = existingKandidat.ferdigbehandleVurdering(veilederident)
+        val ferdigbehandletKandidat = existingKandidat.ferdigbehandleVurdering(
+            veilederident = veilederident,
+            vurderingAlternativ = vurderingAlternativ,
+        )
 
         val updatedKandidat = kartleggingssporsmalRepository.createKandidatStatusendring(kandidat = ferdigbehandletKandidat)
         kartleggingssporsmalKandidatProducer.send(updatedKandidat)
