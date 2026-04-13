@@ -145,7 +145,7 @@ class KartleggingssporsmalService(
     suspend fun registrerFerdigbehandlet(
         uuid: UUID,
         veilederident: String,
-        vurderingAlternativ: VurderingAlternativ? = null, // TODO: Hent fra APIet i stedet
+        vurderingAlternativ: VurderingAlternativ?, // TODO: Make required when frontend makes use of it
     ): KartleggingssporsmalKandidat {
         val existingKandidat =
             kartleggingssporsmalRepository.getKandidat(uuid) ?: throw IllegalArgumentException("Kandidat med uuid $uuid finnes ikke")
