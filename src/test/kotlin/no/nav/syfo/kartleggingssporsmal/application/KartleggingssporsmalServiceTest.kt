@@ -853,6 +853,7 @@ class KartleggingssporsmalServiceTest {
             val returnedKandidat = kartleggingssporsmalService.registrerFerdigbehandlet(
                 uuid = createdKandidat.uuid,
                 veilederident = ferdigbehandletBy,
+                vurderingAlternativ = null
             )
             assertEquals(createdKandidat.uuid, returnedKandidat.uuid)
             assertEquals(ARBEIDSTAKER_PERSONIDENT, returnedKandidat.personident)
@@ -955,6 +956,7 @@ class KartleggingssporsmalServiceTest {
                 kartleggingssporsmalService.registrerFerdigbehandlet(
                     uuid = kandidat.uuid,
                     veilederident = UserConstants.VEILEDER_IDENT,
+                    vurderingAlternativ = VurderingAlternativ.IKKE_RISIKO_FOR_LANGTIDSFRAVAR
                 )
             }
         }
@@ -965,6 +967,7 @@ class KartleggingssporsmalServiceTest {
                 kartleggingssporsmalService.registrerFerdigbehandlet(
                     uuid = UUID.randomUUID(),
                     veilederident = UserConstants.VEILEDER_IDENT,
+                    vurderingAlternativ = VurderingAlternativ.IKKE_RISIKO_FOR_LANGTIDSFRAVAR
                 )
             }
         }
