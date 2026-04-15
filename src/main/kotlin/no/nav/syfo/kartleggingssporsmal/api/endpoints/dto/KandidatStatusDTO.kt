@@ -1,4 +1,4 @@
-package no.nav.syfo.kartleggingssporsmal.api.model
+package no.nav.syfo.kartleggingssporsmal.api.endpoints.dto
 
 import no.nav.syfo.kartleggingssporsmal.domain.KandidatStatus
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
@@ -21,7 +21,6 @@ data class KandidatStatusDTO(
 data class VurderingDTO(
     val vurdertAt: OffsetDateTime,
     val vurdertBy: String,
-    val vurderingAlternativ: KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ?,
 )
 
 fun KartleggingssporsmalKandidat.toKandidatStatusDTO(
@@ -39,7 +38,6 @@ fun KartleggingssporsmalKandidat.toKandidatStatusDTO(
             VurderingDTO(
                 vurdertAt = it.createdAt,
                 vurdertBy = (it as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet).veilederident,
-                vurderingAlternativ = it.vurderingAlternativ,
             )
         },
     createdAt = this.createdAt
