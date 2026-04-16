@@ -14,6 +14,7 @@ import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_HAS_14A
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_INACTIVE
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_NO_ARBEIDSGIVER
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_PILOT_UTEN_UTSENDING
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_FRITEKST_SKJEMA
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT
@@ -699,6 +700,37 @@ class KartleggingssporsmalServiceTest {
             verify(exactly = 0) { mockKandidatProducer.send(any()) }
             verify(exactly = 0) { mockEsyfoVarselProducer.send(any()) }
         }
+
+        @Test
+        fun `processStoppunkter should create kandidat with FLERVALG_FRITEKST_V1 for KONTOR_NAV_SANDEFJORD enhet`() = runTest {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                personident = ARBEIDSTAKER_PERSONIDENT_FRITEKST_SKJEMA,
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+            assertNotNull(stoppunkt)
+
+            kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+
+            val results = kartleggingssporsmalServiceWithKandidatPublishingEnabled.processStoppunkter()
+
+            assertEquals(1, results.size)
+            assertTrue(results.first().isSuccess)
+
+            val stoppunktProcessed = results.first().getOrThrow()
+            val kandidat = database.getKandidatByStoppunktUUID(stoppunktProcessed.uuid)!!
+            assertEquals(Skjemavariant.FLERVALG_FRITEKST_V1, kandidat.skjemavariant)
+
+            val producerRecordSlot = slot<ProducerRecord<String, KartleggingssporsmalKandidatStatusRecord>>()
+            verify(exactly = 1) {
+                mockKandidatProducer.send(capture(producerRecordSlot))
+            }
+
+            val kandidatStatusendringHendelse = producerRecordSlot.captured.value()
+            assertEquals(ARBEIDSTAKER_PERSONIDENT_FRITEKST_SKJEMA.value, kandidatStatusendringHendelse.personident)
+            assertEquals(Skjemavariant.FLERVALG_FRITEKST_V1.name, kandidatStatusendringHendelse.skjemavariant)
+        }
     }
 
     @Nested
@@ -717,7 +749,10 @@ class KartleggingssporsmalServiceTest {
             kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
             val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
 
-            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
                 .copy(varsletAt = OffsetDateTime.now())
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -768,7 +803,10 @@ class KartleggingssporsmalServiceTest {
             kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
             val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
 
-            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
                 .copy(varsletAt = OffsetDateTime.now())
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -837,7 +875,10 @@ class KartleggingssporsmalServiceTest {
             kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
             val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
 
-            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
                 .copy(varsletAt = OffsetDateTime.now())
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -892,8 +933,10 @@ class KartleggingssporsmalServiceTest {
             kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
             val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
 
-            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
-                .copy(varsletAt = OffsetDateTime.now())
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            ).copy(varsletAt = OffsetDateTime.now())
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
                 stoppunktId = createdStoppunkt.id,
@@ -947,7 +990,10 @@ class KartleggingssporsmalServiceTest {
             kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
             val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
 
-            val kandidat = KartleggingssporsmalKandidat.create(personident = ARBEIDSTAKER_PERSONIDENT)
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
                 stoppunktId = createdStoppunkt.id,
