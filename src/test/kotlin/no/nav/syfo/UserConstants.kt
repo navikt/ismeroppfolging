@@ -28,6 +28,7 @@ object UserConstants {
     val PDF_DOKUMENT = byteArrayOf(0x2E, 0x28)
 
     const val VEILEDER_IDENT = "Z999999"
+    const val VEILEDER_IDENT_NO_WRITE_ACCESS = "Z888888"
     const val VIRKSOMHETSNUMMER = "123456789"
     val VALID_PILOTKONTOR = KartleggingssporsmalService.pilotkontorerMedVarsel.first()
     val VALID_PILOTKONTOR_UTEN_VARSEL = KartleggingssporsmalService.pilotkontorer.first()

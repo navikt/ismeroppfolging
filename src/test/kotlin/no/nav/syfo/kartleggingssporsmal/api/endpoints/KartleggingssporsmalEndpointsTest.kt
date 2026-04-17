@@ -20,8 +20,9 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
 import no.nav.syfo.kartleggingssporsmal.domain.Skjemavariant
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ
-import no.nav.syfo.shared.api.generateJWT
 import no.nav.syfo.shared.api.testApiModule
+import no.nav.syfo.shared.api.tokenForVeilederWithNoWriteTilgang
+import no.nav.syfo.shared.api.tokenForVeilederWithFullTilgang
 import no.nav.syfo.shared.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.shared.util.configure
 import no.nav.syfo.shared.util.nowUTC
@@ -34,13 +35,8 @@ import java.util.*
 
 class KartleggingssporsmalEndpointsTest {
 
-    private val externalMockEnvironment = ExternalMockEnvironment.instance
     private val kartleggingssporsmalServiceMock = mockk<KartleggingssporsmalService>(relaxed = true)
-    private val validToken = generateJWT(
-        audience = externalMockEnvironment.environment.azure.appClientId,
-        issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
-        navIdent = UserConstants.VEILEDER_IDENT,
-    )
+    private val validToken = tokenForVeilederWithFullTilgang
 
     private fun ApplicationTestBuilder.setupApiAndClient(kartleggingssporsmalServiceMock: KartleggingssporsmalService? = null): HttpClient {
         application {
@@ -245,6 +241,23 @@ class KartleggingssporsmalEndpointsTest {
             assertEquals(UserConstants.VEILEDER_IDENT, responseDTO.vurdering?.vurdertBy)
             assertEquals(ferdigBehandletStatus.createdAt, responseDTO.vurdering?.vurdertAt)
             assertEquals(ferdigBehandletStatus.vurderingAlternativ, responseDTO.vurdering?.vurderingAlternativ)
+        }
+
+        @Test
+        fun `Returns status Forbidden if denied write access`() = testApplication {
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            )
+            val client = setupApiAndClient(kartleggingssporsmalServiceMock)
+            coEvery { kartleggingssporsmalServiceMock.getKandidat(kandidat.uuid) } returns kandidat
+
+            val response = client.put("$kartleggingssporsmalFerdigbehandleUrl${kandidat.uuid}") {
+                bearerAuth(tokenForVeilederWithNoWriteTilgang)
+                header(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_PERSONIDENT.value)
+            }
+
+            assertEquals(HttpStatusCode.Forbidden, response.status)
         }
 
         @Test
