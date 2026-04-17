@@ -50,6 +50,7 @@ fun Route.registerSenOppfolgingEndpoints(
                 action = API_ACTION,
                 personident = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                requiresWriteAccess = true,
             ) {
                 val kandidatUuid = UUID.fromString(this.call.parameters[kandidatUuidParam])
                 val requestDTO = call.receive<SenOppfolgingVurderingRequestDTO>()

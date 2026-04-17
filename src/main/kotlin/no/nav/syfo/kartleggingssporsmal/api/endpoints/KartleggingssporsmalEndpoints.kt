@@ -74,6 +74,7 @@ fun Route.registerKartleggingssporsmalEndpoints(
                 action = API_ACTION,
                 personident = kandidat.personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                requiresWriteAccess = true,
             ) {
                 val kandidat =
                     kartleggingssporsmalService.registrerFerdigbehandlet(

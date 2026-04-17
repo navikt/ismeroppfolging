@@ -9,7 +9,8 @@ import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
-import no.nav.syfo.shared.api.generateJWT
+import no.nav.syfo.shared.api.tokenForVeilederWithFullTilgang
+import no.nav.syfo.shared.api.tokenForVeilederWithNoWriteTilgang
 import no.nav.syfo.senoppfolging.api.model.SenOppfolgingKandidatResponseDTO
 import no.nav.syfo.senoppfolging.api.model.SenOppfolgingKandidaterRequestDTO
 import no.nav.syfo.senoppfolging.api.model.SenOppfolgingKandidaterResponseDTO
@@ -42,11 +43,7 @@ class SenOppfolgingEndpointsTest {
 
     private val externalMockEnvironment = ExternalMockEnvironment.instance
     private val database = externalMockEnvironment.database
-    private val validToken = generateJWT(
-        audience = externalMockEnvironment.environment.azure.appClientId,
-        issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
-        navIdent = UserConstants.VEILEDER_IDENT,
-    )
+    private val validToken = tokenForVeilederWithFullTilgang
     private val senOppfolgingRepository = SenOppfolgingRepository(database)
 
     private fun ApplicationTestBuilder.setupApiAndClient(): HttpClient {
@@ -267,6 +264,21 @@ class SenOppfolgingEndpointsTest {
                 val response = client.post(ferdigbehandlingUrl)
 
                 assertEquals(HttpStatusCode.Unauthorized, response.status)
+            }
+        }
+
+        @Test
+        fun `Returns status Forbidden if denied write access`() {
+            testApplication {
+                val client = setupApiAndClient()
+                val response = client.post(ferdigbehandlingUrl) {
+                    bearerAuth(tokenForVeilederWithNoWriteTilgang)
+                    header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
+                    contentType(ContentType.Application.Json)
+                    setBody(vurderingRequestDTO)
+                }
+
+                assertEquals(HttpStatusCode.Forbidden, response.status)
             }
         }
 
