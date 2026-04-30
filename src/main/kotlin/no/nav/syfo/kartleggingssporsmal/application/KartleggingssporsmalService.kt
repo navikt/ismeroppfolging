@@ -307,6 +307,7 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_SOLUND = "1412"
         private const val KONTOR_NAV_NITTEDAL = "0233"
         private const val KONTOR_NAV_AURSKOG_HOLAND = "0221"
+        private const val KONTOR_NAV_FREDRIKSTAD = "0106"
         val pilotkontorerMedVarsel = listOf(
             KONTOR_NAV_LIER,
             KONTOR_NAV_ASKER,
@@ -352,7 +353,8 @@ class KartleggingssporsmalService(
         )
         val pilotkontorer = listOf(
             KONTOR_NAV_NITTEDAL,
-            KONTOR_NAV_AURSKOG_HOLAND
+            KONTOR_NAV_AURSKOG_HOLAND,
+            KONTOR_NAV_FREDRIKSTAD,
         ) + pilotkontorerMedVarsel
         val pilotkontorerWithFritekstSkjema = listOf(KONTOR_NAV_SANDEFJORD)
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
