@@ -350,10 +350,10 @@ class KartleggingssporsmalService(
             KONTOR_NAV_OSTEROY,
             KONTOR_NAV_MASFJORDEN,
             KONTOR_NAV_SOLUND,
-        )
-        val pilotkontorer = listOf(
             KONTOR_NAV_NITTEDAL,
             KONTOR_NAV_AURSKOG_HOLAND,
+        )
+        val pilotkontorer = listOf(
             KONTOR_NAV_FREDRIKSTAD,
         ) + pilotkontorerMedVarsel
         val pilotkontorerWithFritekstSkjema = listOf(KONTOR_NAV_SANDEFJORD)
