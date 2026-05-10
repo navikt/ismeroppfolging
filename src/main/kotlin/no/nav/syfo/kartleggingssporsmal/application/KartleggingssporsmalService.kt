@@ -352,10 +352,9 @@ class KartleggingssporsmalService(
             KONTOR_NAV_SOLUND,
             KONTOR_NAV_NITTEDAL,
             KONTOR_NAV_AURSKOG_HOLAND,
+            KONTOR_NAV_FREDRIKSTAD
         )
-        val pilotkontorer = listOf(
-            KONTOR_NAV_FREDRIKSTAD,
-        ) + pilotkontorerMedVarsel
+        val pilotkontorer = pilotkontorerMedVarsel
         val pilotkontorerWithFritekstSkjema = listOf(KONTOR_NAV_SANDEFJORD)
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
