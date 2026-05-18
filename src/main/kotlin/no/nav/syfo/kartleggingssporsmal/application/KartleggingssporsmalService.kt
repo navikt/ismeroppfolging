@@ -105,6 +105,8 @@ class KartleggingssporsmalService(
                 if (isKandidat) {
                     val skjemavariant = if (enhet?.enhetId in pilotkontorerWithFritekstSkjema) {
                         Skjemavariant.FLERVALG_FRITEKST_V1
+                    } else if (enhet?.enhetId in pilotkontorerWithFritekstSkjemaV2) {
+                        Skjemavariant.FLERVALG_FRITEKST_V2
                     } else {
                         Skjemavariant.FLERVALG_V1
                     }
@@ -356,6 +358,7 @@ class KartleggingssporsmalService(
         )
         val pilotkontorer = pilotkontorerMedVarsel
         val pilotkontorerWithFritekstSkjema = listOf(KONTOR_NAV_SANDEFJORD)
+        val pilotkontorerWithFritekstSkjemaV2 = listOf(KONTOR_NAV_ASKER, KONTOR_NAV_SONDRE_NORDSTRAND)
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
 }
