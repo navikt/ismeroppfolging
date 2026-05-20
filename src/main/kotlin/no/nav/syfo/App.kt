@@ -42,7 +42,6 @@ import no.nav.syfo.shared.infrastructure.kafka.identhendelse.kafka.launchKafkaTa
 import no.nav.syfo.shared.infrastructure.kafka.kafkaAivenProducerConfig
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
-import java.util.concurrent.TimeUnit
 
 const val applicationPort = 8080
 
@@ -211,7 +210,7 @@ fun main() {
     )
 
     Runtime.getRuntime().addShutdownHook(
-        Thread { server.stop(10, 10, TimeUnit.SECONDS) }
+        Thread { applicationState.ready = false }
     )
 
     server.start(wait = true)
