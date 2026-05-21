@@ -48,6 +48,7 @@ class JournalforingService(
             ?: throw IllegalStateException("Klarte ikke hente navn fra PDL for personident ${kandidat.personident}")
         val pdf = pdfClient.createKartleggingPdf(
             payload = PdfModel(
+                skjemavariant = kandidat.skjemavariant,
                 datoSendt = kandidat.varsletAt?.toLocalDateOslo() ?: LocalDate.now(),
             ),
             callId = kandidat.uuid.toString(),
