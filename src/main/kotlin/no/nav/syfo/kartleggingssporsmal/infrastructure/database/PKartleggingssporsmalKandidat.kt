@@ -18,6 +18,7 @@ data class PKartleggingssporsmalKandidat(
     val generatedByStoppunktId: Int,
     val status: String,
     val varsletAt: OffsetDateTime?,
+    val varselFerdigstiltAt: OffsetDateTime?,
     val journalpostId: JournalpostId?,
     val skjemavariant: Skjemavariant,
 ) {
@@ -30,6 +31,7 @@ data class PKartleggingssporsmalKandidat(
             personident = this.personident,
             status = pKartleggingssporsmalKandidatStatusendringer.toKartleggingssporsmalKandidatStatusendring(),
             varsletAt = this.varsletAt,
+            varselFerdigstiltAt = this.varselFerdigstiltAt,
             journalpostId = this.journalpostId,
             skjemavariant = skjemavariant,
         )

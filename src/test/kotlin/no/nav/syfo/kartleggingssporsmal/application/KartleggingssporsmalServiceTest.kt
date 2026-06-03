@@ -774,6 +774,7 @@ class KartleggingssporsmalServiceTest {
                 svarAt.toLocalDateOslo()
             )
             assertEquals(kandidat.skjemavariant.name, fetchedKandidat.skjemavariant.name)
+            assertNotNull(fetchedKandidat.varselFerdigstiltAt)
 
             val producerRecordSlotKandidat = slot<ProducerRecord<String, KartleggingssporsmalKandidatStatusRecord>>()
             val producerRecordSlotVarsel = slot<ProducerRecord<String, EsyfovarselHendelse>>()

@@ -121,6 +121,20 @@ class KartleggingssporsmalRepository(
         }
     }
 
+    override suspend fun updateVarselFerdigstiltAtForKandidat(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat {
+        return database.connection.use { connection ->
+            val updatedKandidat = connection.prepareStatement(UPDATE_KANDIDAT_VARSEL_FERDIGSTILT_AT).use {
+                it.setObject(1, kandidat.varselFerdigstiltAt)
+                it.setString(2, kandidat.uuid.toString())
+                it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
+            }
+            val status = connection.getKandidatStatusendringer(kandidat.uuid).firstOrNull()
+                ?: throw NoSuchElementException("KandidatStatusendring for kandidat med UUID ${kandidat.uuid} finnes ikke i databasen")
+            connection.commit()
+            updatedKandidat.toKartleggingssporsmalKandidat(status)
+        }
+    }
+
     override suspend fun updatePublishedAtForKandidatStatusendring(kandidat: KartleggingssporsmalKandidat) {
         database.connection.use { connection ->
             connection.prepareStatement(UPDATE_KANDIDATSTATUSENDRING_PUBLISHED_AT).use {
@@ -376,6 +390,13 @@ class KartleggingssporsmalRepository(
             RETURNING *
         """
 
+        private const val UPDATE_KANDIDAT_VARSEL_FERDIGSTILT_AT = """
+            UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
+            SET varsel_ferdigstilt_at = ?, updated_at = now()
+            WHERE uuid = ?
+            RETURNING *
+        """
+
         private const val GET_NOT_JOURNALFORTE =
             """
                  SELECT *,
@@ -424,6 +445,7 @@ internal fun ResultSet.toPKartleggingssporsmalKandidat(): PKartleggingssporsmalK
         generatedByStoppunktId = getInt("generated_by_stoppunkt_id"),
         status = getString("status"),
         varsletAt = getObject("varslet_at", OffsetDateTime::class.java),
+        varselFerdigstiltAt = getObject("varsel_ferdigstilt_at", OffsetDateTime::class.java),
         journalpostId = getString("journalpost_id")?.let { JournalpostId(it) },
         skjemavariant = Skjemavariant.valueOf(getString("skjemavariant")),
     )

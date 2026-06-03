@@ -26,6 +26,7 @@ interface IKartleggingssporsmalRepository {
 
     suspend fun updatePublishedAtForKandidatStatusendring(kandidat: KartleggingssporsmalKandidat)
     suspend fun updateVarsletAtForKandidat(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat
+    suspend fun updateVarselFerdigstiltAtForKandidat(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat
     fun getNotJournalforteKandidater(): List<KartleggingssporsmalKandidat>
     fun updateJournalpostidForKandidat(kandidat: KartleggingssporsmalKandidat, journalpostId: JournalpostId)
 }

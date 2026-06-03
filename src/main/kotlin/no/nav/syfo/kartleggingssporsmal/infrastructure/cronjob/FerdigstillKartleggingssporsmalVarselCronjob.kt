@@ -19,6 +19,10 @@ class FerdigstillKartleggingssporsmalVarselCronjob(
             val kandidat = kartleggingssporsmalRepository.getKandidat(UUID.fromString(uuid))
             kandidat?.let {
                 esyfovarselProducer.ferdigstillKartleggingssporsmalVarsel(kandidat)
+                    .map { ferdigstiltKandidat ->
+                        val updated = ferdigstiltKandidat.ferdigstillVarsel()
+                        kartleggingssporsmalRepository.updateVarselFerdigstiltAtForKandidat(updated)
+                    }
             } ?: throw RuntimeException("Fant ikke kandidat for manuell ferdigstilling av varsel, uuid: $uuid")
         }
     }
