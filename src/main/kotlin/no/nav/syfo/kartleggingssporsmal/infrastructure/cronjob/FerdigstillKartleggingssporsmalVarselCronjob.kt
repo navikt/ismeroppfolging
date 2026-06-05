@@ -22,6 +22,7 @@ class FerdigstillKartleggingssporsmalVarselCronjob(
                     .map { ferdigstiltKandidat ->
                         val updated = ferdigstiltKandidat.ferdigstillVarsel()
                         kartleggingssporsmalRepository.updateVarselFerdigstiltAtForKandidat(updated)
+                        updated
                     }
             } ?: throw RuntimeException("Fant ikke kandidat for manuell ferdigstilling av varsel, uuid: $uuid")
         }

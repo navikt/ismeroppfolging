@@ -121,17 +121,17 @@ class KartleggingssporsmalRepository(
         }
     }
 
-    override suspend fun updateVarselFerdigstiltAtForKandidat(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat {
+    override suspend fun updateVarselFerdigstiltAtForKandidat(kandidat: KartleggingssporsmalKandidat) {
         return database.connection.use { connection ->
-            val updatedKandidat = connection.prepareStatement(UPDATE_KANDIDAT_VARSEL_FERDIGSTILT_AT).use {
+            connection.prepareStatement(UPDATE_KANDIDAT_VARSEL_FERDIGSTILT_AT).use {
                 it.setObject(1, kandidat.varselFerdigstiltAt)
                 it.setString(2, kandidat.uuid.toString())
-                it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
+                val rowCount = it.executeUpdate()
+                if (rowCount != 1) {
+                    throw SQLException("Expected a single row to be updated, got update count $rowCount")
+                }
             }
-            val status = connection.getKandidatStatusendringer(kandidat.uuid).firstOrNull()
-                ?: throw NoSuchElementException("KandidatStatusendring for kandidat med UUID ${kandidat.uuid} finnes ikke i databasen")
             connection.commit()
-            updatedKandidat.toKartleggingssporsmalKandidat(status)
         }
     }
 
@@ -394,7 +394,6 @@ class KartleggingssporsmalRepository(
             UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
             SET varsel_ferdigstilt_at = ?, updated_at = now()
             WHERE uuid = ?
-            RETURNING *
         """
 
         private const val GET_NOT_JOURNALFORTE =
