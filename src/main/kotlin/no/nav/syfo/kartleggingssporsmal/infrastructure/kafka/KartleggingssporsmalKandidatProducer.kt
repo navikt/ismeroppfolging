@@ -24,7 +24,7 @@ class KartleggingssporsmalKandidatProducer(private val producer: KafkaProducer<S
             producer.send(record).get()
             Result.success(kandidat)
         } catch (e: Exception) {
-            log.error("Exception was thrown when attempting to send kartleggingssporsmal kandidat status for (uuid: ${kandidat.uuid})", e)
+            log.error("Exception was thrown when attempting to send kartleggingssporsmal kandidat status (uuid: ${kandidat.uuid})", e)
             Result.failure(e)
         }
 
