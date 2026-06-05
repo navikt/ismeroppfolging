@@ -37,7 +37,7 @@ class EsyfovarselProducer(
             ).get()
             Result.success(kartleggingssporsmalKandidat)
         } catch (e: Exception) {
-            log.error("Exception was thrown when attempting to send kartleggingssporsmal varsel (uuid: ${kartleggingssporsmalKandidat.uuid}) to esyfovarsel: ${e.message}")
+            log.error("Exception was thrown when attempting to send kartleggingssporsmal varsel (uuid: ${kartleggingssporsmalKandidat.uuid}) to esyfovarsel.", e)
             Result.failure(e)
         }
     }
@@ -60,7 +60,7 @@ class EsyfovarselProducer(
             ).get()
             Result.success(kartleggingssporsmalKandidat)
         } catch (e: Exception) {
-            log.error("Exception was thrown when attempting to ferdigstille kartleggingssporsmal varsel (uuid: ${kartleggingssporsmalKandidat.uuid}) to esyfovarsel: ${e.message}")
+            log.error("Exception was thrown when attempting to ferdigstille kartleggingssporsmal varsel (uuid: ${kartleggingssporsmalKandidat.uuid}) to esyfovarsel.", e)
             Result.failure(e)
         }
     }
