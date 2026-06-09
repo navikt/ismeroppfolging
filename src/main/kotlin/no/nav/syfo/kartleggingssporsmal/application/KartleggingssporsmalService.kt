@@ -148,6 +148,10 @@ class KartleggingssporsmalService(
                 }
 
             esyfoVarselProducer.ferdigstillKartleggingssporsmalVarsel(mottattSvarKandidat)
+                .map { kandidat ->
+                    val ferdigstiltKandidat = kandidat.ferdigstillVarsel()
+                    kartleggingssporsmalRepository.updateVarselFerdigstiltAtForKandidat(ferdigstiltKandidat)
+                }
         }
     }
 

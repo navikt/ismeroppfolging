@@ -22,6 +22,7 @@ data class KartleggingssporsmalKandidat(
     val personident: Personident,
     val status: KartleggingssporsmalKandidatStatusendring,
     val varsletAt: OffsetDateTime?,
+    val varselFerdigstiltAt: OffsetDateTime? = null,
     val journalpostId: JournalpostId? = null,
     val skjemavariant: Skjemavariant,
 ) {
@@ -55,6 +56,8 @@ data class KartleggingssporsmalKandidat(
 
     fun varsle() = this.copy(varsletAt = nowUTC())
 
+    fun ferdigstillVarsel() = this.copy(varselFerdigstiltAt = nowUTC())
+
     companion object {
         fun create(
             personident: Personident,
@@ -65,6 +68,7 @@ data class KartleggingssporsmalKandidat(
             personident = personident,
             status = KartleggingssporsmalKandidatStatusendring.Kandidat(),
             varsletAt = null,
+            varselFerdigstiltAt = null,
             skjemavariant = skjemavariant,
             journalpostId = null,
         )
