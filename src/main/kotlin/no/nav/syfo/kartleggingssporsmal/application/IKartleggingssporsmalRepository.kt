@@ -29,4 +29,5 @@ interface IKartleggingssporsmalRepository {
     suspend fun updateVarselFerdigstiltAtForKandidat(kandidat: KartleggingssporsmalKandidat)
     fun getNotJournalforteKandidater(): List<KartleggingssporsmalKandidat>
     fun updateJournalpostidForKandidat(kandidat: KartleggingssporsmalKandidat, journalpostId: JournalpostId)
+    fun getKandidaterMedSvarUtenFerdigstiltVarsel(): List<KartleggingssporsmalKandidat>
 }

@@ -410,4 +410,131 @@ class KartleggingssporsmalRepositoryTest {
             assertNull(fetchedKandidat)
         }
     }
+
+    @Test
+    fun `getKandidaterMedSvarUtenFerdigstiltVarsel returns kandidater with SvarMottatt and no ferdigstilt varsel`() {
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+            tilfelleStart = LocalDate.now().minusDays(6 * 7),
+            antallSykedager = 6 * 7 + 1,
+        )
+        val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+        assertNotNull(kartleggingssporsmalStoppunkt)
+
+        runBlocking {
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
+            val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            ).copy(varsletAt = OffsetDateTime.now())
+            val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkt.id,
+            )
+            val svarMottattKandidat = createdKandidat.registrerSvarMottatt(OffsetDateTime.now())
+            kartleggingssporsmalRepository.createKandidatStatusendring(svarMottattKandidat)
+
+            val result = kartleggingssporsmalRepository.getKandidaterMedSvarUtenFerdigstiltVarsel()
+            assertEquals(1, result.size)
+            assertEquals(createdKandidat.uuid, result.first().uuid)
+            assertTrue(result.first().status is KartleggingssporsmalKandidatStatusendring.SvarMottatt)
+            assertNull(result.first().varselFerdigstiltAt)
+        }
+    }
+
+    @Test
+    fun `getKandidaterMedSvarUtenFerdigstiltVarsel returns kandidater with Ferdigbehandlet and no ferdigstilt varsel`() {
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+            tilfelleStart = LocalDate.now().minusDays(6 * 7),
+            antallSykedager = 6 * 7 + 1,
+        )
+        val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+        assertNotNull(kartleggingssporsmalStoppunkt)
+
+        runBlocking {
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
+            val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            ).copy(varsletAt = OffsetDateTime.now())
+            val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkt.id,
+            )
+            val svarMottattKandidat = createdKandidat.registrerSvarMottatt(OffsetDateTime.now())
+            val statusSvarMottatt = kartleggingssporsmalRepository.createKandidatStatusendring(svarMottattKandidat)
+            val ferdigbehandletKandidat = statusSvarMottatt.ferdigbehandleVurdering(
+                veilederident = "Z999999",
+                vurderingAlternativ = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ.IKKE_RISIKO_FOR_LANGTIDSFRAVAR,
+            )
+            kartleggingssporsmalRepository.createKandidatStatusendring(ferdigbehandletKandidat)
+
+            val result = kartleggingssporsmalRepository.getKandidaterMedSvarUtenFerdigstiltVarsel()
+            assertEquals(1, result.size)
+            assertEquals(createdKandidat.uuid, result.first().uuid)
+            assertTrue(result.first().status is KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet)
+            assertNull(result.first().varselFerdigstiltAt)
+        }
+    }
+
+    @Test
+    fun `getKandidaterMedSvarUtenFerdigstiltVarsel excludes kandidat with varsel already ferdigstilt`() {
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+            tilfelleStart = LocalDate.now().minusDays(6 * 7),
+            antallSykedager = 6 * 7 + 1,
+        )
+        val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+        assertNotNull(kartleggingssporsmalStoppunkt)
+
+        runBlocking {
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
+            val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            ).copy(varsletAt = OffsetDateTime.now())
+            val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkt.id,
+            )
+            val svarMottattKandidat = createdKandidat.registrerSvarMottatt(OffsetDateTime.now())
+            val withSvar = kartleggingssporsmalRepository.createKandidatStatusendring(svarMottattKandidat)
+            val ferdigstiltKandidat = withSvar.ferdigstillVarsel()
+            kartleggingssporsmalRepository.updateVarselFerdigstiltAtForKandidat(ferdigstiltKandidat)
+
+            val result = kartleggingssporsmalRepository.getKandidaterMedSvarUtenFerdigstiltVarsel()
+            assertTrue(result.isEmpty())
+        }
+    }
+
+    @Test
+    fun `getKandidaterMedSvarUtenFerdigstiltVarsel excludes kandidat with status Kandidat`() {
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+            tilfelleStart = LocalDate.now().minusDays(6 * 7),
+            antallSykedager = 6 * 7 + 1,
+        )
+        val kartleggingssporsmalStoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
+        assertNotNull(kartleggingssporsmalStoppunkt)
+
+        runBlocking {
+            kartleggingssporsmalRepository.createStoppunkt(kartleggingssporsmalStoppunkt!!)
+            val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+            ).copy(varsletAt = OffsetDateTime.now())
+            kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkt.id,
+            )
+
+            val result = kartleggingssporsmalRepository.getKandidaterMedSvarUtenFerdigstiltVarsel()
+            assertTrue(result.isEmpty())
+        }
+    }
 }
