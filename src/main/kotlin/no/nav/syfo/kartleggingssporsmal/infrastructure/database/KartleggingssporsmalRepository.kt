@@ -161,6 +161,19 @@ class KartleggingssporsmalRepository(
             }
         }
 
+    override fun getKandidaterMedSvarUtenFerdigstiltVarsel(): List<KartleggingssporsmalKandidat> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_KANDIDATER_MED_SVAR_UTEN_FERDIGSTILT_VARSEL).use {
+                it.executeQuery().toList {
+                    val pKandidat = toPKartleggingssporsmalKandidat()
+                    val pStatusendring = toPKartleggingssporsmalKandidatStatusendring(prefix = STATUS_PREFIX)
+                    Pair(pKandidat, pStatusendring)
+                }
+            }.map { (kandidat, statusendring) ->
+                kandidat.toKartleggingssporsmalKandidat(statusendring)
+            }
+        }
+
     override fun updateJournalpostidForKandidat(kandidat: KartleggingssporsmalKandidat, journalpostId: JournalpostId) {
         database.connection.use { connection ->
             connection.prepareStatement(SET_JOURNALPOST_ID).use {
@@ -404,6 +417,19 @@ class KartleggingssporsmalRepository(
                  $JOIN_SELECT_NEWEST_STATUS_FROM_STATUSENDRINGER
                  WHERE journalpost_id IS NULL AND varslet_at IS NOT NULL
                  ORDER BY k.created_at ASC
+            """
+
+        private const val GET_KANDIDATER_MED_SVAR_UTEN_FERDIGSTILT_VARSEL =
+            """
+                SELECT *,
+                $STATUS_ALIAS
+                FROM KARTLEGGINGSSPORSMAL_KANDIDAT k
+                $JOIN_SELECT_NEWEST_STATUS_FROM_STATUSENDRINGER
+                WHERE k.varslet_at IS NOT NULL
+                  AND k.varsel_ferdigstilt_at IS NULL
+                  AND s.status IN ('SVAR_MOTTATT', 'FERDIGBEHANDLET')
+                ORDER BY k.created_at
+                LIMIT 200
             """
 
         private const val SET_JOURNALPOST_ID =
