@@ -25,6 +25,7 @@ data class KartleggingssporsmalKandidat(
     val varselFerdigstiltAt: OffsetDateTime? = null,
     val journalpostId: JournalpostId? = null,
     val skjemavariant: Skjemavariant,
+    val shouldSendVarsel: Boolean,
 ) {
 
     fun registrerSvarMottatt(svarAt: OffsetDateTime): KartleggingssporsmalKandidat {
@@ -62,6 +63,7 @@ data class KartleggingssporsmalKandidat(
         fun create(
             personident: Personident,
             skjemavariant: Skjemavariant,
+            shouldSendVarsel: Boolean = true,
         ) = KartleggingssporsmalKandidat(
             uuid = UUID.randomUUID(),
             createdAt = nowUTC(),
@@ -71,6 +73,7 @@ data class KartleggingssporsmalKandidat(
             varselFerdigstiltAt = null,
             skjemavariant = skjemavariant,
             journalpostId = null,
+            shouldSendVarsel = shouldSendVarsel,
         )
     }
 }

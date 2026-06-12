@@ -537,4 +537,91 @@ class KartleggingssporsmalRepositoryTest {
             assertTrue(result.isEmpty())
         }
     }
+
+    @Nested
+    @DisplayName("getKandidaterWithMissingPublishOrVarsel")
+    inner class GetKandidaterWithMissingPublishOrVarsel {
+
+        private fun createStoppunktAndKandidat(
+            shouldSendVarsel: Boolean = true,
+            varsletAt: OffsetDateTime? = null,
+        ): Pair<KartleggingssporsmalKandidat, PKartleggingssporsmalStoppunkt> = runBlocking {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                tilfelleStart = LocalDate.now().minusDays(6 * 7),
+                antallSykedager = 6 * 7 + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)!!
+            kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+            val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+                shouldSendVarsel = shouldSendVarsel,
+            ).copy(varsletAt = varsletAt)
+            val created = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkt.id,
+            )
+            Pair(created, createdStoppunkt)
+        }
+
+        @Test
+        fun `returns kandidat with unpublished statusendring`() {
+            runBlocking {
+                val (kandidat, _) = createStoppunktAndKandidat(shouldSendVarsel = true)
+
+                val result = kartleggingssporsmalRepository.getKandidaterWithMissingPublishOrVarsel()
+                assertEquals(1, result.size)
+                assertEquals(kandidat.uuid, result.first().uuid)
+            }
+        }
+
+        @Test
+        fun `returns kandidat missing varsel even when published`() {
+            runBlocking {
+                val (kandidat, _) = createStoppunktAndKandidat(shouldSendVarsel = true, varsletAt = null)
+                kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(kandidat)
+
+                val result = kartleggingssporsmalRepository.getKandidaterWithMissingPublishOrVarsel()
+                assertEquals(1, result.size)
+                assertEquals(kandidat.uuid, result.first().uuid)
+            }
+        }
+
+        @Test
+        fun `excludes kandidat with published statusendring and varslet`() {
+            runBlocking {
+                val (kandidat, _) = createStoppunktAndKandidat(shouldSendVarsel = true)
+                kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(kandidat)
+                kartleggingssporsmalRepository.updateVarsletAtForKandidat(kandidat.varsle())
+
+                val result = kartleggingssporsmalRepository.getKandidaterWithMissingPublishOrVarsel()
+                assertTrue(result.isEmpty())
+            }
+        }
+
+        @Test
+        fun `excludes kandidat with shouldSendVarsel false and published statusendring`() {
+            runBlocking {
+                val (kandidat, _) = createStoppunktAndKandidat(shouldSendVarsel = false, varsletAt = null)
+                kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(kandidat)
+
+                val result = kartleggingssporsmalRepository.getKandidaterWithMissingPublishOrVarsel()
+                assertTrue(result.isEmpty())
+            }
+        }
+
+        @Test
+        fun `excludes kandidat with non-KANDIDAT status`() {
+            runBlocking {
+                val (kandidat, _) = createStoppunktAndKandidat(shouldSendVarsel = true, varsletAt = OffsetDateTime.now())
+                val svarMottatt = kandidat.registrerSvarMottatt(OffsetDateTime.now())
+                kartleggingssporsmalRepository.createKandidatStatusendring(svarMottatt)
+
+                val result = kartleggingssporsmalRepository.getKandidaterWithMissingPublishOrVarsel()
+                assertTrue(result.isEmpty())
+            }
+        }
+    }
 }

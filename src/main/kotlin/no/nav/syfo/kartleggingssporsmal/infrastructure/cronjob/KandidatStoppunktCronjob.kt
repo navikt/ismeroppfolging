@@ -10,5 +10,9 @@ class KandidatStoppunktCronjob(
     override val intervalDelayMinutes: Long = 5
     override val initialDelayMinutes: Long = 2
 
-    override suspend fun run() = kartleggingssporsmalService.processStoppunkter()
+    override suspend fun run(): List<Result<Any>> {
+        val stoppunktResults = kartleggingssporsmalService.processStoppunkter()
+        val recoveryResults = kartleggingssporsmalService.processKandidaterWithMissingPublishOrVarsel()
+        return stoppunktResults + recoveryResults
+    }
 }

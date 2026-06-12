@@ -174,6 +174,19 @@ class KartleggingssporsmalRepository(
             }
         }
 
+    override fun getKandidaterWithMissingPublishOrVarsel(): List<KartleggingssporsmalKandidat> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_KANDIDATER_WITH_MISSING_PUBLISH_OR_VARSEL).use {
+                it.executeQuery().toList {
+                    val pKandidat = toPKartleggingssporsmalKandidat()
+                    val pStatusendring = toPKartleggingssporsmalKandidatStatusendring(prefix = STATUS_PREFIX)
+                    Pair(pKandidat, pStatusendring)
+                }
+            }.map { (kandidat, statusendring) ->
+                kandidat.toKartleggingssporsmalKandidat(statusendring)
+            }
+        }
+
     override fun updateJournalpostidForKandidat(kandidat: KartleggingssporsmalKandidat, journalpostId: JournalpostId) {
         database.connection.use { connection ->
             connection.prepareStatement(SET_JOURNALPOST_ID).use {
@@ -230,6 +243,7 @@ class KartleggingssporsmalRepository(
             it.setString(6, kandidat.status.kandidatStatus.name)
             it.setObject(7, kandidat.varsletAt)
             it.setString(8, kandidat.skjemavariant.name)
+            it.setBoolean(9, kandidat.shouldSendVarsel)
             it.executeQuery().toList { toPKartleggingssporsmalKandidat() }.single()
         }
 
@@ -359,8 +373,9 @@ class KartleggingssporsmalRepository(
                 generated_by_stoppunkt_id,
                 status,
                 varslet_at,
-                skjemavariant
-            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?)
+                skjemavariant,
+                should_send_varsel
+            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             RETURNING *
         """
 
@@ -446,6 +461,19 @@ class KartleggingssporsmalRepository(
                 WHERE uuid = ?
                 RETURNING *
             """
+
+        private const val GET_KANDIDATER_WITH_MISSING_PUBLISH_OR_VARSEL =
+            """
+                SELECT *,
+                $STATUS_ALIAS
+                FROM KARTLEGGINGSSPORSMAL_KANDIDAT k
+                $JOIN_SELECT_NEWEST_STATUS_FROM_STATUSENDRINGER
+                WHERE s.status = 'KANDIDAT'
+                AND k.should_send_varsel = true
+                AND (s.published_at IS NULL OR k.varslet_at IS NULL)
+                ORDER BY k.created_at
+                LIMIT 100
+            """
     }
 }
 
@@ -473,6 +501,7 @@ internal fun ResultSet.toPKartleggingssporsmalKandidat(): PKartleggingssporsmalK
         varselFerdigstiltAt = getObject("varsel_ferdigstilt_at", OffsetDateTime::class.java),
         journalpostId = getString("journalpost_id")?.let { JournalpostId(it) },
         skjemavariant = Skjemavariant.valueOf(getString("skjemavariant")),
+        shouldSendVarsel = getBoolean("should_send_varsel"),
     )
 }
 
