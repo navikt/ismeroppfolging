@@ -143,14 +143,15 @@ class KartleggingssporsmalService(
         val kandidater = kartleggingssporsmalRepository.getKandidaterWithMissingPublishOrVarsel()
         return kandidater.map { kandidat ->
             runCatching {
-                val isPublished = kandidat.status.publishedAt != null
-                if (kandidat.shouldSendVarsel && !isPublished) {
-                    kartleggingssporsmalKandidatProducer.send(kandidat).map {
-                        kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(kandidat)
-                    }.getOrThrow()
-                }
-                if (kandidat.shouldSendVarsel && kandidat.varsletAt == null) {
-                    sendVarsel(kandidat)
+                if (kandidat.shouldSendVarsel) {
+                    if (kandidat.status.publishedAt == null) {
+                        kartleggingssporsmalKandidatProducer.send(kandidat).map {
+                            kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(kandidat)
+                        }.getOrThrow()
+                    }
+                    if (kandidat.varsletAt == null) {
+                        sendVarsel(kandidat)
+                    }
                 }
                 kandidat
             }
