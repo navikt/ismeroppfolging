@@ -13,6 +13,16 @@ class KandidatStoppunktCronjob(
     override suspend fun run(): List<Result<Any>> {
         val stoppunktResults = kartleggingssporsmalService.processStoppunkter()
         val recoveryResults = kartleggingssporsmalService.processKandidaterWithMissingPublishOrVarsel()
-        return stoppunktResults + recoveryResults
+
+        val processedPersonidenter = stoppunktResults
+            .filter { it.isSuccess }
+            .mapNotNull { it.getOrNull()?.personident }
+            .toSet()
+
+        val deduplicatedRecoveryResults = recoveryResults.filter { result ->
+            result.isFailure || result.getOrNull()?.personident !in processedPersonidenter
+        }
+
+        return stoppunktResults + deduplicatedRecoveryResults
     }
 }
