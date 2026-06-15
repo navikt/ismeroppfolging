@@ -21,6 +21,7 @@ data class PKartleggingssporsmalKandidat(
     val varselFerdigstiltAt: OffsetDateTime?,
     val journalpostId: JournalpostId?,
     val skjemavariant: Skjemavariant,
+    val shouldSendVarsel: Boolean,
 ) {
     fun toKartleggingssporsmalKandidat(
         pKartleggingssporsmalKandidatStatusendringer: PKartleggingssporsmalKandidatStatusendring,
@@ -34,6 +35,7 @@ data class PKartleggingssporsmalKandidat(
             varselFerdigstiltAt = this.varselFerdigstiltAt,
             journalpostId = this.journalpostId,
             skjemavariant = skjemavariant,
+            shouldSendVarsel = this.shouldSendVarsel,
         )
 }
 

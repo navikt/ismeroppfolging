@@ -1020,6 +1020,138 @@ class KartleggingssporsmalServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("Test recovery of kandidater with missing publish or varsel")
+    inner class ProcessKandidaterWithMissingPublishOrVarsel {
+
+        @Test
+        fun `processKandidaterWithMissingPublishOrVarsel should publish and send varsel for kandidat missing both`() = runTest {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)!!
+            kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+            val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+                shouldSendVarsel = true,
+            )
+            val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkt.id,
+            )
+
+            val results = kartleggingssporsmalServiceWithKandidatPublishingEnabled.processKandidaterWithMissingPublishOrVarsel()
+
+            assertEquals(1, results.size)
+            assertTrue(results.first().isSuccess)
+
+            val statusList = kartleggingssporsmalRepository.getKandidatStatusendringer(createdKandidat.uuid)
+            assertNotNull(statusList.first().publishedAt)
+
+            val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
+            assertNotNull(fetchedKandidat?.varsletAt)
+
+            verify(exactly = 1) { mockKandidatProducer.send(any()) }
+            verify(exactly = 1) { mockEsyfoVarselProducer.send(any()) }
+        }
+
+        @Test
+        fun `processKandidaterWithMissingPublishOrVarsel should only send varsel when already published but missing varsel`() = runTest {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)!!
+            kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+            val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+                shouldSendVarsel = true,
+            )
+            val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkt.id,
+            )
+            kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(createdKandidat)
+
+            val results = kartleggingssporsmalServiceWithKandidatPublishingEnabled.processKandidaterWithMissingPublishOrVarsel()
+
+            assertEquals(1, results.size)
+            assertTrue(results.first().isSuccess)
+
+            val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
+            assertNotNull(fetchedKandidat?.varsletAt)
+
+            verify(exactly = 0) { mockKandidatProducer.send(any()) }
+            verify(exactly = 1) { mockEsyfoVarselProducer.send(any()) }
+        }
+
+        @Test
+        fun `processKandidaterWithMissingPublishOrVarsel should do nothing when publishing is disabled`() = runTest {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)!!
+            kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+            val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+                shouldSendVarsel = true,
+            )
+            kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkt.id,
+            )
+
+            val results = kartleggingssporsmalService.processKandidaterWithMissingPublishOrVarsel()
+
+            assertTrue(results.isEmpty())
+            verify(exactly = 0) { mockKandidatProducer.send(any()) }
+            verify(exactly = 0) { mockEsyfoVarselProducer.send(any()) }
+        }
+
+        @Test
+        fun `processKandidaterWithMissingPublishOrVarsel should not send varsel or publish when shouldSendVarsel is false`() = runTest {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
+                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)!!
+            kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+            val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_V1,
+                shouldSendVarsel = false,
+            )
+            kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                kandidat = kandidat,
+                stoppunktId = createdStoppunkt.id,
+            )
+
+            val results = kartleggingssporsmalServiceWithKandidatPublishingEnabled.processKandidaterWithMissingPublishOrVarsel()
+
+            assertEquals(0, results.size)
+
+            verify(exactly = 0) { mockKandidatProducer.send(any()) }
+            verify(exactly = 0) { mockEsyfoVarselProducer.send(any()) }
+        }
+    }
+
     companion object {
         @JvmStatic
         fun provideIkkeKandidatScenarios() = listOf(

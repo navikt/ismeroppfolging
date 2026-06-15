@@ -111,12 +111,13 @@ class KartleggingssporsmalService(
                     val kandidat = KartleggingssporsmalKandidat.create(
                         personident = stoppunkt.personident,
                         skjemavariant = skjemavariant,
+                        shouldSendVarsel = shouldSendVarsel(enhet?.enhetId),
                     )
                     val persistedKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                         kandidat = kandidat,
                         stoppunktId = stoppunktId,
                     )
-                    if (isKandidatPublishingEnabled && shouldSendVarsel(enhet?.enhetId)) {
+                    if (isKandidatPublishingEnabled && persistedKandidat.shouldSendVarsel) {
                         kartleggingssporsmalKandidatProducer.send(
                             kandidat = persistedKandidat,
                         ).map {
@@ -130,6 +131,30 @@ class KartleggingssporsmalService(
                     kartleggingssporsmalRepository.markStoppunktAsProcessed(stoppunktId)
                 }
                 stoppunkt
+            }
+        }
+    }
+
+    suspend fun processKandidaterWithMissingPublishOrVarsel(): List<Result<KartleggingssporsmalKandidat>> {
+        return if (!isKandidatPublishingEnabled) {
+            log.info("Kandidat publishing is disabled, skipping recovery of missing publish/varsel")
+            emptyList()
+        } else {
+            val kandidater = kartleggingssporsmalRepository.getKandidaterWithMissingPublishOrVarsel()
+            kandidater.map { kandidat ->
+                runCatching {
+                    if (kandidat.shouldSendVarsel) {
+                        if (kandidat.status.publishedAt == null) {
+                            kartleggingssporsmalKandidatProducer.send(kandidat).map {
+                                kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(kandidat)
+                            }.getOrThrow()
+                        }
+                        if (kandidat.varsletAt == null) {
+                            sendVarsel(kandidat)
+                        }
+                    }
+                    kandidat
+                }
             }
         }
     }
