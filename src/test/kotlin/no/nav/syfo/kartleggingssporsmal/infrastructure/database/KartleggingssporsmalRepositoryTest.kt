@@ -191,7 +191,7 @@ class KartleggingssporsmalRepositoryTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_FRITEKST_V1,
+                skjemavariant = Skjemavariant.FLERVALG_FRITEKST_V3,
             )
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -202,7 +202,7 @@ class KartleggingssporsmalRepositoryTest {
             assertTrue(createdKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
             assertEquals(createdKandidat.uuid, kandidat.uuid)
             assertNull(createdKandidat.varsletAt)
-            assertEquals(Skjemavariant.FLERVALG_FRITEKST_V1.name, createdKandidat.skjemavariant.name)
+            assertEquals(Skjemavariant.FLERVALG_FRITEKST_V3.name, createdKandidat.skjemavariant.name)
 
             val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
             assertNotNull(fetchedKandidat)

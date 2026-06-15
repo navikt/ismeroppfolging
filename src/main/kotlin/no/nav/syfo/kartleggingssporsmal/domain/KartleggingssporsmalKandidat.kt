@@ -82,4 +82,5 @@ enum class Skjemavariant {
     FLERVALG_V1,
     FLERVALG_FRITEKST_V1,
     FLERVALG_FRITEKST_V2,
+    FLERVALG_FRITEKST_V3,
 }

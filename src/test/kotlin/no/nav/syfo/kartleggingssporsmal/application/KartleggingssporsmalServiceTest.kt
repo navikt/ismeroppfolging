@@ -702,7 +702,7 @@ class KartleggingssporsmalServiceTest {
         }
 
         @Test
-        fun `processStoppunkter should create kandidat with FLERVALG_FRITEKST_V1 for KONTOR_NAV_SANDEFJORD enhet`() = runTest {
+        fun `processStoppunkter should create kandidat with FLERVALG_FRITEKST_V3 for KONTOR_NAV_SANDEFJORD enhet`() = runTest {
             val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
                 personident = ARBEIDSTAKER_PERSONIDENT_FRITEKST_SKJEMA,
                 tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
@@ -720,7 +720,7 @@ class KartleggingssporsmalServiceTest {
 
             val stoppunktProcessed = results.first().getOrThrow()
             val kandidat = database.getKandidatByStoppunktUUID(stoppunktProcessed.uuid)!!
-            assertEquals(Skjemavariant.FLERVALG_FRITEKST_V2, kandidat.skjemavariant)
+            assertEquals(Skjemavariant.FLERVALG_FRITEKST_V3, kandidat.skjemavariant)
 
             val producerRecordSlot = slot<ProducerRecord<String, KartleggingssporsmalKandidatStatusRecord>>()
             verify(exactly = 1) {
@@ -729,7 +729,7 @@ class KartleggingssporsmalServiceTest {
 
             val kandidatStatusendringHendelse = producerRecordSlot.captured.value()
             assertEquals(ARBEIDSTAKER_PERSONIDENT_FRITEKST_SKJEMA.value, kandidatStatusendringHendelse.personident)
-            assertEquals(Skjemavariant.FLERVALG_FRITEKST_V2.name, kandidatStatusendringHendelse.skjemavariant)
+            assertEquals(Skjemavariant.FLERVALG_FRITEKST_V3.name, kandidatStatusendringHendelse.skjemavariant)
         }
     }
 
