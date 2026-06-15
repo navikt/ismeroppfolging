@@ -136,24 +136,25 @@ class KartleggingssporsmalService(
     }
 
     suspend fun processKandidaterWithMissingPublishOrVarsel(): List<Result<KartleggingssporsmalKandidat>> {
-        if (!isKandidatPublishingEnabled) {
+        return if (!isKandidatPublishingEnabled) {
             log.info("Kandidat publishing is disabled, skipping recovery of missing publish/varsel")
-            return emptyList()
-        }
-        val kandidater = kartleggingssporsmalRepository.getKandidaterWithMissingPublishOrVarsel()
-        return kandidater.map { kandidat ->
-            runCatching {
-                if (kandidat.shouldSendVarsel) {
-                    if (kandidat.status.publishedAt == null) {
-                        kartleggingssporsmalKandidatProducer.send(kandidat).map {
-                            kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(kandidat)
-                        }.getOrThrow()
+            emptyList()
+        } else {
+            val kandidater = kartleggingssporsmalRepository.getKandidaterWithMissingPublishOrVarsel()
+            kandidater.map { kandidat ->
+                runCatching {
+                    if (kandidat.shouldSendVarsel) {
+                        if (kandidat.status.publishedAt == null) {
+                            kartleggingssporsmalKandidatProducer.send(kandidat).map {
+                                kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(kandidat)
+                            }.getOrThrow()
+                        }
+                        if (kandidat.varsletAt == null) {
+                            sendVarsel(kandidat)
+                        }
                     }
-                    if (kandidat.varsletAt == null) {
-                        sendVarsel(kandidat)
-                    }
+                    kandidat
                 }
-                kandidat
             }
         }
     }
