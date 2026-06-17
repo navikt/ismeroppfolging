@@ -32,7 +32,7 @@ object UserConstants {
     const val VIRKSOMHETSNUMMER = "123456789"
     val VALID_PILOTKONTOR = KartleggingssporsmalService.pilotkontorerMedVarsel.first()
     val VALID_PILOTKONTOR_UTEN_VARSEL = KartleggingssporsmalService.pilotkontorer.first()
-    val VALID_PILOTKONTOR_FRITEKST = KartleggingssporsmalService.pilotkontorerWithFritekstSkjemaV2.first()
+    val VALID_PILOTKONTOR_FRITEKST = KartleggingssporsmalService.pilotkontorerWithFritekst.first()
     const val PERSON_FORNAVN = "Fornavn"
     const val PERSON_MELLOMNAVN = "Mellomnavn"
     const val PERSON_ETTERNAVN = "Etternavnesen"
