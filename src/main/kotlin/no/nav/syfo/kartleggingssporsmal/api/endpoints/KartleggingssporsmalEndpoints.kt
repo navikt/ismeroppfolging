@@ -1,9 +1,7 @@
 package no.nav.syfo.kartleggingssporsmal.api.endpoints
 
 import io.ktor.http.*
-import io.ktor.server.plugins.*
 import io.ktor.server.request.*
-import io.ktor.server.request.ContentTransformationException
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.kartleggingssporsmal.api.model.KandidatStatusDTO
@@ -50,9 +48,7 @@ fun Route.registerKartleggingssporsmalEndpoints(
             }
         }
         put("/kandidater/{uuid}") {
-            val veilederident =
-                call.getNAVIdent()
-                    ?: throw IllegalArgumentException("Failed to $API_ACTION: No NAV_IDENT supplied in request header")
+            val veilederident = call.getNAVIdent()
             val kandidatUUID =
                 call.parameters["uuid"]?.let { UUID.fromString(it) }
                     ?: throw IllegalArgumentException("Failed to $API_ACTION: No kandidat UUID supplied in request path")
@@ -60,22 +56,14 @@ fun Route.registerKartleggingssporsmalEndpoints(
                 kartleggingssporsmalService.getKandidat(kandidatUUID)
                     ?: throw IllegalArgumentException("Failed to $API_ACTION: No kandidat found for UUID $kandidatUUID")
 
-            // TODO: Remove when frontend sends valid JSON
-            val requestDTO =
-                try {
-                    call.receiveNullable<KartleggingssporsmalRequestDTO>() ?: KartleggingssporsmalRequestDTO()
-                } catch (e: ContentTransformationException) {
-                    KartleggingssporsmalRequestDTO()
-                } catch (e: BadRequestException) {
-                    KartleggingssporsmalRequestDTO()
-                }
-
             validateVeilederAccess(
                 action = API_ACTION,
                 personident = kandidat.personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
                 requiresWriteAccess = true,
             ) {
+                val requestDTO = call.receive<KartleggingssporsmalRequestDTO>()
+
                 val kandidat =
                     kartleggingssporsmalService.registrerFerdigbehandlet(
                         uuid = kandidatUUID,

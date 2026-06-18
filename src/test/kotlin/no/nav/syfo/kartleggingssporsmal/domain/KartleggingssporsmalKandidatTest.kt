@@ -1,8 +1,8 @@
 package no.nav.syfo.kartleggingssporsmal.domain
 
 import no.nav.syfo.UserConstants
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.OffsetDateTime
 import kotlin.test.assertTrue
@@ -42,7 +42,7 @@ class KartleggingssporsmalKandidatTest {
 
         val ferdigbehandletKandidat = svarMottattKandidat.ferdigbehandleVurdering(
             veilederident = UserConstants.VEILEDER_IDENT,
-            vurderingAlternativ = null,
+            vurderingAlternativ = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ.IKKE_RISIKO_FOR_LANGTIDSFRAVAR,
         )
 
         assertThrows<IllegalArgumentException> {
@@ -59,7 +59,7 @@ class KartleggingssporsmalKandidatTest {
         assertThrows<IllegalArgumentException> {
             newKandidat.ferdigbehandleVurdering(
                 veilederident = UserConstants.VEILEDER_IDENT,
-                vurderingAlternativ = null,
+                vurderingAlternativ = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ.IKKE_RISIKO_FOR_LANGTIDSFRAVAR,
             )
         }
         val svarMottattKandidat = newKandidat.registrerSvarMottatt(
@@ -67,14 +67,14 @@ class KartleggingssporsmalKandidatTest {
         )
         val ferdigbehandletKandidat = svarMottattKandidat.ferdigbehandleVurdering(
             veilederident = UserConstants.VEILEDER_IDENT,
-            vurderingAlternativ = null,
+            vurderingAlternativ = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ.IKKE_RISIKO_FOR_LANGTIDSFRAVAR,
         )
         assert(ferdigbehandletKandidat.status is KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet)
 
         assertThrows<IllegalArgumentException> {
             ferdigbehandletKandidat.ferdigbehandleVurdering(
                 veilederident = UserConstants.VEILEDER_IDENT,
-                vurderingAlternativ = null,
+                vurderingAlternativ = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ.IKKE_RISIKO_FOR_LANGTIDSFRAVAR,
             )
         }
     }
