@@ -77,7 +77,7 @@ sealed class KartleggingssporsmalKandidatStatusendring(
     ) {
         override val kandidatStatus: KandidatStatus = KandidatStatus.FERDIGBEHANDLET
 
-        constructor(veilederident: String, vurderingAlternativ: VurderingAlternativ?) : this(
+        constructor(veilederident: String, vurderingAlternativ: VurderingAlternativ) : this(
             uuid = UUID.randomUUID(),
             createdAt = nowUTC(),
             publishedAt = null,

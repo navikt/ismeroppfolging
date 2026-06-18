@@ -10,11 +10,11 @@ import no.nav.syfo.UserConstants
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_ERROR
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_FRITEKST_SKJEMA
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_HAS_14A
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_INACTIVE
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_NO_ARBEIDSGIVER
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_PILOT_UTEN_UTSENDING
-import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_FRITEKST_SKJEMA
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT
@@ -865,64 +865,6 @@ class KartleggingssporsmalServiceTest {
     @Nested
     @DisplayName("Test registrering of ferdig behandlet")
     inner class RegistrerFerdigBehandlet {
-
-        @Test
-        fun `registrer ferdig behandlet should store status and veilederident`() = runTest {
-            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
-                tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
-                antallSykedager = stoppunktStartIntervalDays.toInt() + 1,
-            )
-            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)!!
-            kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
-            val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
-
-            val kandidat = KartleggingssporsmalKandidat.create(
-                personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
-            )
-                .copy(varsletAt = OffsetDateTime.now())
-            val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
-                kandidat = kandidat,
-                stoppunktId = createdStoppunkt.id,
-            )
-
-            kartleggingssporsmalService.registrerSvar(
-                kandidatUuid = createdKandidat.uuid,
-                svarAt = OffsetDateTime.now(),
-                svarId = UUID.randomUUID(),
-            )
-            val ferdigbehandletBy = UserConstants.VEILEDER_IDENT
-            val returnedKandidat = kartleggingssporsmalService.registrerFerdigbehandlet(
-                uuid = createdKandidat.uuid,
-                veilederident = ferdigbehandletBy,
-                vurderingAlternativ = null
-            )
-            assertEquals(createdKandidat.uuid, returnedKandidat.uuid)
-            assertEquals(ARBEIDSTAKER_PERSONIDENT, returnedKandidat.personident)
-            assertTrue(returnedKandidat.status is KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet)
-            assertEquals(
-                ferdigbehandletBy,
-                (returnedKandidat.status as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet).veilederident
-            )
-
-            val fetchedKandidat = kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)
-            assertTrue(fetchedKandidat?.status is KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet)
-            assertEquals(
-                UserConstants.VEILEDER_IDENT,
-                (fetchedKandidat?.status as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet).veilederident
-            )
-            assertNull(fetchedKandidat.status.vurderingAlternativ)
-            assertNotNull(fetchedKandidat.status.publishedAt)
-
-            val producerRecordSlot = mutableListOf<ProducerRecord<String, KartleggingssporsmalKandidatStatusRecord>>()
-            verify(exactly = 2) { mockKandidatProducer.send(capture(producerRecordSlot)) }
-
-            val lastRecord = producerRecordSlot.last().value()
-            assertEquals(createdKandidat.uuid, lastRecord.kandidatUuid)
-            assertEquals(ARBEIDSTAKER_PERSONIDENT.value, lastRecord.personident)
-            assertEquals(KandidatStatus.FERDIGBEHANDLET.name, lastRecord.status)
-            assertEquals(Skjemavariant.FLERVALG_V1.name, lastRecord.skjemavariant)
-        }
 
         @Test
         fun `registrer ferdig behandlet with vurderingAlternativ should store status, veilederident and vurderingAlternativ`() = runTest {

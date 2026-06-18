@@ -2,15 +2,11 @@ package no.nav.syfo.kartleggingssporsmal.application
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
-import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
+import no.nav.syfo.kartleggingssporsmal.domain.*
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ
-import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
-import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_MINIMUM_NUMBER_OF_DAYS_LEFT_IN_OPPFOLGINGSTILFELLE
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_LIMIT_DAYS_EVEN_IF_FEW_DAYS_LEFT
-import no.nav.syfo.kartleggingssporsmal.domain.Oppfolgingstilfelle
-import no.nav.syfo.kartleggingssporsmal.domain.Skjemavariant
+import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt.Companion.KARTLEGGINGSSPORSMAL_STOPPUNKT_START_DAYS
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet.Enhet
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.pdl.model.getAlder
 import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.vedtak14a.Vedtak14aResponseDTO
@@ -20,7 +16,7 @@ import no.nav.syfo.shared.util.toLocalDateOslo
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 
 class KartleggingssporsmalService(
     private val behandlendeEnhetClient: IBehandlendeEnhetClient,
@@ -183,7 +179,7 @@ class KartleggingssporsmalService(
     suspend fun registrerFerdigbehandlet(
         uuid: UUID,
         veilederident: String,
-        vurderingAlternativ: VurderingAlternativ?, // TODO: Make required when frontend makes use of it
+        vurderingAlternativ: VurderingAlternativ,
     ): KartleggingssporsmalKandidat {
         val existingKandidat =
             kartleggingssporsmalRepository.getKandidat(uuid) ?: throw IllegalArgumentException("Kandidat med uuid $uuid finnes ikke")
