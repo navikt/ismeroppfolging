@@ -69,6 +69,10 @@ spec:
       claims:
         extra:
           - "NAVident"
+        groups:
+          - id: "c8957e0a-909c-4b62-8e11-93aae6d295e6" #0000-GA-SYFO-SENSITIV
+          - id: "d8ff201d-730a-453f-82ab-7ab4748307e3" #0000-CA-MODIA-SYFO-LESETILGANG
+          - id: "faec0181-2814-4af5-8faf-bd908801fd92" #0000-CA-MODIA-SYFO-VEILEDER
   kafka:
     pool: nav-dev
   observability:
