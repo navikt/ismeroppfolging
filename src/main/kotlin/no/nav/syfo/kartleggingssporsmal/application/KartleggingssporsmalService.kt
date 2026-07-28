@@ -336,6 +336,15 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_SANDNES = "1102"
         private const val KONTOR_NAV_SKIEN = "0806"
         private const val KONTOR_NAV_TONSBERG = "0704"
+        private const val KONTOR_NAV_VADSO = "2003"
+        private const val KONTOR_NAV_VARDO = "2002"
+        private const val KONTOR_NAV_TANA = "2025"
+        private const val KONTOR_NAV_NESSEBY = "2027"
+        private const val KONTOR_NAV_BATSFJORD = "2028"
+        private const val KONTOR_NAV_BERLEVAG = "2024"
+
+        // TODO: Ny enhet som slår sammen Tana, Nesseby, Berlevåg og Båtsfjord fra 1. sept, men vi har ikke fått enhetsnr enda
+        // private const val KONTOR_NAV_VESTRE_VARANGER = ""
         val pilotkontorerMedVarsel = listOf(
             KONTOR_NAV_LIER,
             KONTOR_NAV_ASKER,
@@ -382,7 +391,17 @@ class KartleggingssporsmalService(
             KONTOR_NAV_AURSKOG_HOLAND,
             KONTOR_NAV_FREDRIKSTAD
         )
-        val pilotkontorer = listOf(KONTOR_NAV_SANDNES, KONTOR_NAV_SKIEN, KONTOR_NAV_TONSBERG) + pilotkontorerMedVarsel
+        val pilotkontorer = listOf(
+            KONTOR_NAV_SANDNES,
+            KONTOR_NAV_SKIEN,
+            KONTOR_NAV_TONSBERG,
+            KONTOR_NAV_VADSO,
+            KONTOR_NAV_VARDO,
+            KONTOR_NAV_TANA,
+            KONTOR_NAV_NESSEBY,
+            KONTOR_NAV_BATSFJORD,
+            KONTOR_NAV_BERLEVAG,
+        ) + pilotkontorerMedVarsel
         val pilotkontorerWithFritekst = listOf(KONTOR_NAV_SANDEFJORD, KONTOR_NAV_ASKER, KONTOR_NAV_SONDRE_NORDSTRAND)
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
