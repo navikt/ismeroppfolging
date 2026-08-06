@@ -389,10 +389,10 @@ class KartleggingssporsmalService(
             KONTOR_NAV_SOLUND,
             KONTOR_NAV_NITTEDAL,
             KONTOR_NAV_AURSKOG_HOLAND,
-            KONTOR_NAV_FREDRIKSTAD
+            KONTOR_NAV_FREDRIKSTAD,
+            KONTOR_NAV_SANDNES,
         )
         val pilotkontorer = listOf(
-            KONTOR_NAV_SANDNES,
             KONTOR_NAV_SKIEN,
             KONTOR_NAV_TONSBERG,
             KONTOR_NAV_VADSO,
