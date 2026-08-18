@@ -102,7 +102,7 @@ class KartleggingssporsmalService(
                     val skjemavariant = if (enhet?.enhetId in pilotkontorerWithFritekst) {
                         Skjemavariant.FLERVALG_FRITEKST_V3
                     } else {
-                        Skjemavariant.FLERVALG_V1
+                        Skjemavariant.FLERVALG_V2
                     }
                     val kandidat = KartleggingssporsmalKandidat.create(
                         personident = stoppunkt.personident,

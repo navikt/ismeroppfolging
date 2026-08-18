@@ -751,7 +751,7 @@ class KartleggingssporsmalServiceTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
                 .copy(varsletAt = OffsetDateTime.now())
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
@@ -785,7 +785,7 @@ class KartleggingssporsmalServiceTest {
 
             val kandidatHendelse = producerRecordSlotKandidat.captured.value()
             assertEquals(kandidatHendelse.status, KandidatStatus.SVAR_MOTTATT.name)
-            assertEquals(Skjemavariant.FLERVALG_V1.name, kandidatHendelse.skjemavariant)
+            assertEquals(Skjemavariant.FLERVALG_V2.name, kandidatHendelse.skjemavariant)
 
             val esyfovarselHendelse = producerRecordSlotVarsel.captured.value()
             assertEquals(esyfovarselHendelse.type, HendelseType.SM_KARTLEGGINGSSPORSMAL)
@@ -806,7 +806,7 @@ class KartleggingssporsmalServiceTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
                 .copy(varsletAt = OffsetDateTime.now())
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
@@ -878,7 +878,7 @@ class KartleggingssporsmalServiceTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             ).copy(varsletAt = OffsetDateTime.now())
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -920,7 +920,7 @@ class KartleggingssporsmalServiceTest {
             assertEquals(createdKandidat.uuid, lastRecord.kandidatUuid)
             assertEquals(ARBEIDSTAKER_PERSONIDENT.value, lastRecord.personident)
             assertEquals(KandidatStatus.FERDIGBEHANDLET.name, lastRecord.status)
-            assertEquals(Skjemavariant.FLERVALG_V1.name, lastRecord.skjemavariant)
+            assertEquals(Skjemavariant.FLERVALG_V2.name, lastRecord.skjemavariant)
         }
 
         @Test
@@ -935,7 +935,7 @@ class KartleggingssporsmalServiceTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -979,7 +979,7 @@ class KartleggingssporsmalServiceTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
                 shouldSendVarsel = true,
             )
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
@@ -1015,7 +1015,7 @@ class KartleggingssporsmalServiceTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
                 shouldSendVarsel = true,
             )
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
@@ -1049,7 +1049,7 @@ class KartleggingssporsmalServiceTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
                 shouldSendVarsel = true,
             )
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
@@ -1077,7 +1077,7 @@ class KartleggingssporsmalServiceTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
                 shouldSendVarsel = false,
             )
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(

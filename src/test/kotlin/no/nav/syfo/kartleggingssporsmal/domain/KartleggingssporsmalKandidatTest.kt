@@ -13,21 +13,21 @@ class KartleggingssporsmalKandidatTest {
     fun `new kandidat has correct status and values`() {
         val newKandidat = KartleggingssporsmalKandidat.create(
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-            skjemavariant = Skjemavariant.FLERVALG_V1,
+            skjemavariant = Skjemavariant.FLERVALG_V2,
         )
 
         assert(newKandidat.status is KartleggingssporsmalKandidatStatusendring.Kandidat)
         assertTrue(newKandidat.personident == UserConstants.ARBEIDSTAKER_PERSONIDENT)
         assertNull(newKandidat.varsletAt)
         assertNull(newKandidat.journalpostId)
-        assertTrue(newKandidat.skjemavariant == Skjemavariant.FLERVALG_V1)
+        assertTrue(newKandidat.skjemavariant == Skjemavariant.FLERVALG_V2)
     }
 
     @Test
     fun `registrereSvarMottatt only works when status is Kandidat or SvarMottatt`() {
         val newKandidat = KartleggingssporsmalKandidat.create(
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-            skjemavariant = Skjemavariant.FLERVALG_V1,
+            skjemavariant = Skjemavariant.FLERVALG_V2,
         )
 
         val svarMottattKandidat = newKandidat.registrerSvarMottatt(
@@ -54,7 +54,7 @@ class KartleggingssporsmalKandidatTest {
     fun `ferdigbehandleKandidat only works when status is SvarMottatt`() {
         val newKandidat = KartleggingssporsmalKandidat.create(
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-            skjemavariant = Skjemavariant.FLERVALG_V1,
+            skjemavariant = Skjemavariant.FLERVALG_V2,
         )
         assertThrows<IllegalArgumentException> {
             newKandidat.ferdigbehandleVurdering(

@@ -117,7 +117,7 @@ class JournalforingServiceTest {
             pdfClientMock.createKartleggingPdf(
                 payload = PdfModel(
                     brevdata = BrevData(
-                        skjemavariant = Skjemavariant.FLERVALG_V1.name,
+                        skjemavariant = Skjemavariant.FLERVALG_V2.name,
                         createdAt = varsletKandidat.varsletAt!!.toLocalDateOslo().format(PdfModel.formatter)
                     ),
                 ),
@@ -147,7 +147,7 @@ class JournalforingServiceTest {
     fun `feiler når kall til pdl feiler`() {
         val kandidat = KartleggingssporsmalKandidat.create(
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENT_PDL_FAILS,
-            skjemavariant = Skjemavariant.FLERVALG_V1,
+            skjemavariant = Skjemavariant.FLERVALG_V2,
         )
 
         val result = runBlocking {

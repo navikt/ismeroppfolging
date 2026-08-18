@@ -30,7 +30,7 @@ class FerdigstillKartleggingssporsmalVarselCronjobTest {
     private fun createVarsletKandidatMedSvarMottatt(): KartleggingssporsmalKandidat {
         val kandidat = KartleggingssporsmalKandidat.create(
             personident = ARBEIDSTAKER_PERSONIDENT,
-            skjemavariant = Skjemavariant.FLERVALG_V1,
+            skjemavariant = Skjemavariant.FLERVALG_V2,
         ).copy(varsletAt = OffsetDateTime.now())
         return kandidat.registrerSvarMottatt(OffsetDateTime.now())
     }

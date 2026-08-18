@@ -34,7 +34,7 @@ class EsyfovarselProducerTest {
         fun `sendKartleggingssporsmal should send varsel`() {
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
 
             val result = esyfovarselProducer.sendKartleggingssporsmal(kandidat)
@@ -59,7 +59,7 @@ class EsyfovarselProducerTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
 
             val result = esyfovarselProducer.sendKartleggingssporsmal(kandidat)
@@ -81,7 +81,7 @@ class EsyfovarselProducerTest {
         fun `ferdigstillKartleggingssporsmalVarsel should send varsel with ferdigstill flag true`() {
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
 
             val result = esyfovarselProducer.ferdigstillKartleggingssporsmalVarsel(kandidat)
@@ -106,7 +106,7 @@ class EsyfovarselProducerTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
             val result = esyfovarselProducer.ferdigstillKartleggingssporsmalVarsel(kandidat)
 

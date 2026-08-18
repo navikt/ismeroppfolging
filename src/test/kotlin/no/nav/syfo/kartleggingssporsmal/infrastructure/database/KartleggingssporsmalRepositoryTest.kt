@@ -151,7 +151,7 @@ class KartleggingssporsmalRepositoryTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -234,11 +234,11 @@ class KartleggingssporsmalRepositoryTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
             val otherKandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
                 .copy(createdAt = OffsetDateTime.now().minusHours(1))
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
@@ -273,7 +273,7 @@ class KartleggingssporsmalRepositoryTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -300,7 +300,7 @@ class KartleggingssporsmalRepositoryTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -333,11 +333,11 @@ class KartleggingssporsmalRepositoryTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
             val otherKandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
                 .copy(createdAt = OffsetDateTime.now().minusHours(1))
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
@@ -373,7 +373,7 @@ class KartleggingssporsmalRepositoryTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
                 .copy(varsletAt = OffsetDateTime.now())
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
@@ -393,7 +393,7 @@ class KartleggingssporsmalRepositoryTest {
     fun `updateSvarForKandidat should throw an exception when the kandidat does not exist`() {
         val kandidat = KartleggingssporsmalKandidat.create(
             personident = ARBEIDSTAKER_PERSONIDENT,
-            skjemavariant = Skjemavariant.FLERVALG_V1,
+            skjemavariant = Skjemavariant.FLERVALG_V2,
         )
         val kandidatSvarMottatt = kandidat.registrerSvarMottatt(OffsetDateTime.now())
         runBlocking {
@@ -426,7 +426,7 @@ class KartleggingssporsmalRepositoryTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             ).copy(varsletAt = OffsetDateTime.now())
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -458,7 +458,7 @@ class KartleggingssporsmalRepositoryTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             ).copy(varsletAt = OffsetDateTime.now())
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -495,7 +495,7 @@ class KartleggingssporsmalRepositoryTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             ).copy(varsletAt = OffsetDateTime.now())
             val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -526,7 +526,7 @@ class KartleggingssporsmalRepositoryTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             ).copy(varsletAt = OffsetDateTime.now())
             kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
                 kandidat = kandidat,
@@ -556,7 +556,7 @@ class KartleggingssporsmalRepositoryTest {
 
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
                 shouldSendVarsel = shouldSendVarsel,
             ).copy(varsletAt = varsletAt)
             val created = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
