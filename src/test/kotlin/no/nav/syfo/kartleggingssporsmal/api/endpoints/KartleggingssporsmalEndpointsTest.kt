@@ -69,7 +69,7 @@ class KartleggingssporsmalEndpointsTest {
             val client = setupApiAndClient(kartleggingssporsmalServiceMock)
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
             coEvery { kartleggingssporsmalServiceMock.getKandidatur(ARBEIDSTAKER_PERSONIDENT) } returns listOf(kandidat)
             coEvery { kartleggingssporsmalServiceMock.getKandidatStatus(kandidat.uuid) } returns listOf(kandidat.status)
@@ -159,7 +159,7 @@ class KartleggingssporsmalEndpointsTest {
                 )
             val kandidatFerdigbehandlet = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
                 .copy(status = ferdigBehandletStatus)
             val svarAt = nowUTC().minusDays(1)
@@ -204,7 +204,7 @@ class KartleggingssporsmalEndpointsTest {
         fun `Returns status Forbidden if denied write access`() = testApplication {
             val kandidat = KartleggingssporsmalKandidat.create(
                 personident = ARBEIDSTAKER_PERSONIDENT,
-                skjemavariant = Skjemavariant.FLERVALG_V1,
+                skjemavariant = Skjemavariant.FLERVALG_V2,
             )
             val client = setupApiAndClient(kartleggingssporsmalServiceMock)
             coEvery { kartleggingssporsmalServiceMock.getKandidat(kandidat.uuid) } returns kandidat
