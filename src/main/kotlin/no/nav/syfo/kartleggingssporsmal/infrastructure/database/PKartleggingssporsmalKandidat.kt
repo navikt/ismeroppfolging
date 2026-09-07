@@ -49,6 +49,7 @@ data class PKartleggingssporsmalKandidatStatusendring(
     val svarAt: OffsetDateTime?,
     val veilederident: String?,
     val vurderingAlternativ: String?,
+    val vurderingFritekst: String?,
 ) {
     fun toKartleggingssporsmalKandidatStatusendring(): KartleggingssporsmalKandidatStatusendring =
         when (this.status) {
@@ -72,6 +73,7 @@ data class PKartleggingssporsmalKandidatStatusendring(
                     publishedAt = this.publishedAt,
                     veilederident = this.veilederident!!,
                     vurderingAlternativ = this.vurderingAlternativ?.let { Ferdigbehandlet.VurderingAlternativ.valueOf(it) },
+                    vurderingFritekst = this.vurderingFritekst,
                 )
             else -> throw IllegalArgumentException("Ukjent statusendring: ${this.status}")
         }

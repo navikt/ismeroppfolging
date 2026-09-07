@@ -69,6 +69,7 @@ fun Route.registerKartleggingssporsmalEndpoints(
                         uuid = kandidatUUID,
                         veilederident = veilederident,
                         vurderingAlternativ = requestDTO.vurderingAlternativ,
+                        vurderingFritekst = requestDTO.vurderingFritekst,
                     )
                 val kandidatStatusListe = kartleggingssporsmalService.getKandidatStatus(kandidat.uuid)
 

@@ -78,4 +78,32 @@ class KartleggingssporsmalKandidatTest {
             )
         }
     }
+
+    @Test
+    fun `vurderingFritekst cannot exceed max length`() {
+        val newKandidat = KartleggingssporsmalKandidat.create(
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+            skjemavariant = Skjemavariant.FLERVALG_V2,
+        )
+        val svarMottattKandidat = newKandidat.registrerSvarMottatt(
+            svarAt = OffsetDateTime.now(),
+        )
+        val maxLength = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VURDERING_FRITEKST_MAX_LENGTH
+
+        val ferdigbehandletKandidat = svarMottattKandidat.ferdigbehandleVurdering(
+            veilederident = UserConstants.VEILEDER_IDENT,
+            vurderingAlternativ = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ.RISIKO_FOR_LANGTIDSFRAVAR,
+            vurderingFritekst = "a".repeat(maxLength),
+        )
+        val status = ferdigbehandletKandidat.status as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet
+        assertTrue(status.vurderingFritekst?.length == maxLength)
+
+        assertThrows<IllegalArgumentException> {
+            svarMottattKandidat.ferdigbehandleVurdering(
+                veilederident = UserConstants.VEILEDER_IDENT,
+                vurderingAlternativ = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ.RISIKO_FOR_LANGTIDSFRAVAR,
+                vurderingFritekst = "a".repeat(maxLength + 1),
+            )
+        }
+    }
 }

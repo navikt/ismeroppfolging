@@ -180,12 +180,14 @@ class KartleggingssporsmalService(
         uuid: UUID,
         veilederident: String,
         vurderingAlternativ: VurderingAlternativ,
+        vurderingFritekst: String? = null,
     ): KartleggingssporsmalKandidat {
         val existingKandidat =
             kartleggingssporsmalRepository.getKandidat(uuid) ?: throw IllegalArgumentException("Kandidat med uuid $uuid finnes ikke")
         val ferdigbehandletKandidat = existingKandidat.ferdigbehandleVurdering(
             veilederident = veilederident,
             vurderingAlternativ = vurderingAlternativ,
+            vurderingFritekst = vurderingFritekst,
         )
 
         val updatedKandidat = kartleggingssporsmalRepository.createKandidatStatusendring(kandidat = ferdigbehandletKandidat)
