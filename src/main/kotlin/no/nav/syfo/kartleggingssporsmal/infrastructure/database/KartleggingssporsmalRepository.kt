@@ -286,6 +286,10 @@ class KartleggingssporsmalRepository(
                 8,
                 if (statusendring is KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet) statusendring.vurderingAlternativ?.name else null
             )
+            it.setString(
+                9,
+                if (statusendring is KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet) statusendring.vurderingFritekst else null
+            )
             it.executeQuery()
                 .toList { toPKartleggingssporsmalKandidatStatusendring() }
                 .single()
@@ -314,7 +318,8 @@ class KartleggingssporsmalRepository(
             s.published_at as ${STATUS_PREFIX}published_at,
             s.svar_at as ${STATUS_PREFIX}svar_at,
             s.veilederident as ${STATUS_PREFIX}veilederident,
-            s.vurdering_alternativ as ${STATUS_PREFIX}vurdering_alternativ
+            s.vurdering_alternativ as ${STATUS_PREFIX}vurdering_alternativ,
+            s.vurdering_fritekst as ${STATUS_PREFIX}vurdering_fritekst
         """
 
         private const val JOIN_SELECT_NEWEST_STATUS_FROM_STATUSENDRINGER = """
@@ -389,8 +394,9 @@ class KartleggingssporsmalRepository(
                 published_at,
                 svar_at,
                 veilederident,
-                vurdering_alternativ
-            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?)
+                vurdering_alternativ,
+                vurdering_fritekst
+            ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             RETURNING *
         """
 
@@ -516,5 +522,6 @@ internal fun ResultSet.toPKartleggingssporsmalKandidatStatusendring(prefix: Stri
         svarAt = getObject("${prefix}svar_at", OffsetDateTime::class.java),
         veilederident = getString("${prefix}veilederident"),
         vurderingAlternativ = getString("${prefix}vurdering_alternativ"),
+        vurderingFritekst = getString("${prefix}vurdering_fritekst"),
     )
 }

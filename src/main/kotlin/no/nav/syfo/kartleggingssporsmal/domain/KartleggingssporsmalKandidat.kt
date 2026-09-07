@@ -43,6 +43,7 @@ data class KartleggingssporsmalKandidat(
     fun ferdigbehandleVurdering(
         veilederident: String,
         vurderingAlternativ: VurderingAlternativ,
+        vurderingFritekst: String? = null,
     ): KartleggingssporsmalKandidat {
         if (this.status !is KartleggingssporsmalKandidatStatusendring.SvarMottatt) {
             throw IllegalArgumentException("Ferdigbehandling feilet: Kandidaten (${this.uuid}) må ha status ${KartleggingssporsmalKandidatStatusendring.SvarMottatt::class.simpleName} for å ferdigbehandles, men var ${status.kandidatStatus} ")
@@ -51,6 +52,7 @@ data class KartleggingssporsmalKandidat(
             status = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet(
                 veilederident = veilederident,
                 vurderingAlternativ = vurderingAlternativ,
+                vurderingFritekst = vurderingFritekst,
             )
         )
     }

@@ -22,6 +22,7 @@ data class VurderingDTO(
     val vurdertAt: OffsetDateTime,
     val vurdertBy: String,
     val vurderingAlternativ: KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ?,
+    val vurderingFritekst: String?,
 )
 
 fun KartleggingssporsmalKandidat.toKandidatStatusDTO(
@@ -40,6 +41,7 @@ fun KartleggingssporsmalKandidat.toKandidatStatusDTO(
                 vurdertAt = it.createdAt,
                 vurdertBy = (it as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet).veilederident,
                 vurderingAlternativ = it.vurderingAlternativ,
+                vurderingFritekst = it.vurderingFritekst,
             )
         },
     createdAt = this.createdAt

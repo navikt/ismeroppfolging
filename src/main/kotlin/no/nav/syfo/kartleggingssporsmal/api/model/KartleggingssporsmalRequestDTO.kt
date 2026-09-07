@@ -4,4 +4,5 @@ import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatu
 
 data class KartleggingssporsmalRequestDTO(
     val vurderingAlternativ: VurderingAlternativ,
+    val vurderingFritekst: String? = null,
 )

@@ -70,6 +70,7 @@ sealed class KartleggingssporsmalKandidatStatusendring(
         override val publishedAt: OffsetDateTime?,
         val veilederident: String,
         val vurderingAlternativ: VurderingAlternativ?,
+        val vurderingFritekst: String?,
     ) : KartleggingssporsmalKandidatStatusendring(
         uuid,
         createdAt,
@@ -77,13 +78,26 @@ sealed class KartleggingssporsmalKandidatStatusendring(
     ) {
         override val kandidatStatus: KandidatStatus = KandidatStatus.FERDIGBEHANDLET
 
-        constructor(veilederident: String, vurderingAlternativ: VurderingAlternativ) : this(
+        init {
+            if ((vurderingFritekst?.length ?: 0) > VURDERING_FRITEKST_MAX_LENGTH) {
+                throw IllegalArgumentException(
+                    "vurderingFritekst kan ikke være lengre enn $VURDERING_FRITEKST_MAX_LENGTH tegn",
+                )
+            }
+        }
+
+        constructor(veilederident: String, vurderingAlternativ: VurderingAlternativ, vurderingFritekst: String? = null) : this(
             uuid = UUID.randomUUID(),
             createdAt = nowUTC(),
             publishedAt = null,
             veilederident = veilederident,
             vurderingAlternativ = vurderingAlternativ,
+            vurderingFritekst = vurderingFritekst,
         )
+
+        companion object {
+            const val VURDERING_FRITEKST_MAX_LENGTH = 200
+        }
 
         enum class VurderingAlternativ {
             RISIKO_FOR_LANGTIDSFRAVAR,
