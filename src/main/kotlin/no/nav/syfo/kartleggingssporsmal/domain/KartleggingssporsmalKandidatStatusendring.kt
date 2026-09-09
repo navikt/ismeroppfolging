@@ -92,7 +92,7 @@ sealed class KartleggingssporsmalKandidatStatusendring(
             publishedAt = null,
             veilederident = veilederident,
             vurderingAlternativ = vurderingAlternativ,
-            vurderingFritekst = vurderingFritekst,
+            vurderingFritekst = vurderingFritekst?.ifBlank { null },
         )
 
         companion object {
