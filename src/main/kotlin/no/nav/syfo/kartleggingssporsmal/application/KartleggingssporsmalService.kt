@@ -390,11 +390,11 @@ class KartleggingssporsmalService(
             KONTOR_NAV_SANDNES,
             KONTOR_NAV_SKIEN,
             KONTOR_NAV_TONSBERG,
+            KONTOR_NAV_VESTRE_VARANGER,
         )
         val pilotkontorer = listOf(
             KONTOR_NAV_VADSO,
             KONTOR_NAV_VARDO,
-            KONTOR_NAV_VESTRE_VARANGER,
         ) + pilotkontorerMedVarsel
         val pilotkontorerWithFritekst = listOf(KONTOR_NAV_SANDEFJORD, KONTOR_NAV_ASKER, KONTOR_NAV_SONDRE_NORDSTRAND)
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
