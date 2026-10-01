@@ -3,6 +3,7 @@ package no.nav.syfo.shared.infrastructure.kafka.identhendelse.kafka
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import no.nav.syfo.ApplicationState
+import no.nav.syfo.kartleggingssporsmal.application.IKartleggingssporsmalRepository
 import no.nav.syfo.senoppfolging.application.ISenOppfolgingRepository
 import no.nav.syfo.shared.infrastructure.kafka.identhendelse.IdenthendelseService
 import no.nav.syfo.shared.infrastructure.kafka.KafkaEnvironment
@@ -18,9 +19,11 @@ fun launchKafkaTaskIdenthendelse(
     applicationState: ApplicationState,
     kafkaEnvironment: KafkaEnvironment,
     senOppfolgingRepository: ISenOppfolgingRepository,
+    kartleggingssporsmalRepository: IKartleggingssporsmalRepository,
 ) {
     val identhendelseService = IdenthendelseService(
         senOppfolgingRepository = senOppfolgingRepository,
+        kartleggingssporsmalRepository = kartleggingssporsmalRepository,
     )
 
     val kafkaIdenthendelseConsumerService = IdenthendelseConsumerService(

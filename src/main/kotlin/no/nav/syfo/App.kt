@@ -190,6 +190,7 @@ fun main() {
                     applicationState = applicationState,
                     kafkaEnvironment = environment.kafka,
                     senOppfolgingRepository = senOppfolgingRepository,
+                    kartleggingssporsmalRepository = kartleggingssporsmalRepository,
                 )
                 launchOppfolgingstilfelleConsumer(
                     applicationState = applicationState,

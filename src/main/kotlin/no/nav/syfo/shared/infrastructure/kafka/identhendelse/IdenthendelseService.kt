@@ -1,5 +1,6 @@
 package no.nav.syfo.shared.infrastructure.kafka.identhendelse
 
+import no.nav.syfo.kartleggingssporsmal.application.IKartleggingssporsmalRepository
 import no.nav.syfo.senoppfolging.application.ISenOppfolgingRepository
 import no.nav.syfo.shared.infrastructure.kafka.identhendelse.kafka.KafkaIdenthendelseDTO
 import org.slf4j.Logger
@@ -7,6 +8,7 @@ import org.slf4j.LoggerFactory
 
 class IdenthendelseService(
     private val senOppfolgingRepository: ISenOppfolgingRepository,
+    private val kartleggingssporsmalRepository: IKartleggingssporsmalRepository,
 ) {
 
     private val log: Logger = LoggerFactory.getLogger(IdenthendelseService::class.java)
@@ -23,6 +25,13 @@ class IdenthendelseService(
                 if (kandidaterWithOldIdent.isNotEmpty()) {
                     senOppfolgingRepository.updateKandidatPersonident(kandidaterWithOldIdent, activeIdent)
                     log.info("Identhendelse: Updated ${kandidaterWithOldIdent.size} kandidater based on Identhendelse from PDL")
+                }
+
+                val updatedKartleggingRows = inactiveIdenter.sumOf { personident ->
+                    kartleggingssporsmalRepository.updatePersonident(personident, activeIdent)
+                }
+                if (updatedKartleggingRows > 0) {
+                    log.info("Identhendelse: Updated $updatedKartleggingRows kartleggingssporsmal rows based on Identhendelse from PDL")
                 }
             }
         }

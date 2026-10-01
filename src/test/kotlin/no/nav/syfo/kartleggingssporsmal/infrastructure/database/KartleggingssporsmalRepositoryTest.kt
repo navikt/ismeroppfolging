@@ -3,6 +3,8 @@ package no.nav.syfo.kartleggingssporsmal.infrastructure.database
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_INACTIVE
+import no.nav.syfo.shared.domain.Personident
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
@@ -622,6 +624,59 @@ class KartleggingssporsmalRepositoryTest {
                 val result = kartleggingssporsmalRepository.getKandidaterWithMissingPublishOrVarsel()
                 assertTrue(result.isEmpty())
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("updatePersonident")
+    inner class UpdatePersonident {
+        private val oldPersonident = ARBEIDSTAKER_PERSONIDENT
+        private val newPersonident = Personident("12345678999")
+
+        @Test
+        fun `updates personident for stoppunkt and kandidat not yet varslet`() {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                tilfelleStart = LocalDate.now().minusDays(6 * 7),
+                antallSykedager = 6 * 7 + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)!!
+            runBlocking {
+                kartleggingssporsmalRepository.createStoppunkt(stoppunkt)
+                val createdStoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+                val kandidat = KartleggingssporsmalKandidat.create(
+                    personident = oldPersonident,
+                    skjemavariant = Skjemavariant.FLERVALG_V2,
+                )
+                val createdKandidat = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(
+                    kandidat = kandidat,
+                    stoppunktId = createdStoppunkt.id,
+                )
+
+                val updated = kartleggingssporsmalRepository.updatePersonident(oldPersonident, newPersonident)
+
+                assertEquals(2, updated)
+                assertEquals(newPersonident, database.getKartleggingssporsmalStoppunkt().first().personident)
+                assertEquals(newPersonident, kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)!!.personident)
+            }
+        }
+
+        @Test
+        fun `does not update other personidenter`() {
+            val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+                personident = ARBEIDSTAKER_PERSONIDENT_INACTIVE,
+                tilfelleStart = LocalDate.now().minusDays(6 * 7),
+                antallSykedager = 6 * 7 + 1,
+            )
+            val stoppunkt = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)!!
+            runBlocking { kartleggingssporsmalRepository.createStoppunkt(stoppunkt) }
+
+            val updated = kartleggingssporsmalRepository.updatePersonident(oldPersonident, newPersonident)
+
+            assertEquals(0, updated)
+            assertEquals(
+                ARBEIDSTAKER_PERSONIDENT_INACTIVE,
+                database.getKartleggingssporsmalStoppunkt().first().personident,
+            )
         }
     }
 }
