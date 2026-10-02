@@ -4,6 +4,7 @@ import no.nav.syfo.kartleggingssporsmal.domain.JournalpostId
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidat
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalKandidatStatusendring
 import no.nav.syfo.kartleggingssporsmal.domain.KartleggingssporsmalStoppunkt
+import no.nav.syfo.kartleggingssporsmal.domain.PersonidentOppdatering
 import no.nav.syfo.shared.domain.Personident
 import java.util.*
 
@@ -31,5 +32,5 @@ interface IKartleggingssporsmalRepository {
     fun updateJournalpostidForKandidat(kandidat: KartleggingssporsmalKandidat, journalpostId: JournalpostId)
     fun getKandidaterMedSvarUtenFerdigstiltVarsel(): List<KartleggingssporsmalKandidat>
     fun getKandidaterWithMissingPublishOrVarsel(): List<KartleggingssporsmalKandidat>
-    fun updatePersonident(oldPersonident: Personident, newPersonident: Personident): Int
+    fun updatePersonident(oldPersonident: Personident, newPersonident: Personident): PersonidentOppdatering
 }

@@ -201,20 +201,20 @@ class KartleggingssporsmalRepository(
         }
     }
 
-    override fun updatePersonident(oldPersonident: Personident, newPersonident: Personident): Int =
+    override fun updatePersonident(oldPersonident: Personident, newPersonident: Personident): PersonidentOppdatering =
         database.connection.use { connection ->
-            val updatedKandidater = connection.prepareStatement(UPDATE_KANDIDAT_PERSONIDENT).use {
+            val kandidatUuids = connection.prepareStatement(UPDATE_KANDIDAT_PERSONIDENT).use {
                 it.setString(1, newPersonident.value)
                 it.setString(2, oldPersonident.value)
-                it.executeUpdate()
+                it.executeQuery().toList { UUID.fromString(getString("uuid").trim()) }
             }
-            val updatedStoppunkter = connection.prepareStatement(UPDATE_STOPPUNKT_PERSONIDENT).use {
+            val stoppunktUuids = connection.prepareStatement(UPDATE_STOPPUNKT_PERSONIDENT).use {
                 it.setString(1, newPersonident.value)
                 it.setString(2, oldPersonident.value)
-                it.executeUpdate()
+                it.executeQuery().toList { UUID.fromString(getString("uuid").trim()) }
             }
             connection.commit()
-            updatedKandidater + updatedStoppunkter
+            PersonidentOppdatering(kandidatUuids = kandidatUuids, stoppunktUuids = stoppunktUuids)
         }
 
     override suspend fun createKandidatStatusendring(
@@ -481,6 +481,7 @@ class KartleggingssporsmalRepository(
                 UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
                 SET personident = ?, updated_at = now()
                 WHERE personident = ?
+                RETURNING uuid
             """
 
         private const val UPDATE_STOPPUNKT_PERSONIDENT =
@@ -488,6 +489,7 @@ class KartleggingssporsmalRepository(
                 UPDATE KARTLEGGINGSSPORSMAL_STOPPUNKT
                 SET personident = ?
                 WHERE personident = ?
+                RETURNING uuid
             """
 
         private const val UPDATE_KANDIDAT_STATUS =

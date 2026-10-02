@@ -24,14 +24,28 @@ class IdenthendelseService(
 
                 if (kandidaterWithOldIdent.isNotEmpty()) {
                     senOppfolgingRepository.updateKandidatPersonident(kandidaterWithOldIdent, activeIdent)
-                    log.info("Identhendelse: Updated ${kandidaterWithOldIdent.size} kandidater based on Identhendelse from PDL")
+                    log.info(
+                        "Identhendelse: Updated personident for ${kandidaterWithOldIdent.size} SEN_OPPFOLGING_KANDIDAT " +
+                            "rows, uuids=${kandidaterWithOldIdent.map { it.uuid }}"
+                    )
                 }
 
-                val updatedKartleggingRows = inactiveIdenter.sumOf { personident ->
+                val oppdateringer = inactiveIdenter.map { personident ->
                     kartleggingssporsmalRepository.updatePersonident(personident, activeIdent)
                 }
-                if (updatedKartleggingRows > 0) {
-                    log.info("Identhendelse: Updated $updatedKartleggingRows kartleggingssporsmal rows based on Identhendelse from PDL")
+                val kartleggingKandidatUuids = oppdateringer.flatMap { it.kandidatUuids }
+                val kartleggingStoppunktUuids = oppdateringer.flatMap { it.stoppunktUuids }
+                if (kartleggingKandidatUuids.isNotEmpty()) {
+                    log.info(
+                        "Identhendelse: Updated personident for ${kartleggingKandidatUuids.size} " +
+                            "KARTLEGGINGSSPORSMAL_KANDIDAT rows, uuids=$kartleggingKandidatUuids"
+                    )
+                }
+                if (kartleggingStoppunktUuids.isNotEmpty()) {
+                    log.info(
+                        "Identhendelse: Updated personident for ${kartleggingStoppunktUuids.size} " +
+                            "KARTLEGGINGSSPORSMAL_STOPPUNKT rows, uuids=$kartleggingStoppunktUuids"
+                    )
                 }
             }
         }

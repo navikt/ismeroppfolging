@@ -654,7 +654,8 @@ class KartleggingssporsmalRepositoryTest {
 
                 val updated = kartleggingssporsmalRepository.updatePersonident(oldPersonident, newPersonident)
 
-                assertEquals(2, updated)
+                assertEquals(listOf(createdKandidat.uuid), updated.kandidatUuids)
+                assertEquals(1, updated.stoppunktUuids.size)
                 assertEquals(newPersonident, database.getKartleggingssporsmalStoppunkt().first().personident)
                 assertEquals(newPersonident, kartleggingssporsmalRepository.getKandidat(createdKandidat.uuid)!!.personident)
             }
@@ -672,7 +673,7 @@ class KartleggingssporsmalRepositoryTest {
 
             val updated = kartleggingssporsmalRepository.updatePersonident(oldPersonident, newPersonident)
 
-            assertEquals(0, updated)
+            assertTrue(updated.isEmpty())
             assertEquals(
                 ARBEIDSTAKER_PERSONIDENT_INACTIVE,
                 database.getKartleggingssporsmalStoppunkt().first().personident,
