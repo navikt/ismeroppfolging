@@ -201,6 +201,22 @@ class KartleggingssporsmalRepository(
         }
     }
 
+    override fun updatePersonident(oldPersonident: Personident, newPersonident: Personident): PersonidentOppdatering =
+        database.connection.use { connection ->
+            val kandidatUuids = connection.prepareStatement(UPDATE_KANDIDAT_PERSONIDENT).use {
+                it.setString(1, newPersonident.value)
+                it.setString(2, oldPersonident.value)
+                it.executeQuery().toList { UUID.fromString(getString("uuid").trim()) }
+            }
+            val stoppunktUuids = connection.prepareStatement(UPDATE_STOPPUNKT_PERSONIDENT).use {
+                it.setString(1, newPersonident.value)
+                it.setString(2, oldPersonident.value)
+                it.executeQuery().toList { UUID.fromString(getString("uuid").trim()) }
+            }
+            connection.commit()
+            PersonidentOppdatering(kandidatUuids = kandidatUuids, stoppunktUuids = stoppunktUuids)
+        }
+
     override suspend fun createKandidatStatusendring(
         kandidat: KartleggingssporsmalKandidat,
     ): KartleggingssporsmalKandidat =
@@ -458,6 +474,22 @@ class KartleggingssporsmalRepository(
                 UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
                 SET journalpost_id = ?, updated_at = now()
                 WHERE uuid = ?
+            """
+
+        private const val UPDATE_KANDIDAT_PERSONIDENT =
+            """
+                UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT
+                SET personident = ?, updated_at = now()
+                WHERE personident = ?
+                RETURNING uuid
+            """
+
+        private const val UPDATE_STOPPUNKT_PERSONIDENT =
+            """
+                UPDATE KARTLEGGINGSSPORSMAL_STOPPUNKT
+                SET personident = ?
+                WHERE personident = ?
+                RETURNING uuid
             """
 
         private const val UPDATE_KANDIDAT_STATUS =
