@@ -44,7 +44,7 @@ class KartleggingssporsmalService(
             }
         }
 
-        if (isInPilot(behandlendeEnhet?.enhetId)) {
+        if (shouldProcess(behandlendeEnhet?.enhetId)) {
             val kartleggingssporsmalStoppunkt: KartleggingssporsmalStoppunkt? = KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)
 
             if (kartleggingssporsmalStoppunkt != null) {
@@ -62,11 +62,11 @@ class KartleggingssporsmalService(
         val callId = UUID.randomUUID().toString()
 
         // De kan ha flyttet i tiden mellom stoppunktet ble laget og nå, og da skal de ikke bli kandidat
-        val pilotStoppunkter = findEnhetForStoppunkter(unprocessedStoppunkter, callId)
+        val stoppunkterWithEnhet = findEnhetForStoppunkter(unprocessedStoppunkter, callId)
 
-        return pilotStoppunkter.map { (stoppunktId, stoppunkt, enhet) ->
+        return stoppunkterWithEnhet.map { (stoppunktId, stoppunkt, enhet) ->
             runCatching {
-                val isKandidat = if (isInPilot(enhet?.enhetId)) {
+                val isKandidat = if (shouldProcess(enhet?.enhetId)) {
                     coroutineScope {
                         val oppfolgingstilfelleRequest = async {
                             oppfolgingstilfelleClient.getOppfolgingstilfelle(
@@ -94,7 +94,7 @@ class KartleggingssporsmalService(
                         )
                     }
                 } else {
-                    log.warn("Stoppunkt with uuid ${stoppunkt.uuid} is not longer valid for pilot")
+                    log.warn("Stoppunkt with uuid ${stoppunkt.uuid} is no longer valid, enhet is missing or excluded")
                     false
                 }
 
@@ -270,7 +270,7 @@ class KartleggingssporsmalService(
         }
     }
 
-    private fun isInPilot(enhetId: String?) = enhetId in pilotkontorer
+    private fun shouldProcess(enhetId: String?) = enhetId != null && enhetId !in ekskluderteKontorer
 
     private fun shouldSendVarsel(enhetId: String?) = enhetId in pilotkontorerMedVarsel
 
@@ -338,9 +338,8 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_SANDNES = "1102"
         private const val KONTOR_NAV_SKIEN = "0806"
         private const val KONTOR_NAV_TONSBERG = "0704"
-        private const val KONTOR_NAV_VADSO = "2003"
-        private const val KONTOR_NAV_VARDO = "2002"
         private const val KONTOR_NAV_VESTRE_VARANGER = "2028"
+        const val KONTOR_NAV_UTLAND = "0393"
 
         val pilotkontorerMedVarsel = listOf(
             KONTOR_NAV_LIER,
@@ -392,10 +391,7 @@ class KartleggingssporsmalService(
             KONTOR_NAV_TONSBERG,
             KONTOR_NAV_VESTRE_VARANGER,
         )
-        val pilotkontorer = listOf(
-            KONTOR_NAV_VADSO,
-            KONTOR_NAV_VARDO,
-        ) + pilotkontorerMedVarsel
+        val ekskluderteKontorer = listOf(KONTOR_NAV_UTLAND)
         val pilotkontorerWithFritekst = listOf(KONTOR_NAV_SANDEFJORD, KONTOR_NAV_ASKER, KONTOR_NAV_SONDRE_NORDSTRAND)
         private const val OPPARBEIDE_NY_SYKEPENGERETT_WEEKS = 26L
     }
