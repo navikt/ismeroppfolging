@@ -338,6 +338,7 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_SANDNES = "1102"
         private const val KONTOR_NAV_SKIEN = "0806"
         private const val KONTOR_NAV_TONSBERG = "0704"
+
         // Vadsø og Vardø skal snart legges til i pilotkontorerMedVarsel
         private const val KONTOR_NAV_VADSO = "2003"
         private const val KONTOR_NAV_VARDO = "2002"
