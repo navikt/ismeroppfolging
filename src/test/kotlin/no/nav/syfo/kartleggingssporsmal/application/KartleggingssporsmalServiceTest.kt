@@ -719,7 +719,7 @@ class KartleggingssporsmalServiceTest {
 
             val stoppunktProcessed = results.first().getOrThrow()
             val kandidat = database.getKandidatByStoppunktUUID(stoppunktProcessed.uuid)!!
-            assertEquals(Skjemavariant.FLERVALG_FRITEKST_V3, kandidat.skjemavariant)
+            assertEquals(Skjemavariant.FLERVALG_FRITEKST_V4, kandidat.skjemavariant)
 
             val producerRecordSlot = slot<ProducerRecord<String, KartleggingssporsmalKandidatStatusRecord>>()
             verify(exactly = 1) {
@@ -728,7 +728,7 @@ class KartleggingssporsmalServiceTest {
 
             val kandidatStatusendringHendelse = producerRecordSlot.captured.value()
             assertEquals(ARBEIDSTAKER_PERSONIDENT_FRITEKST_SKJEMA.value, kandidatStatusendringHendelse.personident)
-            assertEquals(Skjemavariant.FLERVALG_FRITEKST_V3.name, kandidatStatusendringHendelse.skjemavariant)
+            assertEquals(Skjemavariant.FLERVALG_FRITEKST_V4.name, kandidatStatusendringHendelse.skjemavariant)
         }
     }
 

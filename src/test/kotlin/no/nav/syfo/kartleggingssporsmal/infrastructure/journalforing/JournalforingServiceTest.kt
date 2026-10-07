@@ -117,7 +117,7 @@ class JournalforingServiceTest {
             pdfClientMock.createKartleggingPdf(
                 payload = PdfModel(
                     brevdata = BrevData(
-                        skjemavariant = Skjemavariant.FLERVALG_V2.name,
+                        skjemavariant = Skjemavariant.FLERVALG_V3.name,
                         createdAt = varsletKandidat.varsletAt!!.toLocalDateOslo().format(PdfModel.formatter)
                     ),
                 ),
