@@ -31,7 +31,8 @@ object UserConstants {
     const val VEILEDER_IDENT_NO_WRITE_ACCESS = "Z888888"
     const val VIRKSOMHETSNUMMER = "123456789"
     val VALID_PILOTKONTOR = KartleggingssporsmalService.pilotkontorerMedVarsel.first()
-    val VALID_PILOTKONTOR_UTEN_VARSEL = KartleggingssporsmalService.pilotkontorer.first()
+    const val KONTOR_UTEN_VARSEL = "4444"
+    const val EKSKLUDERT_KONTOR = KartleggingssporsmalService.KONTOR_NAV_UTLAND
     val VALID_PILOTKONTOR_FRITEKST = KartleggingssporsmalService.pilotkontorerWithFritekst.first()
     const val PERSON_FORNAVN = "Fornavn"
     const val PERSON_MELLOMNAVN = "Mellomnavn"

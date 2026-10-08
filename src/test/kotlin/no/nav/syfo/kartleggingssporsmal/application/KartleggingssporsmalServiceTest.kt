@@ -336,7 +336,7 @@ class KartleggingssporsmalServiceTest {
         }
 
         @Test
-        fun `processOppfolgingstilfelle should ignore when not in pilot enhet`() = runTest {
+        fun `processOppfolgingstilfelle should ignore when enhet is excluded`() = runTest {
             val oppfolgingstilfelleNotPilot = createOppfolgingstilfelleFromKafka(
                 personident = ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET,
                 antallSykedager = stoppunktStartIntervalDays.toInt(),
@@ -362,7 +362,7 @@ class KartleggingssporsmalServiceTest {
         }
 
         @Test
-        fun `processOppfolgingstilfelle should ignore when multiple negative conditions - dead and not in pilot`() = runTest {
+        fun `processOppfolgingstilfelle should ignore when multiple negative conditions - dead and excluded enhet`() = runTest {
             val oppfolgingstilfelleDodNotPilot = createOppfolgingstilfelleFromKafka(
                 personident = ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET,
                 antallSykedager = stoppunktStartIntervalDays.toInt(),
@@ -461,9 +461,8 @@ class KartleggingssporsmalServiceTest {
             assertNotNull(dbStoppunkt.processedAt)
         }
 
-//      @Disabled("Diabled frem til vi har kontorer som er i pilot for prosessering av stoppunkt, uten å faktisk sende varselet")
         @Test
-        fun `processStoppunkter should process unprocessed stoppunkt and create KANDIDAT but not publish when pilotkontor not enabled for varsel`() = runTest {
+        fun `processStoppunkter should process unprocessed stoppunkt and create KANDIDAT but not publish when kontor not enabled for varsel`() = runTest {
             val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
                 personident = ARBEIDSTAKER_PERSONIDENT_PILOT_UTEN_UTSENDING,
                 tilfelleStart = LocalDate.now().minusDays(stoppunktStartIntervalDays),
@@ -1103,7 +1102,7 @@ class KartleggingssporsmalServiceTest {
             Arguments.of(ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT.value, "tilfelle ends in a few days"),
             Arguments.of(ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD.value, "person is dod"),
             Arguments.of(ARBEIDSTAKER_PERSONIDENT_NO_ARBEIDSGIVER.value, "person is not arbeidstaker"),
-            Arguments.of(ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET.value, "person not in pilot"),
+            Arguments.of(ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET.value, "person has excluded enhet"),
         )
     }
 }
