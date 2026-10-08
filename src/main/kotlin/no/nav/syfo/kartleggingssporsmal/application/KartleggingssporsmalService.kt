@@ -113,21 +113,24 @@ class KartleggingssporsmalService(
                         kandidat = kandidat,
                         stoppunktId = stoppunktId,
                     )
-                    if (isKandidatPublishingEnabled && persistedKandidat.shouldSendVarsel) {
-                        kartleggingssporsmalKandidatProducer.send(
-                            kandidat = persistedKandidat,
-                        ).map {
-                            kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(persistedKandidat)
-                            sendVarsel(persistedKandidat)
-                        }
-                    } else {
-                        log.info("Kandidat publishing is disabled, not sending kandidat with uuid ${kandidat.uuid} to kafka topic")
-                    }
+                    publishKandidatAndSendVarsel(persistedKandidat)
                 } else {
                     kartleggingssporsmalRepository.markStoppunktAsProcessed(stoppunktId)
                 }
                 stoppunkt
             }
+        }
+    }
+
+    private suspend fun publishKandidatAndSendVarsel(kandidat: KartleggingssporsmalKandidat) {
+        when {
+            !isKandidatPublishingEnabled ->
+                log.info("Kandidat publishing is disabled, not sending kandidat with uuid ${kandidat.uuid} to kafka topic")
+            kandidat.shouldSendVarsel ->
+                kartleggingssporsmalKandidatProducer.send(kandidat = kandidat).map {
+                    kartleggingssporsmalRepository.updatePublishedAtForKandidatStatusendring(kandidat)
+                    sendVarsel(kandidat)
+                }
         }
     }
 
