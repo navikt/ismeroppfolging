@@ -19,14 +19,14 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Deploy ismeroppfolging-senoppfolging-kandidat-status topic to dev
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@v3
         env:
           CLUSTER: dev-gcp
           RESOURCE: .nais/kafka/ismeroppfolging-senoppfolging-kandidat-status.yaml
           VARS: .nais/kafka/dev.json
 
       - name: Deploy ismeroppfolging-kartleggingssporsmal-kandidat topic to dev
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@v3
         env:
           CLUSTER: dev-gcp
           RESOURCE: .nais/kafka/ismeroppfolging-kartleggingssporsmal-kandidat.yaml
@@ -40,14 +40,14 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Deploy ismeroppfolging-senoppfolging-kandidat-status topic to prod
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@v3
         env:
           CLUSTER: prod-gcp
           RESOURCE: .nais/kafka/ismeroppfolging-senoppfolging-kandidat-status.yaml
           VARS: .nais/kafka/prod.json
 
       - name: Deploy ismeroppfolging-kartleggingssporsmal-kandidat topic to prod
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@v3
         env:
           CLUSTER: prod-gcp
           RESOURCE: .nais/kafka/ismeroppfolging-kartleggingssporsmal-kandidat.yaml
