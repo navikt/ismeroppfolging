@@ -49,7 +49,7 @@ class PdfGenClient(
         callId: String,
     ): ByteArray? {
         log.error(
-            "Error while requesting PDF from syfooppdfgen with {}, {}, {}",
+            "Error while requesting PDF from esyfo-pdfgen with {}, {}, {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             StructuredArguments.keyValue("url", url),
             StructuredArguments.keyValue("callId", callId),
