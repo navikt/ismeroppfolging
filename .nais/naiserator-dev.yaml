@@ -53,7 +53,7 @@ spec:
         - application: isoppfolgingstilfelle
         - application: veilarbvedtaksstotte
           namespace: obo
-        - application: syfooppdfgen
+        - application: esyfo-pdfgen
           namespace: team-esyfo
   gcp:
     sqlInstances:
@@ -100,9 +100,9 @@ spec:
     - name: SYFOBEHANDLENDEENHET_URL
       value: "http://syfobehandlendeenhet"
     - name: ESYFO_PDFGEN_CLIENT_ID
-      value: "dev-gcp.team-esyfo.syfooppdfgen"
+      value: "dev-gcp.team-esyfo.esyfo-pdfgen"
     - name: ESYFO_PDFGEN_URL
-      value: "http://syfooppdfgen.team-esyfo"
+      value: "http://esyfo-pdfgen.team-esyfo"
     - name: PDL_CLIENT_ID
       value: "dev-fss.pdl.pdl-api"
     - name: PDL_URL
