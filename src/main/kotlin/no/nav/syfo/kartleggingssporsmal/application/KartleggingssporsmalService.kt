@@ -341,11 +341,66 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_SANDNES = "1102"
         private const val KONTOR_NAV_SKIEN = "0806"
         private const val KONTOR_NAV_TONSBERG = "0704"
-
-        // Vadsø og Vardø skal snart legges til i pilotkontorerMedVarsel
-        private const val KONTOR_NAV_VADSO = "2003"
-        private const val KONTOR_NAV_VARDO = "2002"
         private const val KONTOR_NAV_VESTRE_VARANGER = "2028"
+
+        // Trio-fylker: Troms og Finnmark
+        private const val KONTOR_NAV_TROMSO = "1902"
+        private const val KONTOR_NAV_SALANGEN_LAVANGEN_DYROY = "1923"
+        private const val KONTOR_NAV_MALSELV_BARDU = "1924"
+        private const val KONTOR_NAV_BALSFJORD_STORFJORD = "1933"
+        private const val KONTOR_NAV_KARLSOY = "1936"
+        private const val KONTOR_NAV_LYNGEN = "1938"
+        private const val KONTOR_NAV_GAIVUOTNA_KAFJORD = "1940"
+        private const val KONTOR_NAV_SKJERVOY = "1941"
+        private const val KONTOR_NAV_NORDREISA = "1942"
+        private const val KONTOR_NAV_VARDO = "2002"
+        private const val KONTOR_NAV_VADSO = "2003"
+        private const val KONTOR_NAV_HAMMERFEST_MASOY = "2004"
+        private const val KONTOR_NAV_AVJOVARRI = "2011"
+        private const val KONTOR_NAV_ALTA_KVANANGEN_LOPPA = "2012"
+        private const val KONTOR_NAV_HASVIK = "2015"
+        private const val KONTOR_NAV_NORDKAPP = "2019"
+        private const val KONTOR_NAV_PORSANGER = "2020"
+        private const val KONTOR_NAV_LEBESBY = "2022"
+        private const val KONTOR_NAV_GAMVIK = "2023"
+
+        // Trio-fylker: Vestland
+        private const val KONTOR_NAV_VINDAFJORD_ETNE = "1160"
+        private const val KONTOR_NAV_BERGEN_SOR = "1202"
+        private const val KONTOR_NAV_BERGEN_NORD = "1203"
+        private const val KONTOR_NAV_BERGEN_VEST = "1206"
+        private const val KONTOR_NAV_SVEIO = "1216"
+        private const val KONTOR_NAV_BOMLO = "1219"
+        private const val KONTOR_NAV_STORD = "1221"
+        private const val KONTOR_NAV_FITJAR = "1222"
+        private const val KONTOR_NAV_TYSNES = "1223"
+        private const val KONTOR_NAV_KVINNHERAD = "1224"
+        private const val KONTOR_NAV_ULLENSVANG = "1228"
+        private const val KONTOR_NAV_EIDFJORD = "1232"
+        private const val KONTOR_NAV_ULVIK = "1233"
+        private const val KONTOR_NAV_VOSS = "1235"
+        private const val KONTOR_NAV_KVAM = "1238"
+        private const val KONTOR_NAV_SAMNANGER = "1242"
+        private const val KONTOR_NAV_BJORNAFJORDEN = "1243"
+        private const val KONTOR_NAV_AUSTEVOLL = "1244"
+        private const val KONTOR_NAV_OYGARDEN = "1246"
+        private const val KONTOR_NAV_ASKOY = "1247"
+        private const val KONTOR_NAV_VAKSDAL = "1251"
+        private const val KONTOR_NAV_KINN = "1401"
+        private const val KONTOR_NAV_ASKVOLL = "1428"
+        private const val KONTOR_NAV_SUNNFJORD_YTRE_SOGN = "1432"
+        private const val KONTOR_NAV_NORDFJORD = "1443"
+
+        // Trio-fylker: Vest-Viken
+        private const val KONTOR_NAV_BAERUM = "0219"
+        private const val KONTOR_NAV_JEVNAKER = "0532"
+        private const val KONTOR_NAV_DRAMMEN = "0602"
+        private const val KONTOR_NAV_KONGSBERG = "0604"
+        private const val KONTOR_NAV_HOLE = "0612"
+        private const val KONTOR_NAV_HALLINGDAL = "0617"
+        private const val KONTOR_NAV_MIDT_BUSKERUD = "0623"
+        private const val KONTOR_NAV_NUMEDAL = "0632"
+
         const val KONTOR_NAV_UTLAND = "0393"
 
         val pilotkontorerMedVarsel = listOf(
@@ -397,6 +452,58 @@ class KartleggingssporsmalService(
             KONTOR_NAV_SKIEN,
             KONTOR_NAV_TONSBERG,
             KONTOR_NAV_VESTRE_VARANGER,
+            KONTOR_NAV_TROMSO,
+            KONTOR_NAV_SALANGEN_LAVANGEN_DYROY,
+            KONTOR_NAV_MALSELV_BARDU,
+            KONTOR_NAV_BALSFJORD_STORFJORD,
+            KONTOR_NAV_KARLSOY,
+            KONTOR_NAV_LYNGEN,
+            KONTOR_NAV_GAIVUOTNA_KAFJORD,
+            KONTOR_NAV_SKJERVOY,
+            KONTOR_NAV_NORDREISA,
+            KONTOR_NAV_VARDO,
+            KONTOR_NAV_VADSO,
+            KONTOR_NAV_HAMMERFEST_MASOY,
+            KONTOR_NAV_AVJOVARRI,
+            KONTOR_NAV_ALTA_KVANANGEN_LOPPA,
+            KONTOR_NAV_HASVIK,
+            KONTOR_NAV_NORDKAPP,
+            KONTOR_NAV_PORSANGER,
+            KONTOR_NAV_LEBESBY,
+            KONTOR_NAV_GAMVIK,
+            KONTOR_NAV_VINDAFJORD_ETNE,
+            KONTOR_NAV_BERGEN_SOR,
+            KONTOR_NAV_BERGEN_NORD,
+            KONTOR_NAV_BERGEN_VEST,
+            KONTOR_NAV_SVEIO,
+            KONTOR_NAV_BOMLO,
+            KONTOR_NAV_STORD,
+            KONTOR_NAV_FITJAR,
+            KONTOR_NAV_TYSNES,
+            KONTOR_NAV_KVINNHERAD,
+            KONTOR_NAV_ULLENSVANG,
+            KONTOR_NAV_EIDFJORD,
+            KONTOR_NAV_ULVIK,
+            KONTOR_NAV_VOSS,
+            KONTOR_NAV_KVAM,
+            KONTOR_NAV_SAMNANGER,
+            KONTOR_NAV_BJORNAFJORDEN,
+            KONTOR_NAV_AUSTEVOLL,
+            KONTOR_NAV_OYGARDEN,
+            KONTOR_NAV_ASKOY,
+            KONTOR_NAV_VAKSDAL,
+            KONTOR_NAV_KINN,
+            KONTOR_NAV_ASKVOLL,
+            KONTOR_NAV_SUNNFJORD_YTRE_SOGN,
+            KONTOR_NAV_NORDFJORD,
+            KONTOR_NAV_BAERUM,
+            KONTOR_NAV_JEVNAKER,
+            KONTOR_NAV_DRAMMEN,
+            KONTOR_NAV_KONGSBERG,
+            KONTOR_NAV_HOLE,
+            KONTOR_NAV_HALLINGDAL,
+            KONTOR_NAV_MIDT_BUSKERUD,
+            KONTOR_NAV_NUMEDAL,
         )
         val ekskluderteKontorer = listOf(KONTOR_NAV_UTLAND)
         val pilotkontorerWithFritekst = listOf(KONTOR_NAV_SANDEFJORD, KONTOR_NAV_ASKER, KONTOR_NAV_SONDRE_NORDSTRAND)
