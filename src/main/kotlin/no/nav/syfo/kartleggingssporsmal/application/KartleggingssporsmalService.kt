@@ -351,7 +351,6 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_SOR_VARANGER = "2030"
 
         // Trio-fylker: Vestland
-        private const val KONTOR_NAV_VINDAFJORD_ETNE = "1160"
         private const val KONTOR_NAV_BERGEN_SOR = "1202"
         private const val KONTOR_NAV_BERGEN_NORD = "1203"
         private const val KONTOR_NAV_BERGEN_VEST = "1206"
@@ -385,6 +384,7 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_LUSTER = "1426"
         private const val KONTOR_NAV_ASKVOLL = "1428"
         private const val KONTOR_NAV_SUNNFJORD_YTRE_SOGN = "1432"
+        private const val KONTOR_NAV_SUNNFJORD_YTRE_SOGN_REGIONAL_SFE = "1476"
         private const val KONTOR_NAV_NORDFJORD = "1443"
 
         // Trio-fylker: Vest-Viken
@@ -471,7 +471,6 @@ class KartleggingssporsmalService(
             KONTOR_NAV_PORSANGER,
             KONTOR_NAV_LEBESBY,
             KONTOR_NAV_GAMVIK,
-            KONTOR_NAV_VINDAFJORD_ETNE,
             KONTOR_NAV_BERGEN_SOR,
             KONTOR_NAV_BERGEN_NORD,
             KONTOR_NAV_BERGEN_VEST,
@@ -495,6 +494,7 @@ class KartleggingssporsmalService(
             KONTOR_NAV_KINN,
             KONTOR_NAV_ASKVOLL,
             KONTOR_NAV_SUNNFJORD_YTRE_SOGN,
+            KONTOR_NAV_SUNNFJORD_YTRE_SOGN_REGIONAL_SFE,
             KONTOR_NAV_NORDFJORD,
             KONTOR_NAV_BAERUM,
             KONTOR_NAV_JEVNAKER,
