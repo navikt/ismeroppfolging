@@ -3,24 +3,24 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val confluent = "8.3.0"
+val confluent = "8.4.0"
 val flywayVersion = "11.19.0"
 val hikariVersion = "7.1.0"
-val postgresVersion = "42.7.13"
+val postgresVersion = "42.7.14"
 val postgresEmbeddedVersion = "2.2.2"
 val postgresRuntimeVersion = "17.9.0"
-val kafkaVersion = "4.3.1"
-val logbackVersion = "1.6.1"
+val kafkaVersion = "4.4.0"
+val logbackVersion = "1.6.6"
 val logstashEncoderVersion = "9.0"
-val micrometerRegistryVersion = "1.17.0"
-val jacksonDatatypeVersion = "2.22.1"
-val jacksonDatabindVersion = "3.2.1"
-val ktorVersion = "3.6.0"
+val micrometerRegistryVersion = "1.17.2"
+val jacksonDatatypeVersion = "2.22.4"
+val jacksonDatabindVersion = "3.2.4"
+val ktorVersion = "3.6.1"
 val mockkVersion = "1.14.11"
-val nimbusJoseJwtVersion = "10.9.1"
+val nimbusJoseJwtVersion = "10.10"
 
 plugins {
-    kotlin("jvm") version "2.4.10"
+    kotlin("jvm") version "2.4.21"
     id("com.gradleup.shadow") version "8.3.8"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
     id("com.adarshr.test-logger") version "4.0.0"
@@ -35,7 +35,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
 
-    implementation("io.ktor:ktor-client-apache:$ktorVersion")
+    implementation("io.ktor:ktor-client-apache5:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
@@ -66,7 +66,21 @@ dependencies {
     }
 
     implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", excludeLog4j)
+    constraints {
+        implementation("at.yawk.lz4:lz4-java") {
+            version {
+                require("1.11.4")
+            }
+        }
+    }
     implementation("io.confluent:kafka-avro-serializer:$confluent", excludeLog4j)
+    constraints {
+        implementation("com.google.guava:guava") {
+            version {
+                require("33.8.0-jre")
+            }
+        }
+    }
 
     // (De-)serialization
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonDatatypeVersion")
