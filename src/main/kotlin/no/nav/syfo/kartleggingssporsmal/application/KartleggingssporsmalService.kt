@@ -326,6 +326,7 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_TONSBERG = "0704"
 
         // Trio-fylker: Troms og Finnmark
+        private const val KONTOR_TROMS_FINNMARK_EGNE_ANSATTE = "1983"
         private const val KONTOR_NAV_TROMSO = "1902"
         private const val KONTOR_NAV_SOR_TROMS = "1903"
         private const val KONTOR_NAV_SALANGEN_LAVANGEN_DYROY = "1923"
@@ -351,6 +352,7 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_SOR_VARANGER = "2030"
 
         // Trio-fylker: Vestland
+        private const val KONTOR_VESTLAND_EGNE_ANSATTE = "1283"
         private const val KONTOR_NAV_BERGEN_SOR = "1202"
         private const val KONTOR_NAV_BERGEN_NORD = "1203"
         private const val KONTOR_NAV_BERGEN_VEST = "1206"
@@ -388,6 +390,7 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_NORDFJORD = "1443"
 
         // Trio-fylker: Vest-Viken
+        private const val KONTOR_VEST_VIKEN_EGNE_ANSATTE = "0683"
         private const val KONTOR_NAV_BAERUM = "0219"
         private const val KONTOR_NAV_ASKER = "0220"
         private const val KONTOR_NAV_JEVNAKER = "0532"
@@ -504,6 +507,9 @@ class KartleggingssporsmalService(
             KONTOR_NAV_HALLINGDAL,
             KONTOR_NAV_MIDT_BUSKERUD,
             KONTOR_NAV_NUMEDAL,
+            KONTOR_TROMS_FINNMARK_EGNE_ANSATTE,
+            KONTOR_VESTLAND_EGNE_ANSATTE,
+            KONTOR_VEST_VIKEN_EGNE_ANSATTE
         )
         val ekskluderteKontorer = listOf(KONTOR_NAV_UTLAND)
         val pilotkontorerWithFritekst = listOf(KONTOR_NAV_SANDEFJORD, KONTOR_NAV_ASKER, KONTOR_NAV_SONDRE_NORDSTRAND)
