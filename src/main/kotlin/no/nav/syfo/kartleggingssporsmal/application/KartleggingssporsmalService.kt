@@ -324,6 +324,7 @@ class KartleggingssporsmalService(
         private const val KONTOR_NAV_SANDNES = "1102"
         private const val KONTOR_NAV_SKIEN = "0806"
         private const val KONTOR_NAV_TONSBERG = "0704"
+        private const val KONTOR_NAV_VERDAL = "1721"
 
         // Trio-fylker: Troms og Finnmark
         private const val KONTOR_TROMS_FINNMARK_EGNE_ANSATTE = "1983"
@@ -509,7 +510,8 @@ class KartleggingssporsmalService(
             KONTOR_NAV_NUMEDAL,
             KONTOR_TROMS_FINNMARK_EGNE_ANSATTE,
             KONTOR_VESTLAND_EGNE_ANSATTE,
-            KONTOR_VEST_VIKEN_EGNE_ANSATTE
+            KONTOR_VEST_VIKEN_EGNE_ANSATTE,
+            KONTOR_NAV_VERDAL
         )
         val ekskluderteKontorer = listOf(KONTOR_NAV_UTLAND)
         val pilotkontorerWithFritekst = listOf(KONTOR_NAV_SANDEFJORD, KONTOR_NAV_ASKER, KONTOR_NAV_SONDRE_NORDSTRAND)
