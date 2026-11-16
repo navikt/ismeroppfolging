@@ -13,10 +13,10 @@ val kafkaVersion = "4.4.0"
 val logbackVersion = "1.6.6"
 val logstashEncoderVersion = "9.0"
 val micrometerRegistryVersion = "1.17.2"
-val jacksonDatatypeVersion = "2.22.4"
-val jacksonDatabindVersion = "3.2.4"
+val jacksonDatatypeVersion = "2.23.0"
+val jacksonDatabindVersion = "3.3.0"
 val ktorVersion = "3.6.1"
-val mockkVersion = "1.14.11"
+val mockkVersion = "1.14.12"
 val nimbusJoseJwtVersion = "10.10"
 
 plugins {
