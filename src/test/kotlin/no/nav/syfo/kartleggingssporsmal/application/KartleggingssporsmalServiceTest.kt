@@ -17,6 +17,7 @@ import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_NO_ARBEIDSGIVER
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_PILOT_UTEN_UTSENDING
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_ENDED
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT_BUT_LONG
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_TOO_OLD
@@ -1100,6 +1101,7 @@ class KartleggingssporsmalServiceTest {
             Arguments.of(ARBEIDSTAKER_PERSONIDENT_TOO_OLD.value, "too old"),
             Arguments.of(ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT.value, "tilfelle is not longer than stoppunkt anymore"),
             Arguments.of(ARBEIDSTAKER_PERSONIDENT_TILFELLE_SHORT_DURATION_LEFT.value, "tilfelle ends in a few days"),
+            Arguments.of(ARBEIDSTAKER_PERSONIDENT_TILFELLE_ENDED.value, "tilfelle has ended before stoppunkt"),
             Arguments.of(ARBEIDSTAKER_PERSONIDENT_TILFELLE_DOD.value, "person is dod"),
             Arguments.of(ARBEIDSTAKER_PERSONIDENT_NO_ARBEIDSGIVER.value, "person is not arbeidstaker"),
             Arguments.of(ARBEIDSTAKER_PERSONIDENT_ANNEN_ENHET.value, "person has excluded enhet"),
