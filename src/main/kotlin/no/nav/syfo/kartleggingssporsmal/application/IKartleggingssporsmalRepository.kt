@@ -32,5 +32,7 @@ interface IKartleggingssporsmalRepository {
     fun updateJournalpostidForKandidat(kandidat: KartleggingssporsmalKandidat, journalpostId: JournalpostId)
     fun getKandidaterMedSvarUtenFerdigstiltVarsel(): List<KartleggingssporsmalKandidat>
     fun getKandidaterWithMissingPublishOrVarsel(): List<KartleggingssporsmalKandidat>
+    fun getKandidaterWithStatusendringNotPublishedV2(): List<KartleggingssporsmalKandidat>
+    fun updatePublishedV2AtForKandidatStatusendring(kandidat: KartleggingssporsmalKandidat)
     fun updatePersonident(oldPersonident: Personident, newPersonident: Personident): PersonidentOppdatering
 }

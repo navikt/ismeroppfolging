@@ -69,6 +69,7 @@ data class Environment(
     val isJournalforingRetryEnabled: Boolean =
         getEnvVar("IS_JOURNALFORING_RETRY_ENABLED", "true").toBoolean(),
     val isKandidatPublishingEnabled: Boolean = getEnvVar("IS_KANDIDAT_PUBLISHING_ENABLED").toBoolean(),
+    val isKandidatV2PublishingEnabled: Boolean = getEnvVar("IS_KANDIDAT_V2_PUBLISHING_ENABLED", "false").toBoolean(),
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

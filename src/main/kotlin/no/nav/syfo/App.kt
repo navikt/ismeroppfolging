@@ -20,7 +20,11 @@ import no.nav.syfo.kartleggingssporsmal.infrastructure.database.Kartleggingsspor
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselHendelseSerializer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.EsyfovarselProducer
+import no.nav.syfo.kartleggingssporsmal.application.KartleggingssporsmalKandidatV2PublishService
+import no.nav.syfo.kartleggingssporsmal.infrastructure.cronjob.PublishKartleggingssporsmalKandidatV2Cronjob
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatProducer
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatV2Producer
+import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatV2RecordSerializer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.KartleggingssporsmalKandidatRecordSerializer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.kartleggingssporsmalsvar.launchKartleggingssporsmalSvarConsumer
 import no.nav.syfo.kartleggingssporsmal.infrastructure.kafka.oppfolgingstilfelle.launchOppfolgingstilfelleConsumer
@@ -93,6 +97,11 @@ fun main() {
             kafkaAivenProducerConfig<KartleggingssporsmalKandidatRecordSerializer>(kafkaEnvironment = environment.kafka)
         )
     )
+    val kartleggingssporsmalKandidatV2Producer = KartleggingssporsmalKandidatV2Producer(
+        producer = KafkaProducer(
+            kafkaAivenProducerConfig<KartleggingssporsmalKandidatV2RecordSerializer>(kafkaEnvironment = environment.kafka)
+        )
+    )
     val kandidatStatusProducer = KandidatStatusProducer(
         producer = KafkaProducer(
             kafkaAivenProducerConfig<KandidatStatusRecordSerializer>(kafkaEnvironment = environment.kafka)
@@ -142,6 +151,11 @@ fun main() {
                 senOppfolgingService = senOppfolgingService,
                 isKandidatPublishingEnabled = environment.isKandidatPublishingEnabled,
             )
+            val kandidatV2PublishService = KartleggingssporsmalKandidatV2PublishService(
+                kartleggingssporsmalRepository = kartleggingssporsmalRepository,
+                kandidatV2Producer = kartleggingssporsmalKandidatV2Producer,
+                isKandidatV2PublishingEnabled = environment.isKandidatV2PublishingEnabled,
+            )
             journalforingService = JournalforingService(
                 kartleggingssporsmalRepository = kartleggingssporsmalRepository,
                 dokarkivClient = dokarkivClient,
@@ -167,6 +181,7 @@ fun main() {
                     PublishKandidatStatusCronjob(senOppfolgingService),
                     KandidatStoppunktCronjob(kartleggingssporsmalService),
                     JournalforKartleggingssporsmalCronjob(journalforingService),
+                    PublishKartleggingssporsmalKandidatV2Cronjob(kandidatV2PublishService),
                     FerdigstillKartleggingssporsmalVarselCronjob(kartleggingssporsmalRepository, esyfovarselProducer),
                 )
 

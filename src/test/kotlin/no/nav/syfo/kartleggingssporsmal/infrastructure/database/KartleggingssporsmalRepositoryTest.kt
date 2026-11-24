@@ -392,6 +392,46 @@ class KartleggingssporsmalRepositoryTest {
     }
 
     @Test
+    fun `getKandidaterWithStatusendringNotPublishedV2 returns statusendringer in order until marked as published`() {
+        val oppfolgingstilfelle = createOppfolgingstilfelleFromKafka(
+            tilfelleStart = LocalDate.now().minusDays(6 * 7),
+            antallSykedager = 6 * 7 + 1,
+        )
+        runBlocking {
+            kartleggingssporsmalRepository.createStoppunkt(KartleggingssporsmalStoppunkt.create(oppfolgingstilfelle)!!)
+            val stoppunkt = database.getKartleggingssporsmalStoppunkt().first()
+            val kandidat = KartleggingssporsmalKandidat.create(
+                personident = ARBEIDSTAKER_PERSONIDENT,
+                skjemavariant = Skjemavariant.FLERVALG_FRITEKST_V4,
+            ).copy(varsletAt = OffsetDateTime.now())
+            val created = kartleggingssporsmalRepository.createKandidatAndMarkStoppunktAsProcessed(kandidat, stoppunkt.id)
+            val svarMottatt = kartleggingssporsmalRepository.createKandidatStatusendring(
+                created.registrerSvarMottatt(OffsetDateTime.now())
+            )
+            val ferdigbehandlet = kartleggingssporsmalRepository.createKandidatStatusendring(
+                svarMottatt.ferdigbehandleVurdering(
+                    veilederident = "Z999999",
+                    vurderingAlternativ = KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet.VurderingAlternativ.RISIKO_FOR_LANGTIDSFRAVAR,
+                    vurderingFritekst = "Fritekst",
+                )
+            )
+
+            val unpublished = kartleggingssporsmalRepository.getKandidaterWithStatusendringNotPublishedV2()
+
+            assertEquals(
+                listOf(created.status.uuid, svarMottatt.status.uuid, ferdigbehandlet.status.uuid),
+                unpublished.map { it.status.uuid },
+            )
+            val vurdering = unpublished.last().status as KartleggingssporsmalKandidatStatusendring.Ferdigbehandlet
+            assertEquals("Fritekst", vurdering.vurderingFritekst)
+
+            unpublished.forEach { kartleggingssporsmalRepository.updatePublishedV2AtForKandidatStatusendring(it) }
+
+            assertTrue(kartleggingssporsmalRepository.getKandidaterWithStatusendringNotPublishedV2().isEmpty())
+        }
+    }
+
+    @Test
     fun `updateSvarForKandidat should throw an exception when the kandidat does not exist`() {
         val kandidat = KartleggingssporsmalKandidat.create(
             personident = ARBEIDSTAKER_PERSONIDENT,
