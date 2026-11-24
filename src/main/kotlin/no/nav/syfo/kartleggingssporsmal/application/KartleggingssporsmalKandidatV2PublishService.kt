@@ -24,10 +24,19 @@ class KartleggingssporsmalKandidatV2PublishService(
             results.add(result)
             if (result.isFailure) break
         }
+        val antallPubliserteStatusendringer = results.count { it.isSuccess }
+        if (antallPubliserteStatusendringer >= 1) {
+            log.info(
+                "Published {} kartleggingssporsmal kandidat v2 statusendringer to topic {}",
+                antallPubliserteStatusendringer,
+                KARTLEGGINGSSPORSMAL_KANDIDAT_V2_TOPIC,
+            )
+        }
         return results
     }
 
     companion object {
+        private const val KARTLEGGINGSSPORSMAL_KANDIDAT_V2_TOPIC = "teamsykefravr.ismeroppfolging-kartleggingssporsmal-kandidat-v2"
         private val log = LoggerFactory.getLogger(KartleggingssporsmalKandidatV2PublishService::class.java)
     }
 }
