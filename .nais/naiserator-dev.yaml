@@ -123,3 +123,5 @@ spec:
       value: "false"
     - name: IS_KANDIDAT_PUBLISHING_ENABLED
       value: "true"
+    - name: IS_KANDIDAT_V2_PUBLISHING_ENABLED
+      value: "true"

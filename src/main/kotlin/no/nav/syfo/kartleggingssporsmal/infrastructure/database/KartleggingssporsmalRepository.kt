@@ -107,6 +107,30 @@ class KartleggingssporsmalRepository(
         }
     }
 
+    override fun getKandidaterWithStatusendringNotPublishedV2(): List<KartleggingssporsmalKandidat> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_STATUSENDRINGER_NOT_PUBLISHED_V2).use {
+                it.executeQuery().toList {
+                    val pKandidat = toPKartleggingssporsmalKandidat()
+                    val pStatusendring = toPKartleggingssporsmalKandidatStatusendring(prefix = STATUS_PREFIX)
+                    pKandidat.toKartleggingssporsmalKandidat(pStatusendring)
+                }
+            }
+        }
+
+    override fun updatePublishedV2AtForKandidatStatusendring(kandidat: KartleggingssporsmalKandidat) {
+        database.connection.use { connection ->
+            connection.prepareStatement(UPDATE_KANDIDATSTATUSENDRING_PUBLISHED_V2_AT).use {
+                it.setString(1, kandidat.status.uuid.toString())
+                val rowCount = it.executeUpdate()
+                if (rowCount != 1) {
+                    throw SQLException("Expected a single row to be updated, got update count $rowCount")
+                }
+            }
+            connection.commit()
+        }
+    }
+
     override suspend fun updateVarsletAtForKandidat(kandidat: KartleggingssporsmalKandidat): KartleggingssporsmalKandidat {
         return database.connection.use { connection ->
             val updatedKandidat = connection.prepareStatement(UPDATE_KANDIDAT_VARSLET_AT).use {
@@ -431,6 +455,23 @@ class KartleggingssporsmalRepository(
             UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT_STATUSENDRING
             SET published_at = now()
             WHERE uuid = ?
+        """
+
+        private const val UPDATE_KANDIDATSTATUSENDRING_PUBLISHED_V2_AT = """
+            UPDATE KARTLEGGINGSSPORSMAL_KANDIDAT_STATUSENDRING
+            SET published_v2_at = now()
+            WHERE uuid = ?
+        """
+
+        private const val GET_STATUSENDRINGER_NOT_PUBLISHED_V2 = """
+            SELECT *,
+            $STATUS_ALIAS
+            FROM KARTLEGGINGSSPORSMAL_KANDIDAT k
+            INNER JOIN KARTLEGGINGSSPORSMAL_KANDIDAT_STATUSENDRING s ON k.id = s.kandidat_id
+            WHERE s.published_v2_at IS NULL
+              AND k.should_send_varsel = true
+            ORDER BY s.created_at, s.id
+            LIMIT 500
         """
 
         private const val UPDATE_KANDIDAT_VARSLET_AT = """
