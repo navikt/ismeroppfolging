@@ -17,11 +17,17 @@ spec:
     partitions: 4
     replication: 3
     retentionBytes: -1  # -1 means unlimited
-    retentionHours: -1  # -1 means unlimited
+    retentionHours: 17520  # 2 years
   acl:
     - team: teamsykefravr
       application: ismeroppfolging
       access: readwrite
+    - team: teamsykefravr
+      application: syfooversiktsrv
+      access: read
+    - team: team-esyfo
+      application: meroppfolging-backend
+      access: read
     - team: disykefravar
       application: dvh-sykefravar-airflow-kafka
       access: read
